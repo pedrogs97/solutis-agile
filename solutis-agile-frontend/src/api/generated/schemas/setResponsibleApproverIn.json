@@ -1,0 +1,18 @@
+{
+  "description": "Payload to set the responsible approver for a step.",
+  "properties": {
+    "name": { "title": "Name", "type": "string" },
+    "email": { "title": "Email", "type": "string" },
+    "workflowId": { "title": "Workflowid", "type": "integer" },
+    "stepId": { "title": "Stepid", "type": "integer" },
+    "observations": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "default": "",
+      "title": "Observations"
+    }
+  },
+  "required": ["name", "email", "workflowId", "stepId"],
+  "title": "SetResponsibleApproverIn",
+  "type": "object",
+  "x-readme-ref-name": "SetResponsibleApproverIn"
+}

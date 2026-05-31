@@ -1,0 +1,35 @@
+{
+  "description": "Current supplier situation response.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "supplier": { "title": "Supplier", "type": "integer" },
+    "status": {
+      "anyOf": [
+        {
+          "description": "Simple domain reference output.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "name": { "title": "Name", "type": "string" }
+          },
+          "required": ["id", "name"],
+          "title": "DomainRefOut",
+          "type": "object",
+          "x-readme-ref-name": "DomainRefOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "createdAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Createdat"
+    },
+    "updatedAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Updatedat"
+    }
+  },
+  "required": ["id", "supplier"],
+  "title": "SupplierSituationOut",
+  "type": "object",
+  "x-readme-ref-name": "SupplierSituationOut"
+}

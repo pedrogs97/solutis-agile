@@ -1,0 +1,14 @@
+{
+  "description": "Payload to create an attachment type.",
+  "properties": {
+    "name": { "title": "Name", "type": "string" },
+    "riskLevel": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Risklevel"
+    }
+  },
+  "required": ["name"],
+  "title": "AttachmentTypeCreateIn",
+  "type": "object",
+  "x-readme-ref-name": "AttachmentTypeCreateIn"
+}

@@ -1,0 +1,98 @@
+services:
+  agile-front:
+    build:
+      context: ./solutis-agile-frontend
+      target: builder
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./solutis-agile-frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+    restart: always
+    env_file:
+      - ./solutis-agile-frontend/.env
+    networks:
+      - agile-network
+
+  solutis-sync:
+    build:
+      context: ./solutis-sync
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./solutis-sync/src:/solutis-sync/src
+      - ./solutis-sync/logs:/solutis-sync/logs
+      - ./solutis-sync/.env:/solutis-sync/.env
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8003 --workers 2 --reload
+    restart: always
+    env_file:
+      - ./solutis-sync/.env
+    networks:
+      - agile-network
+
+  agile-back:
+    build:
+      context: ./solutis_manager_back
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./solutis_manager_back/src:/solutis-agile/src
+      - ./solutis_manager_back/alembic:/solutis-agile/alembic
+      - ./solutis_manager_back/templates:/solutis-agile/templates
+      - /mnt/storage:/storage
+      - ./solutis_manager_back/logs:/solutis-agile/logs
+      - ./solutis_manager_back/.env:/solutis-agile/.env
+    command: sh -c "uv run uvicorn src.main:appAPI --host 0.0.0.0 --port 8080 --reload"
+    restart: always
+    env_file:
+      - ./solutis_manager_back/.env
+    networks:
+      - agile-network
+
+  solutis-procurement:
+    build:
+      context: ./solutis_procurement
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./solutis_procurement/src:/app/src
+      - ./solutis_procurement/config:/app/config
+      - ./solutis_procurement/manage.py:/app/manage.py
+      - /mnt/storage:/storage
+      - ./solutis_procurement/logs:/app/logs
+      - ./solutis_procurement/.env:/app/.env
+      - ./solutis_procurement/db.sqlite3:/app/db.sqlite3
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput --clear &&
+             uvicorn config.asgi:application --host 0.0.0.0 --port 8001 --reload --workers 3"
+    restart: always
+    env_file:
+      - ./solutis_procurement/.env
+    networks:
+      - agile-network
+
+  solutis-report:
+    build:
+      context: ./solutis_report
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./solutis_report/src:/solutis-report/src
+      - ./solutis_report/logs:/solutis-report/logs
+      - ./solutis_report/.env:/solutis-report/.env
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8002 --workers 2 --reload
+    restart: always
+    env_file:
+      - ./solutis_report/.env
+    networks:
+      - agile-network
+
+networks:
+  agile-network:
+    driver: bridge

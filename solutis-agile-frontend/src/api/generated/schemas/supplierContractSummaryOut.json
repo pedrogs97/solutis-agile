@@ -1,0 +1,16 @@
+{
+  "description": "Supplier contract dates used in list responses.",
+  "properties": {
+    "contractStartDate": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Contractstartdate"
+    },
+    "contractEndDate": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Contractenddate"
+    }
+  },
+  "title": "SupplierContractSummaryOut",
+  "type": "object",
+  "x-readme-ref-name": "SupplierContractSummaryOut"
+}

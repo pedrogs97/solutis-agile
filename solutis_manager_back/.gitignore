@@ -1,0 +1,57 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# IDEs and editors
+/.idea
+.settings/
+.vscode/
+
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+
+# Unit test / coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Logs
+*.log
+*.bkp
+
+# PyBuilder
+.pybuilder/
+target/
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Environments
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.venv
+env/
+venv/
+ENV/
+.DS_Store
+*.sqlite3
+*.db
+.python-version
+*.xlsx
+
+# media
+**/media
+
+# storage
+**/storage
+**/contracts
+
+.vscode/*
+.agents/*

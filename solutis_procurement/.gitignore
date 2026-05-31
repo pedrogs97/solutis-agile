@@ -1,0 +1,16 @@
+# gitignore padrão para projetos django
+*.pyc
+__pycache__/
+db.sqlite3
+/media
+/staticfiles
+/storage
+.env
+*.log
+.codex
+.pytest_cache/
+.venv
+.pylint-cache/*
+.agents/*
+.coverage
+.coverage.*

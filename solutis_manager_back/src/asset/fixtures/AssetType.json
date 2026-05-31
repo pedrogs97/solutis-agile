@@ -1,0 +1,149 @@
+[
+    {
+        "table": "asset_type",
+        "id": 1,
+        "code": "0001",
+        "name": "NOTEBOOK",
+        "acronym": "NTK"
+    },
+    {
+        "table": "asset_type",
+        "id": 2,
+        "code": "0002",
+        "name": "DESKTOP",
+        "acronym": "DTK"
+    },
+    {
+        "table": "asset_type",
+        "id": 3,
+        "code": "0003",
+        "name": "MONITOR",
+        "acronym": "MOT"
+    },
+    {
+        "table": "asset_type",
+        "id": 4,
+        "code": "0004",
+        "name": "WEBCAM",
+        "acronym": "WCN"
+    },
+    {
+        "table": "asset_type",
+        "id": 5,
+        "code": "0005",
+        "name": "TELEFONIA",
+        "acronym": "TLA"
+    },
+    {
+        "table": "asset_type",
+        "id": 8,
+        "code": "0008",
+        "name": "IMPRESSORA",
+        "acronym": "IPS"
+    },
+    {
+        "table": "asset_type",
+        "id": 9,
+        "code": "0009",
+        "name": "TABLET",
+        "acronym": "TBT"
+    },
+    {
+        "table": "asset_type",
+        "id": 10,
+        "code": "0010",
+        "name": "HEADSET",
+        "acronym": "HAT"
+    },
+    {
+        "table": "asset_type",
+        "id": 11,
+        "code": "0011",
+        "name": "MOUSE/TECLADO",
+        "acronym": "MST"
+    },
+    {
+        "table": "asset_type",
+        "id": 12,
+        "code": "0012",
+        "name": "HD EXTERNO",
+        "acronym": "HDE"
+    },
+    {
+        "table": "asset_type",
+        "id": 13,
+        "code": "0013",
+        "name": "PENDRIVE",
+        "acronym": "PDE"
+    },
+    {
+        "table": "asset_type",
+        "id": 14,
+        "code": "0014",
+        "name": "MACBOOK",
+        "acronym": "MCK"
+    },
+    {
+        "table": "asset_type",
+        "id": 15,
+        "code": "0015",
+        "name": "MAC MINI",
+        "acronym": "MCM"
+    },
+    {
+        "table": "asset_type",
+        "id": 16,
+        "code": "0016",
+        "name": "MOBILIÁRIO",
+        "acronym": "MBO"
+    },
+    {
+        "table": "asset_type",
+        "id": 17,
+        "code": "0017",
+        "name": "COMPUTADORES E PERIFERICOS",
+        "acronym": "CPS"
+    },
+    {
+        "table": "asset_type",
+        "id": 18,
+        "code": "0018",
+        "name": "MAQUINAS E EQUIPAMENTOS",
+        "acronym": "MEO"
+    },
+    {
+        "table": "asset_type",
+        "id": 19,
+        "code": "0019",
+        "name": "MOVEIS E UTENSILIOS",
+        "acronym": "MOU"
+    },
+    {
+        "table": "asset_type",
+        "id": 20,
+        "code": "0020",
+        "name": "VEICULOS",
+        "acronym": "VCL"
+    },
+    {
+        "table": "asset_type",
+        "id": 21,
+        "code": "0021",
+        "name": "INSTALAÇÕES",
+        "acronym": "INS"
+    },
+    {
+        "table": "asset_type",
+        "id": 22,
+        "code": "0022",
+        "name": "BENFEITORIAS EM IMÓVEIS",
+        "acronym": "BNI"
+    },
+    {
+        "table": "asset_type",
+        "id": 23,
+        "code": "0023",
+        "name": "SOFTWARES ADMINISTRATIVOS",
+        "acronym": "SFA"
+    }
+]

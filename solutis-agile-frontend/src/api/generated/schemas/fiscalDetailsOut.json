@@ -1,0 +1,42 @@
+{
+  "description": "Supplier fiscal details response.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "createdAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Createdat"
+    },
+    "updatedAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Updatedat"
+    },
+    "issWithholding": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Isswithholding"
+    },
+    "issRegime": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Issregime"
+    },
+    "issTaxpayer": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Isstaxpayer"
+    },
+    "simplesNacionalParticipant": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Simplesnacionalparticipant"
+    },
+    "cooperativeMember": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Cooperativemember"
+    },
+    "withholdingTaxNature": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Withholdingtaxnature"
+    }
+  },
+  "required": ["id"],
+  "title": "FiscalDetailsOut",
+  "type": "object",
+  "x-readme-ref-name": "FiscalDetailsOut"
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Supplier status summary used in list responses.",
+  "properties": {
+    "name": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Name"
+    }
+  },
+  "title": "SupplierStatusSummaryOut",
+  "type": "object",
+  "x-readme-ref-name": "SupplierStatusSummaryOut"
+}

@@ -1,0 +1,36 @@
+{
+  "description": "Company information payload used in supplier create/update.",
+  "properties": {
+    "companySize": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Companysize"
+    },
+    "icmsTaxpayer": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Icmstaxpayer"
+    },
+    "taxationRegime": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Taxationregime"
+    },
+    "incomeType": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Incometype"
+    },
+    "taxationMethod": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Taxationmethod"
+    },
+    "customerType": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Customertype"
+    },
+    "nit": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Nit"
+    }
+  },
+  "title": "CompanyInformationPayload",
+  "type": "object",
+  "x-readme-ref-name": "CompanyInformationPayload"
+}

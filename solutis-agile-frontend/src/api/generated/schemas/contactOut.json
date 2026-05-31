@@ -1,0 +1,30 @@
+{
+  "description": "Supplier contact response.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "createdAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Createdat"
+    },
+    "updatedAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Updatedat"
+    },
+    "name": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Name"
+    },
+    "email": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Email"
+    },
+    "phone": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Phone"
+    }
+  },
+  "required": ["id"],
+  "title": "ContactOut",
+  "type": "object",
+  "x-readme-ref-name": "ContactOut"
+}

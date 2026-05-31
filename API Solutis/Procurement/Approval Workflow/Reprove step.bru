@@ -1,0 +1,26 @@
+meta {
+  name: Reprove step
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{PROCUREMENT_BASE_URL}}/approval/step/approve/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "workflowId": 1,
+    "isApproved": false
+  }
+}
+
+settings {
+  encodeUrl: false
+}

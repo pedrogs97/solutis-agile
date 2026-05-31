@@ -1,0 +1,13 @@
+:root {
+  --app-background-color: #f6f8fb;
+}
+
+[data-mantine-color-scheme='dark'] {
+  --app-background-color: #1a1b1e;
+}
+
+html,
+body {
+  background-color: var(--app-background-color);
+  transition: background-color 0.2s ease;
+}

@@ -1,0 +1,12 @@
+# IDE
+.agents/*
+
+# Python
+.venv/*
+.mypy_cache/*
+.pytest_cache/*
+.ruff_cache/*
+
+# Env
+.env
+logs/*

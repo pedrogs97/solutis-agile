@@ -1,0 +1,20 @@
+{
+  "description": "Contact payload used in supplier create/update.",
+  "properties": {
+    "name": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Name"
+    },
+    "email": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Email"
+    },
+    "phone": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Phone"
+    }
+  },
+  "title": "ContactPayload",
+  "type": "object",
+  "x-readme-ref-name": "ContactPayload"
+}

@@ -1,0 +1,11 @@
+{
+  "description": "Simple domain reference output.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "name": { "title": "Name", "type": "string" }
+  },
+  "required": ["id", "name"],
+  "title": "DomainRefOut",
+  "type": "object",
+  "x-readme-ref-name": "DomainRefOut"
+}

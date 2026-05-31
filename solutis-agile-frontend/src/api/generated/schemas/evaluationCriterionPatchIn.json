@@ -1,0 +1,24 @@
+{
+  "description": "Payload for partial evaluation criterion updates.",
+  "properties": {
+    "name": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Name"
+    },
+    "description": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Description"
+    },
+    "weight": {
+      "anyOf": [{ "type": "number" }, { "type": "string" }, { "type": "null" }],
+      "title": "Weight"
+    },
+    "order": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Order"
+    }
+  },
+  "title": "EvaluationCriterionPatchIn",
+  "type": "object",
+  "x-readme-ref-name": "EvaluationCriterionPatchIn"
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Payload to start an approval workflow.",
+  "properties": {
+    "supplierId": { "title": "Supplierid", "type": "integer" },
+    "approverName": { "title": "Approvername", "type": "string" },
+    "approverEmail": { "title": "Approveremail", "type": "string" }
+  },
+  "required": ["supplierId", "approverName", "approverEmail"],
+  "title": "StartApprovalIn",
+  "type": "object",
+  "x-readme-ref-name": "StartApprovalIn"
+}

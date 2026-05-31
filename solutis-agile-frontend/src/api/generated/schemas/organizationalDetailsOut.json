@@ -1,0 +1,50 @@
+{
+  "description": "Supplier organizational details response.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "createdAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Createdat"
+    },
+    "updatedAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Updatedat"
+    },
+    "costCenter": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Costcenter"
+    },
+    "businessUnit": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Businessunit"
+    },
+    "responsibleExecutive": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Responsibleexecutive"
+    },
+    "responsibleManager": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Responsiblemanager"
+    },
+    "payerType": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Payertype"
+    },
+    "businessSector": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Businesssector"
+    },
+    "taxpayerClassification": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Taxpayerclassification"
+    },
+    "publicEntity": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Publicentity"
+    }
+  },
+  "required": ["id"],
+  "title": "OrganizationalDetailsOut",
+  "type": "object",
+  "x-readme-ref-name": "OrganizationalDetailsOut"
+}

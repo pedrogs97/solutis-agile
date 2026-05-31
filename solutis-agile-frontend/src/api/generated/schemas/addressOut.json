@@ -1,0 +1,46 @@
+{
+  "description": "Supplier address response.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "createdAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Createdat"
+    },
+    "updatedAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Updatedat"
+    },
+    "postalCode": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Postalcode"
+    },
+    "number": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Number"
+    },
+    "complement": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Complement"
+    },
+    "street": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Street"
+    },
+    "city": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "City"
+    },
+    "state": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "State"
+    },
+    "neighbourhood": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Neighbourhood"
+    }
+  },
+  "required": ["id"],
+  "title": "AddressOut",
+  "type": "object",
+  "x-readme-ref-name": "AddressOut"
+}

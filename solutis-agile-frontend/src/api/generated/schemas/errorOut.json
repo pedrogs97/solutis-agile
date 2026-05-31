@@ -1,0 +1,33 @@
+{
+  "description": "Standard error response for documented API operations.",
+  "properties": {
+    "detail": { "title": "Detail", "type": "string" },
+    "errors": {
+      "anyOf": [
+        {
+          "items": {
+            "description": "Field-level error returned by API validation.",
+            "properties": {
+              "field": {
+                "anyOf": [{ "type": "string" }, { "type": "null" }],
+                "title": "Field"
+              },
+              "message": { "title": "Message", "type": "string" }
+            },
+            "required": ["message"],
+            "title": "FieldErrorOut",
+            "type": "object",
+            "x-readme-ref-name": "FieldErrorOut"
+          },
+          "type": "array"
+        },
+        { "type": "null" }
+      ],
+      "title": "Errors"
+    }
+  },
+  "required": ["detail"],
+  "title": "ErrorOut",
+  "type": "object",
+  "x-readme-ref-name": "ErrorOut"
+}

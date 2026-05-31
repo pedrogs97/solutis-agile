@@ -1,0 +1,16 @@
+{
+  "description": "Payload to partially update an attachment type.",
+  "properties": {
+    "name": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Name"
+    },
+    "riskLevel": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Risklevel"
+    }
+  },
+  "title": "AttachmentTypePatchIn",
+  "type": "object",
+  "x-readme-ref-name": "AttachmentTypePatchIn"
+}

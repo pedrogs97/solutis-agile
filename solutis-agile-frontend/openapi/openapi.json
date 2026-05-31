@@ -1,0 +1,4569 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Solutis Procurement API",
+    "version": "1.0.0",
+    "description": ""
+  },
+  "paths": {
+    "/api/v1/suppliers/": {
+      "post": {
+        "operationId": "createSupplier",
+        "summary": "Create Supplier",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Create a supplier and initialize its approval workflow.",
+        "tags": ["suppliers"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierCreateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/suppliers/{pk}/": {
+      "get": {
+        "operationId": "getSupplier",
+        "summary": "Get Supplier",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Get supplier details by id.",
+        "tags": ["suppliers"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateSupplier",
+        "summary": "Put Supplier",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Update a supplier with full payload semantics.",
+        "tags": ["suppliers"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierUpdateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchSupplier",
+        "summary": "Patch Supplier",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Partially update a supplier.",
+        "tags": ["suppliers"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierUpdateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteSupplier",
+        "summary": "Delete Supplier",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Delete a supplier by id.",
+        "tags": ["suppliers"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/suppliers-list/": {
+      "get": {
+        "operationId": "listSuppliers",
+        "summary": "List Suppliers",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "cnpj",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cnpj"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "risk",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Risk level ID",
+              "title": "Risk"
+            },
+            "required": false,
+            "description": "Risk level ID"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "default": 12,
+              "title": "Size",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedSupplierListOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "List suppliers with filters, search, and pagination.",
+        "tags": ["suppliers"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/attachments-list/{supplier_id}/": {
+      "get": {
+        "operationId": "listAttachments",
+        "summary": "List Attachments",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "supplier_id",
+            "schema": {
+              "title": "Supplier Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List attachments for a supplier.",
+        "tags": ["attachments"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/attachments/upload/": {
+      "post": {
+        "operationId": "uploadAttachment",
+        "summary": "Upload Attachment",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Upload or replace a supplier attachment.",
+        "tags": ["attachments"],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "title": "MultiPartBodyParams",
+                "type": "object",
+                "properties": {
+                  "supplier": {
+                    "title": "Supplier",
+                    "type": "integer"
+                  },
+                  "attachment_type": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Attachment Type"
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Description"
+                  },
+                  "file": {
+                    "format": "binary",
+                    "title": "File",
+                    "type": "string"
+                  }
+                },
+                "required": ["supplier", "file"]
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/attachments/history/{supplier_id}/{attachment_type_id}/": {
+      "get": {
+        "operationId": "listAttachmentHistory",
+        "summary": "List Attachment History",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "supplier_id",
+            "schema": {
+              "title": "Supplier Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "attachment_type_id",
+            "schema": {
+              "title": "Attachment Type Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List full attachment version history for supplier and attachment type.",
+        "tags": ["attachments"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/attachments/history-download/{pk}/": {
+      "get": {
+        "operationId": "downloadAttachmentHistory",
+        "summary": "Download Attachment History",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Download an attachment file from history.",
+        "tags": ["attachments"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/attachments/{pk}/download/": {
+      "get": {
+        "operationId": "downloadAttachment",
+        "summary": "Download Attachment",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Download an attachment file.",
+        "tags": ["attachments"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/attachment-types/": {
+      "get": {
+        "operationId": "listAttachmentTypes",
+        "summary": "List Attachment Types",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List attachment types optionally filtered by risk level.",
+        "tags": ["attachments"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createAttachmentType",
+        "summary": "Create Attachment Type",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Create an attachment type.",
+        "tags": ["attachments"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentTypeCreateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/attachment-types/{pk}/": {
+      "get": {
+        "operationId": "getAttachmentType",
+        "summary": "Get Attachment Type",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Get a single attachment type by id.",
+        "tags": ["attachments"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchAttachmentType",
+        "summary": "Patch Attachment Type",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Partially update an attachment type.",
+        "tags": ["attachments"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentTypePatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteAttachmentType",
+        "summary": "Delete Attachment Type",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Delete an attachment type.",
+        "tags": ["attachments"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/responsibility-matrix/": {
+      "post": {
+        "operationId": "createResponsibilityMatrix",
+        "summary": "Create Responsibility Matrix",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Create a responsibility matrix for a supplier.",
+        "tags": ["responsibility-matrix"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/responsibility-matrix/{pk}/": {
+      "get": {
+        "operationId": "getResponsibilityMatrix",
+        "summary": "Get Responsibility Matrix",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Retrieve a supplier responsibility matrix.",
+        "tags": ["responsibility-matrix"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "putResponsibilityMatrix",
+        "summary": "Put Responsibility Matrix",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Fully update a supplier responsibility matrix.",
+        "tags": ["responsibility-matrix"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchResponsibilityMatrix",
+        "summary": "Patch Responsibility Matrix",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Partially update a supplier responsibility matrix.",
+        "tags": ["responsibility-matrix"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/approval/steps/": {
+      "get": {
+        "operationId": "listSteps",
+        "summary": "List Steps",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Return all configured approval steps.",
+        "tags": ["approval"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/approval/start/": {
+      "post": {
+        "operationId": "startApprovalFlow",
+        "summary": "Start Approval Flow",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Start an approval flow for a supplier.",
+        "tags": ["approval"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartApprovalIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/approval/steps/responsible/": {
+      "post": {
+        "operationId": "setStepResponsible",
+        "summary": "Set Step Responsible",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Assign the responsible approver for the next workflow step.",
+        "tags": ["approval"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetResponsibleApproverIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/approval/step/approve/": {
+      "post": {
+        "operationId": "approveCurrentStep",
+        "summary": "Approve Current Step",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Approve or reprove a workflow step.",
+        "tags": ["approval"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveCurrentStepIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/approval/supplier/{supplier_id}/flows/": {
+      "get": {
+        "operationId": "supplierApprovalFlows",
+        "summary": "Supplier Approval Flows",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "supplier_id",
+            "schema": {
+              "title": "Supplier Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List approval flow history for a supplier.",
+        "tags": ["approval"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/approval/supplier/{supplier_id}/flows/reset/": {
+      "post": {
+        "operationId": "resetSupplierApprovalFlows",
+        "summary": "Reset Supplier Approval Flows",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "supplier_id",
+            "schema": {
+              "title": "Supplier Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Reset and remove the current approval flow history for a supplier.",
+        "tags": ["approval"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/classifications/": {
+      "get": {
+        "operationId": "listClassifications",
+        "summary": "List Classifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List domain classifications.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/categories/": {
+      "get": {
+        "operationId": "listCategories",
+        "summary": "List Categories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List supplier categories.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/risk-levels/": {
+      "get": {
+        "operationId": "listRiskLevels",
+        "summary": "List Risk Levels",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List supplier risk levels.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/supplier-types/": {
+      "get": {
+        "operationId": "listSupplierTypes",
+        "summary": "List Supplier Types",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List supplier types.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/supplier-situations/": {
+      "get": {
+        "operationId": "listSupplierSituations",
+        "summary": "List Supplier Situations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List supplier situations.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/pix-types/": {
+      "get": {
+        "operationId": "listPixTypes",
+        "summary": "List Pix Types",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List PIX key types.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/payment-methods/": {
+      "get": {
+        "operationId": "listPaymentMethods",
+        "summary": "List Payment Methods",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List payment methods.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/payer-types/": {
+      "get": {
+        "operationId": "listPayerTypes",
+        "summary": "List Payer Types",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List payer types.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/business-sectors/": {
+      "get": {
+        "operationId": "listBusinessSectors",
+        "summary": "List Business Sectors",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List business sectors.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/company-sizes/": {
+      "get": {
+        "operationId": "listCompanySizes",
+        "summary": "List Company Sizes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List company sizes.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/customer-types/": {
+      "get": {
+        "operationId": "listCustomerTypes",
+        "summary": "List Customer Types",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List customer types.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/taxpayer-classifications/": {
+      "get": {
+        "operationId": "listTaxpayerClassifications",
+        "summary": "List Taxpayer Classifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List taxpayer classifications.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/taxation-regimes/": {
+      "get": {
+        "operationId": "listTaxationRegimes",
+        "summary": "List Taxation Regimes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List taxation regimes.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/taxation-methods/": {
+      "get": {
+        "operationId": "listTaxationMethods",
+        "summary": "List Taxation Methods",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List taxation methods.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/icms-taxpayers/": {
+      "get": {
+        "operationId": "listIcmsTaxpayers",
+        "summary": "List Icms Taxpayers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List ICMS taxpayer types.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/withholding-taxes/": {
+      "get": {
+        "operationId": "listWithholdingTaxes",
+        "summary": "List Withholding Taxes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List withholding taxes.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/iss-withholdings/": {
+      "get": {
+        "operationId": "listIssWithholdings",
+        "summary": "List Iss Withholdings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List ISS withholding types.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/iss-regimes/": {
+      "get": {
+        "operationId": "listIssRegimes",
+        "summary": "List Iss Regimes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List ISS regimes.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/income-types/": {
+      "get": {
+        "operationId": "listIncomeTypes",
+        "summary": "List Income Types",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List income types.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/domain/public-entities/": {
+      "get": {
+        "operationId": "listPublicEntities",
+        "summary": "List Public Entities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List public entities.",
+        "tags": ["domain"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evaluation/criteria-list/": {
+      "get": {
+        "operationId": "listCriteria",
+        "summary": "List Criteria",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "default": 12,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Size",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List evaluation criteria with pagination.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evaluation/criteria/": {
+      "post": {
+        "operationId": "createCriterion",
+        "summary": "Create Criterion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Create a new evaluation criterion.",
+        "tags": ["evaluation"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluationCriterionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evaluation/criteria/{pk}/": {
+      "get": {
+        "operationId": "getCriterion",
+        "summary": "Get Criterion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Retrieve one evaluation criterion.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "putCriterion",
+        "summary": "Put Criterion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Update one evaluation criterion.",
+        "tags": ["evaluation"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluationCriterionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchCriterion",
+        "summary": "Patch Criterion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Partially update one evaluation criterion.",
+        "tags": ["evaluation"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluationCriterionPatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteCriterion",
+        "summary": "Delete Criterion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Delete one evaluation criterion.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evaluation/evaluations-list/": {
+      "get": {
+        "operationId": "listEvaluations",
+        "summary": "List Evaluations",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "default": 12,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Size",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "supplier",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Supplier"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "evaluationYear",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Evaluationyear"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "periodType",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Periodtype"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "periodNumber",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Periodnumber"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List supplier evaluations with filters and pagination.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evaluation/evaluations/": {
+      "post": {
+        "operationId": "createEvaluation",
+        "summary": "Create Evaluation",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Create a supplier evaluation and optional criterion scores.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evaluation/evaluations/{pk}/": {
+      "get": {
+        "operationId": "getEvaluation",
+        "summary": "Get Evaluation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Retrieve one supplier evaluation with details.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "putEvaluation",
+        "summary": "Put Evaluation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Update a supplier evaluation.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchEvaluation",
+        "summary": "Patch Evaluation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Partially update a supplier evaluation.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteEvaluation",
+        "summary": "Delete Evaluation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "title": "Pk",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Delete a supplier evaluation.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evaluation/summary/": {
+      "get": {
+        "operationId": "evaluationSummary",
+        "summary": "Evaluation Summary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Return evaluation summary list.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evaluation/supplier-history/": {
+      "get": {
+        "operationId": "supplierHistory",
+        "summary": "Supplier History",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "supplier",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Supplier"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Return evaluation history for a supplier.",
+        "tags": ["evaluation"],
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evaluation/evaluations/{evaluation_id}/scores/": {
+      "post": {
+        "operationId": "addCriterionScores",
+        "summary": "Add Criterion Scores",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "evaluation_id",
+            "schema": {
+              "title": "Evaluation Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Append criterion scores to an existing evaluation.",
+        "tags": ["evaluation"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/CriterionScoreIn"
+                },
+                "title": "Payload",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "ProxyHeaderBearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddressOut": {
+        "description": "Supplier address response.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "postalCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postalcode"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          },
+          "complement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Complement"
+          },
+          "street": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Street"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "neighbourhood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neighbourhood"
+          }
+        },
+        "required": ["id"],
+        "title": "AddressOut",
+        "type": "object"
+      },
+      "CompanyInformationOut": {
+        "description": "Supplier company information response.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "companySize": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Companysize"
+          },
+          "icmsTaxpayer": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icmstaxpayer"
+          },
+          "taxationRegime": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxationregime"
+          },
+          "incomeType": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incometype"
+          },
+          "taxationMethod": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxationmethod"
+          },
+          "customerType": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customertype"
+          },
+          "nit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nit"
+          }
+        },
+        "required": ["id"],
+        "title": "CompanyInformationOut",
+        "type": "object"
+      },
+      "ContactOut": {
+        "description": "Supplier contact response.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": ["id"],
+        "title": "ContactOut",
+        "type": "object"
+      },
+      "ContractOut": {
+        "description": "Supplier contract response.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "objectContract": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Objectcontract"
+          },
+          "executedActivities": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Executedactivities"
+          },
+          "contractStartDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractstartdate"
+          },
+          "contractEndDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractenddate"
+          },
+          "contractType": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contracttype"
+          },
+          "contractPeriod": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractperiod"
+          },
+          "hasContractRenewal": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hascontractrenewal"
+          },
+          "warningContractRenewal": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningcontractrenewal"
+          },
+          "warningContractPeriod": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningcontractperiod"
+          },
+          "warningOnTermination": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningontermination"
+          },
+          "warningOnRenewal": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningonrenewal"
+          },
+          "warningOnPeriod": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningonperiod"
+          }
+        },
+        "required": ["id"],
+        "title": "ContractOut",
+        "type": "object"
+      },
+      "DomainRefOut": {
+        "description": "Simple domain reference output.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["id", "name"],
+        "title": "DomainRefOut",
+        "type": "object"
+      },
+      "FiscalDetailsOut": {
+        "description": "Supplier fiscal details response.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "issWithholding": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isswithholding"
+          },
+          "issRegime": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issregime"
+          },
+          "issTaxpayer": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isstaxpayer"
+          },
+          "simplesNacionalParticipant": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simplesnacionalparticipant"
+          },
+          "cooperativeMember": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cooperativemember"
+          },
+          "withholdingTaxNature": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Withholdingtaxnature"
+          }
+        },
+        "required": ["id"],
+        "title": "FiscalDetailsOut",
+        "type": "object"
+      },
+      "OrganizationalDetailsOut": {
+        "description": "Supplier organizational details response.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "costCenter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Costcenter"
+          },
+          "businessUnit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Businessunit"
+          },
+          "responsibleExecutive": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responsibleexecutive"
+          },
+          "responsibleManager": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responsiblemanager"
+          },
+          "payerType": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payertype"
+          },
+          "businessSector": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Businesssector"
+          },
+          "taxpayerClassification": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxpayerclassification"
+          },
+          "publicEntity": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publicentity"
+          }
+        },
+        "required": ["id"],
+        "title": "OrganizationalDetailsOut",
+        "type": "object"
+      },
+      "PaymentDetailsOut": {
+        "description": "Supplier payment details response.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "paymentFrequency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymentfrequency"
+          },
+          "paymentDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymentdate"
+          },
+          "contractTotalValue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contracttotalvalue"
+          },
+          "contractMonthlyValue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractmonthlyvalue"
+          },
+          "checkingAccount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkingaccount"
+          },
+          "bank": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank"
+          },
+          "bankCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bankcode"
+          },
+          "agency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency"
+          },
+          "paymentMethod": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymentmethod"
+          },
+          "pixKeyType": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pixkeytype"
+          },
+          "pixKey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pixkey"
+          }
+        },
+        "required": ["id"],
+        "title": "PaymentDetailsOut",
+        "type": "object"
+      },
+      "SupplierOut": {
+        "description": "Supplier detail response.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "tradeName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tradename"
+          },
+          "legalName": {
+            "title": "Legalname",
+            "type": "string"
+          },
+          "taxId": {
+            "title": "Taxid",
+            "type": "string"
+          },
+          "stateBusinessRegistration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statebusinessregistration"
+          },
+          "municipalBusinessRegistration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Municipalbusinessregistration"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AddressOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContactOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paymentDetails": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentDetailsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "organizationalDetails": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationalDetailsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fiscalDetails": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiscalDetailsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "companyInformation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyInformationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contract": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContractOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "classification": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DomainRefOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DomainRefOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "riskLevel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DomainRefOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DomainRefOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "situation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SupplierSituationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "responsibilityMatrix": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responsibilitymatrix"
+          }
+        },
+        "required": ["id", "legalName", "taxId"],
+        "title": "SupplierOut",
+        "type": "object"
+      },
+      "SupplierSituationOut": {
+        "description": "Current supplier situation response.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "supplier": {
+            "title": "Supplier",
+            "type": "integer"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DomainRefOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          }
+        },
+        "required": ["id", "supplier"],
+        "title": "SupplierSituationOut",
+        "type": "object"
+      },
+      "ErrorOut": {
+        "description": "Standard error response for documented API operations.",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldErrorOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors"
+          }
+        },
+        "required": ["detail"],
+        "title": "ErrorOut",
+        "type": "object"
+      },
+      "FieldErrorOut": {
+        "description": "Field-level error returned by API validation.",
+        "properties": {
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": ["message"],
+        "title": "FieldErrorOut",
+        "type": "object"
+      },
+      "AddressPayload": {
+        "description": "Address payload used in supplier create/update.",
+        "properties": {
+          "postalCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postalcode"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          },
+          "complement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Complement"
+          },
+          "street": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Street"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "neighbourhood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neighbourhood"
+          }
+        },
+        "title": "AddressPayload",
+        "type": "object"
+      },
+      "CompanyInformationPayload": {
+        "description": "Company information payload used in supplier create/update.",
+        "properties": {
+          "companySize": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Companysize"
+          },
+          "icmsTaxpayer": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icmstaxpayer"
+          },
+          "taxationRegime": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxationregime"
+          },
+          "incomeType": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incometype"
+          },
+          "taxationMethod": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxationmethod"
+          },
+          "customerType": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customertype"
+          },
+          "nit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nit"
+          }
+        },
+        "title": "CompanyInformationPayload",
+        "type": "object"
+      },
+      "ContactPayload": {
+        "description": "Contact payload used in supplier create/update.",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "title": "ContactPayload",
+        "type": "object"
+      },
+      "ContractPayload": {
+        "description": "Contract payload used in supplier create/update.",
+        "properties": {
+          "objectContract": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Objectcontract"
+          },
+          "executedActivities": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Executedactivities"
+          },
+          "contractStartDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractstartdate"
+          },
+          "contractEndDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractenddate"
+          },
+          "contractType": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contracttype"
+          },
+          "contractPeriod": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractperiod"
+          },
+          "hasContractRenewal": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hascontractrenewal"
+          },
+          "warningContractRenewal": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningcontractrenewal"
+          },
+          "warningContractPeriod": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningcontractperiod"
+          },
+          "warningOnTermination": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningontermination"
+          },
+          "warningOnRenewal": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningonrenewal"
+          },
+          "warningOnPeriod": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warningonperiod"
+          }
+        },
+        "title": "ContractPayload",
+        "type": "object"
+      },
+      "FiscalDetailsPayload": {
+        "description": "Fiscal details payload used in supplier create/update.",
+        "properties": {
+          "issWithholding": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isswithholding"
+          },
+          "issRegime": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issregime"
+          },
+          "issTaxpayer": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isstaxpayer"
+          },
+          "simplesNacionalParticipant": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simplesnacionalparticipant"
+          },
+          "cooperativeMember": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cooperativemember"
+          },
+          "withholdingTaxNature": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Withholdingtaxnature"
+          }
+        },
+        "title": "FiscalDetailsPayload",
+        "type": "object"
+      },
+      "OrganizationalDetailsPayload": {
+        "description": "Organizational details payload used in supplier create/update.",
+        "properties": {
+          "costCenter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Costcenter"
+          },
+          "businessUnit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Businessunit"
+          },
+          "responsibleExecutive": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responsibleexecutive"
+          },
+          "responsibleManager": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responsiblemanager"
+          },
+          "payerType": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payertype"
+          },
+          "businessSector": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Businesssector"
+          },
+          "taxpayerClassification": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxpayerclassification"
+          },
+          "publicEntity": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publicentity"
+          }
+        },
+        "title": "OrganizationalDetailsPayload",
+        "type": "object"
+      },
+      "PaymentDetailsPayload": {
+        "description": "Payment details payload used in supplier create/update.",
+        "properties": {
+          "paymentFrequency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymentfrequency"
+          },
+          "paymentDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymentdate"
+          },
+          "contractTotalValue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contracttotalvalue"
+          },
+          "contractMonthlyValue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractmonthlyvalue"
+          },
+          "checkingAccount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkingaccount"
+          },
+          "bank": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank"
+          },
+          "bankCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bankcode"
+          },
+          "agency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency"
+          },
+          "paymentMethod": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymentmethod"
+          },
+          "pixKeyType": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pixkeytype"
+          },
+          "pixKey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pixkey"
+          }
+        },
+        "title": "PaymentDetailsPayload",
+        "type": "object"
+      },
+      "SupplierCreateIn": {
+        "description": "Supplier creation payload.",
+        "properties": {
+          "legalName": {
+            "title": "Legalname",
+            "type": "string"
+          },
+          "taxId": {
+            "title": "Taxid",
+            "type": "string"
+          },
+          "tradeName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tradename"
+          },
+          "stateBusinessRegistration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statebusinessregistration"
+          },
+          "municipalBusinessRegistration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Municipalbusinessregistration"
+          },
+          "classification": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classification"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "riskLevel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risklevel"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AddressPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContactPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paymentDetails": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentDetailsPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "organizationalDetails": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationalDetailsPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fiscalDetails": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiscalDetailsPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "companyInformation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyInformationPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contract": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContractPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["legalName", "taxId"],
+        "title": "SupplierCreateIn",
+        "type": "object"
+      },
+      "SupplierUpdateIn": {
+        "description": "Supplier update payload.",
+        "properties": {
+          "legalName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legalname"
+          },
+          "taxId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxid"
+          },
+          "tradeName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tradename"
+          },
+          "stateBusinessRegistration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statebusinessregistration"
+          },
+          "municipalBusinessRegistration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Municipalbusinessregistration"
+          },
+          "classification": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classification"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "riskLevel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risklevel"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AddressPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContactPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paymentDetails": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentDetailsPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "organizationalDetails": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationalDetailsPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fiscalDetails": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiscalDetailsPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "companyInformation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyInformationPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contract": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContractPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "SupplierUpdateIn",
+        "type": "object"
+      },
+      "SupplierListFilters": {
+        "description": "Supplier list query filters for Ninja endpoints.",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "cnpj": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cnpj"
+          },
+          "risk": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Risk level ID",
+            "title": "Risk"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "search": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search"
+          }
+        },
+        "title": "SupplierListFilters",
+        "type": "object"
+      },
+      "PaginatedSupplierListOut": {
+        "description": "Paginated supplier list response.",
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SupplierListItemOut"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "required": ["count", "results"],
+        "title": "PaginatedSupplierListOut",
+        "type": "object"
+      },
+      "SupplierContractSummaryOut": {
+        "description": "Supplier contract dates used in list responses.",
+        "properties": {
+          "contractStartDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractstartdate"
+          },
+          "contractEndDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contractenddate"
+          }
+        },
+        "title": "SupplierContractSummaryOut",
+        "type": "object"
+      },
+      "SupplierListItemOut": {
+        "description": "Supplier item returned by paginated list endpoint.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "legalName": {
+            "title": "Legalname",
+            "type": "string"
+          },
+          "taxId": {
+            "title": "Taxid",
+            "type": "string"
+          },
+          "situation": {
+            "$ref": "#/components/schemas/SupplierSituationSummaryOut"
+          },
+          "riskLevel": {
+            "$ref": "#/components/schemas/SupplierRiskLevelSummaryOut"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/SupplierContractSummaryOut"
+          }
+        },
+        "required": [
+          "id",
+          "legalName",
+          "taxId",
+          "situation",
+          "riskLevel",
+          "contract"
+        ],
+        "title": "SupplierListItemOut",
+        "type": "object"
+      },
+      "SupplierRiskLevelSummaryOut": {
+        "description": "Supplier risk level summary used in list responses.",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "SupplierRiskLevelSummaryOut",
+        "type": "object"
+      },
+      "SupplierSituationSummaryOut": {
+        "description": "Supplier situation summary used in list responses.",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/SupplierStatusSummaryOut"
+          }
+        },
+        "required": ["status"],
+        "title": "SupplierSituationSummaryOut",
+        "type": "object"
+      },
+      "SupplierStatusSummaryOut": {
+        "description": "Supplier status summary used in list responses.",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "SupplierStatusSummaryOut",
+        "type": "object"
+      },
+      "AttachmentTypeCreateIn": {
+        "description": "Payload to create an attachment type.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "riskLevel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risklevel"
+          }
+        },
+        "required": ["name"],
+        "title": "AttachmentTypeCreateIn",
+        "type": "object"
+      },
+      "AttachmentTypePatchIn": {
+        "description": "Payload to partially update an attachment type.",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "riskLevel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risklevel"
+          }
+        },
+        "title": "AttachmentTypePatchIn",
+        "type": "object"
+      },
+      "StartApprovalIn": {
+        "description": "Payload to start an approval workflow.",
+        "properties": {
+          "supplierId": {
+            "title": "Supplierid",
+            "type": "integer"
+          },
+          "approverName": {
+            "title": "Approvername",
+            "type": "string"
+          },
+          "approverEmail": {
+            "title": "Approveremail",
+            "type": "string"
+          }
+        },
+        "required": ["supplierId", "approverName", "approverEmail"],
+        "title": "StartApprovalIn",
+        "type": "object"
+      },
+      "SetResponsibleApproverIn": {
+        "description": "Payload to set the responsible approver for a step.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "workflowId": {
+            "title": "Workflowid",
+            "type": "integer"
+          },
+          "stepId": {
+            "title": "Stepid",
+            "type": "integer"
+          },
+          "observations": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "",
+            "title": "Observations"
+          }
+        },
+        "required": ["name", "email", "workflowId", "stepId"],
+        "title": "SetResponsibleApproverIn",
+        "type": "object"
+      },
+      "ApproveCurrentStepIn": {
+        "description": "Payload to approve or reprove a workflow step.",
+        "properties": {
+          "workflowId": {
+            "title": "Workflowid",
+            "type": "integer"
+          },
+          "isApproved": {
+            "default": true,
+            "title": "Isapproved",
+            "type": "boolean"
+          }
+        },
+        "required": ["workflowId"],
+        "title": "ApproveCurrentStepIn",
+        "type": "object"
+      },
+      "EvaluationCriterionIn": {
+        "description": "Payload for evaluation criterion create/update.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Weight"
+          },
+          "order": {
+            "default": 0,
+            "title": "Order",
+            "type": "integer"
+          }
+        },
+        "required": ["name", "description", "weight"],
+        "title": "EvaluationCriterionIn",
+        "type": "object"
+      },
+      "EvaluationCriterionPatchIn": {
+        "description": "Payload for partial evaluation criterion updates.",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight"
+          },
+          "order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order"
+          }
+        },
+        "title": "EvaluationCriterionPatchIn",
+        "type": "object"
+      },
+      "CriterionScoreIn": {
+        "description": "Payload for criterion scores.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "integer"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Score"
+          },
+          "comments": {
+            "default": "",
+            "title": "Comments",
+            "type": "string"
+          }
+        },
+        "required": ["criterion", "score"],
+        "title": "CriterionScoreIn",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "ProxyHeaderBearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "servers": []
+}

@@ -1,0 +1,36 @@
+{
+  "description": "Address payload used in supplier create/update.",
+  "properties": {
+    "postalCode": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Postalcode"
+    },
+    "number": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Number"
+    },
+    "complement": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Complement"
+    },
+    "street": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Street"
+    },
+    "city": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "City"
+    },
+    "state": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "State"
+    },
+    "neighbourhood": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Neighbourhood"
+    }
+  },
+  "title": "AddressPayload",
+  "type": "object",
+  "x-readme-ref-name": "AddressPayload"
+}

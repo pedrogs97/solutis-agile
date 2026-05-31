@@ -1,0 +1,202 @@
+[
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 1,
+        "fields": {
+            "name": "CONTRATO ASSINADO",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 2,
+        "fields": {
+            "name": "CONTRATO SOCIAL E ÚLTIMAS ALTERAÇÕES",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 3,
+        "fields": {
+            "name": "CARTÃO CNPJ",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 4,
+        "fields": {
+            "name": "COMPROVANTE DE ENDEREÇO",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 5,
+        "fields": {
+            "name": "INSCRIÇÃO ESTADUAL (SE APLICÁVEL)",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 6,
+        "fields": {
+            "name": "INSCRIÇÃO MUNICIPAL (SE APLICÁVEL)",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 7,
+        "fields": {
+            "name": "CERTIDÕES NEGATIVAS - RECEITA FEDERAL",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 8,
+        "fields": {
+            "name": "CERTIDÕES NEGATIVAS - ESTADUAL",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 9,
+        "fields": {
+            "name": "CERTIDÕES NEGATIVAS - FGTS",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 10,
+        "fields": {
+            "name": "CERTIDÕES NEGATIVAS - INSS",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 11,
+        "fields": {
+            "name": "CERTIDÕES NEGATIVAS - JUSTIÇA DO TRABALHO",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 12,
+        "fields": {
+            "name": "CERTIFICADO DE REGULARIDADE DO SIMPLES NACIONAL",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 13,
+        "fields": {
+            "name": "COMPROVANTE DE CONTA BANCÁRIA",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 14,
+        "fields": {
+            "name": "LICENÇAS ESPECÍFICAS",
+            "risk_level": null
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 15,
+        "fields": {
+            "name": "QUESTIONÁRIO DE DUE DILIGENCE",
+            "risk_level": 3
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 16,
+        "fields": {
+            "name": "ATESTADO DE CAPACIDADE TÉCNICA",
+            "risk_level": 3
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 17,
+        "fields": {
+            "name": "TERMO DE COMPROMISSO",
+            "risk_level": 2
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 18,
+        "fields": {
+            "name": "TERMO DE COMPROMISSO",
+            "risk_level": 3
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 19,
+        "fields": {
+            "name": "TERMO DE RESPONSABILIDADE",
+            "risk_level": 2
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 20,
+        "fields": {
+            "name": "TERMO DE RESPONSABILIDADE",
+            "risk_level": 3
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 21,
+        "fields": {
+            "name": "RELATÓRIO DE AUDITORIA OU CERTIFICAÇÕES ISO (QUANDO APLICÁVEL)",
+            "risk_level": 3
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 22,
+        "fields": {
+            "name": "DOCUMENTOS DIVERSOS",
+            "risk_level": 1
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 23,
+        "fields": {
+            "name": "DOCUMENTOS DIVERSOS",
+            "risk_level": 2
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 24,
+        "fields": {
+            "name": "DOCUMENTOS DIVERSOS",
+            "risk_level": 3
+        }
+    },
+    {
+        "model": "supplier.domattachmenttype",
+        "pk": 25,
+        "fields": {
+            "name": "CERTIDÕES NEGATIVAS - MUNICIPAL",
+            "risk_level": null
+        }
+    }
+]

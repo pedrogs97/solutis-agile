@@ -1,0 +1,14 @@
+[project]
+name = "solutis-agile-workspace"
+version = "1.0.0"
+description = "Solutis Agile Monorepo Workspace"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+  "solutis-sync",
+  "solutis_manager_back",
+  "solutis_procurement",
+  "solutis_report"
+]

@@ -1,0 +1,12 @@
+{
+  "description": "Supplier risk level summary used in list responses.",
+  "properties": {
+    "name": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Name"
+    }
+  },
+  "title": "SupplierRiskLevelSummaryOut",
+  "type": "object",
+  "x-readme-ref-name": "SupplierRiskLevelSummaryOut"
+}

@@ -1,0 +1,15 @@
+{
+  "description": "Payload for criterion scores.",
+  "properties": {
+    "criterion": { "title": "Criterion", "type": "integer" },
+    "score": {
+      "anyOf": [{ "type": "number" }, { "type": "string" }],
+      "title": "Score"
+    },
+    "comments": { "default": "", "title": "Comments", "type": "string" }
+  },
+  "required": ["criterion", "score"],
+  "title": "CriterionScoreIn",
+  "type": "object",
+  "x-readme-ref-name": "CriterionScoreIn"
+}

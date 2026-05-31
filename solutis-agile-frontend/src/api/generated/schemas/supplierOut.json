@@ -1,0 +1,524 @@
+{
+  "description": "Supplier detail response.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "name": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Name"
+    },
+    "tradeName": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Tradename"
+    },
+    "legalName": { "title": "Legalname", "type": "string" },
+    "taxId": { "title": "Taxid", "type": "string" },
+    "stateBusinessRegistration": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Statebusinessregistration"
+    },
+    "municipalBusinessRegistration": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Municipalbusinessregistration"
+    },
+    "address": {
+      "anyOf": [
+        {
+          "description": "Supplier address response.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "createdAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Createdat"
+            },
+            "updatedAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Updatedat"
+            },
+            "postalCode": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Postalcode"
+            },
+            "number": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Number"
+            },
+            "complement": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Complement"
+            },
+            "street": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Street"
+            },
+            "city": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "City"
+            },
+            "state": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "State"
+            },
+            "neighbourhood": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Neighbourhood"
+            }
+          },
+          "required": ["id"],
+          "title": "AddressOut",
+          "type": "object",
+          "x-readme-ref-name": "AddressOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "contact": {
+      "anyOf": [
+        {
+          "description": "Supplier contact response.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "createdAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Createdat"
+            },
+            "updatedAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Updatedat"
+            },
+            "name": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Name"
+            },
+            "email": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Email"
+            },
+            "phone": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Phone"
+            }
+          },
+          "required": ["id"],
+          "title": "ContactOut",
+          "type": "object",
+          "x-readme-ref-name": "ContactOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "paymentDetails": {
+      "anyOf": [
+        {
+          "description": "Supplier payment details response.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "createdAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Createdat"
+            },
+            "updatedAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Updatedat"
+            },
+            "paymentFrequency": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Paymentfrequency"
+            },
+            "paymentDate": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Paymentdate"
+            },
+            "contractTotalValue": {
+              "anyOf": [{ "type": "number" }, { "type": "null" }],
+              "title": "Contracttotalvalue"
+            },
+            "contractMonthlyValue": {
+              "anyOf": [{ "type": "number" }, { "type": "null" }],
+              "title": "Contractmonthlyvalue"
+            },
+            "checkingAccount": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Checkingaccount"
+            },
+            "bank": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Bank"
+            },
+            "bankCode": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Bankcode"
+            },
+            "agency": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Agency"
+            },
+            "paymentMethod": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Paymentmethod"
+            },
+            "pixKeyType": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Pixkeytype"
+            },
+            "pixKey": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Pixkey"
+            }
+          },
+          "required": ["id"],
+          "title": "PaymentDetailsOut",
+          "type": "object",
+          "x-readme-ref-name": "PaymentDetailsOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "organizationalDetails": {
+      "anyOf": [
+        {
+          "description": "Supplier organizational details response.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "createdAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Createdat"
+            },
+            "updatedAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Updatedat"
+            },
+            "costCenter": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Costcenter"
+            },
+            "businessUnit": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Businessunit"
+            },
+            "responsibleExecutive": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Responsibleexecutive"
+            },
+            "responsibleManager": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Responsiblemanager"
+            },
+            "payerType": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Payertype"
+            },
+            "businessSector": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Businesssector"
+            },
+            "taxpayerClassification": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Taxpayerclassification"
+            },
+            "publicEntity": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Publicentity"
+            }
+          },
+          "required": ["id"],
+          "title": "OrganizationalDetailsOut",
+          "type": "object",
+          "x-readme-ref-name": "OrganizationalDetailsOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "fiscalDetails": {
+      "anyOf": [
+        {
+          "description": "Supplier fiscal details response.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "createdAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Createdat"
+            },
+            "updatedAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Updatedat"
+            },
+            "issWithholding": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Isswithholding"
+            },
+            "issRegime": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Issregime"
+            },
+            "issTaxpayer": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Isstaxpayer"
+            },
+            "simplesNacionalParticipant": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Simplesnacionalparticipant"
+            },
+            "cooperativeMember": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Cooperativemember"
+            },
+            "withholdingTaxNature": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Withholdingtaxnature"
+            }
+          },
+          "required": ["id"],
+          "title": "FiscalDetailsOut",
+          "type": "object",
+          "x-readme-ref-name": "FiscalDetailsOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "companyInformation": {
+      "anyOf": [
+        {
+          "description": "Supplier company information response.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "createdAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Createdat"
+            },
+            "updatedAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Updatedat"
+            },
+            "companySize": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Companysize"
+            },
+            "icmsTaxpayer": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Icmstaxpayer"
+            },
+            "taxationRegime": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Taxationregime"
+            },
+            "incomeType": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Incometype"
+            },
+            "taxationMethod": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Taxationmethod"
+            },
+            "customerType": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Customertype"
+            },
+            "nit": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Nit"
+            }
+          },
+          "required": ["id"],
+          "title": "CompanyInformationOut",
+          "type": "object",
+          "x-readme-ref-name": "CompanyInformationOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "contract": {
+      "anyOf": [
+        {
+          "description": "Supplier contract response.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "createdAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Createdat"
+            },
+            "updatedAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Updatedat"
+            },
+            "objectContract": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Objectcontract"
+            },
+            "executedActivities": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Executedactivities"
+            },
+            "contractStartDate": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Contractstartdate"
+            },
+            "contractEndDate": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Contractenddate"
+            },
+            "contractType": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Contracttype"
+            },
+            "contractPeriod": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Contractperiod"
+            },
+            "hasContractRenewal": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Hascontractrenewal"
+            },
+            "warningContractRenewal": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Warningcontractrenewal"
+            },
+            "warningContractPeriod": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Warningcontractperiod"
+            },
+            "warningOnTermination": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Warningontermination"
+            },
+            "warningOnRenewal": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Warningonrenewal"
+            },
+            "warningOnPeriod": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Warningonperiod"
+            }
+          },
+          "required": ["id"],
+          "title": "ContractOut",
+          "type": "object",
+          "x-readme-ref-name": "ContractOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "classification": {
+      "anyOf": [
+        {
+          "description": "Simple domain reference output.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "name": { "title": "Name", "type": "string" }
+          },
+          "required": ["id", "name"],
+          "title": "DomainRefOut",
+          "type": "object",
+          "x-readme-ref-name": "DomainRefOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "category": {
+      "anyOf": [
+        {
+          "description": "Simple domain reference output.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "name": { "title": "Name", "type": "string" }
+          },
+          "required": ["id", "name"],
+          "title": "DomainRefOut",
+          "type": "object",
+          "x-readme-ref-name": "DomainRefOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "riskLevel": {
+      "anyOf": [
+        {
+          "description": "Simple domain reference output.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "name": { "title": "Name", "type": "string" }
+          },
+          "required": ["id", "name"],
+          "title": "DomainRefOut",
+          "type": "object",
+          "x-readme-ref-name": "DomainRefOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "type": {
+      "anyOf": [
+        {
+          "description": "Simple domain reference output.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "name": { "title": "Name", "type": "string" }
+          },
+          "required": ["id", "name"],
+          "title": "DomainRefOut",
+          "type": "object",
+          "x-readme-ref-name": "DomainRefOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "createdAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Createdat"
+    },
+    "updatedAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Updatedat"
+    },
+    "situation": {
+      "anyOf": [
+        {
+          "description": "Current supplier situation response.",
+          "properties": {
+            "id": { "title": "Id", "type": "integer" },
+            "supplier": { "title": "Supplier", "type": "integer" },
+            "status": {
+              "anyOf": [
+                {
+                  "description": "Simple domain reference output.",
+                  "properties": {
+                    "id": { "title": "Id", "type": "integer" },
+                    "name": { "title": "Name", "type": "string" }
+                  },
+                  "required": ["id", "name"],
+                  "title": "DomainRefOut",
+                  "type": "object",
+                  "x-readme-ref-name": "DomainRefOut"
+                },
+                { "type": "null" }
+              ]
+            },
+            "createdAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Createdat"
+            },
+            "updatedAt": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Updatedat"
+            }
+          },
+          "required": ["id", "supplier"],
+          "title": "SupplierSituationOut",
+          "type": "object",
+          "x-readme-ref-name": "SupplierSituationOut"
+        },
+        { "type": "null" }
+      ]
+    },
+    "responsibilityMatrix": {
+      "anyOf": [
+        { "additionalProperties": true, "type": "object" },
+        { "type": "null" }
+      ],
+      "title": "Responsibilitymatrix"
+    }
+  },
+  "required": ["id", "legalName", "taxId"],
+  "title": "SupplierOut",
+  "type": "object",
+  "x-readme-ref-name": "SupplierOut"
+}

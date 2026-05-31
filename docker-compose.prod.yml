@@ -1,0 +1,96 @@
+services:
+  agile-front:
+    image: solutis-agile-frontend:${FRONTEND_TAG:-latest}
+    container_name: solutis-agile-frontend-prod
+    build:
+      context: ./solutis-agile-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    restart: always
+    env_file:
+      - ./solutis-agile-frontend/.env
+    networks:
+      - agile-network
+
+  solutis-sync:
+    image: solutis-sync:${SYNC_TAG:-latest}
+    container_name: solutis-sync-prod
+    build:
+      context: ./solutis-sync
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./solutis-sync/logs:/solutis-sync/logs
+      - ./solutis-sync/.env:/solutis-sync/.env
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8003 --workers 2
+    restart: always
+    env_file:
+      - ./solutis-sync/.env
+    networks:
+      - agile-network
+
+  agile-back:
+    image: solutis-manager-back:${MANAGER_TAG:-latest}
+    container_name: solutis-manager-back-prod
+    build:
+      context: ./solutis_manager_back
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - /mnt/storage:/storage
+      - ./solutis_manager_back/logs:/solutis-agile/logs
+      - ./solutis_manager_back/.env:/solutis-agile/.env
+    command: sh -c "uv run uvicorn src.main:appAPI --host 0.0.0.0 --port 8080"
+    restart: always
+    env_file:
+      - ./solutis_manager_back/.env
+    networks:
+      - agile-network
+
+  solutis-procurement:
+    image: solutis-procurement:${PROCUREMENT_TAG:-latest}
+    container_name: solutis-procurement-prod
+    build:
+      context: ./solutis_procurement
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - /mnt/storage:/storage
+      - ./solutis_procurement/logs:/app/logs
+      - ./solutis_procurement/.env:/app/.env
+      - ./solutis_procurement/db.sqlite3:/app/db.sqlite3
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput --clear &&
+             uvicorn config.asgi:application --host 0.0.0.0 --port 8001 --workers 3"
+    restart: always
+    env_file:
+      - ./solutis_procurement/.env
+    networks:
+      - agile-network
+
+  solutis-report:
+    image: solutis-report:${REPORT_TAG:-latest}
+    container_name: solutis-report-prod
+    build:
+      context: ./solutis_report
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./solutis_report/logs:/solutis-report/logs
+      - ./solutis_report/.env:/solutis-report/.env
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8002 --workers 2
+    restart: always
+    env_file:
+      - ./solutis_report/.env
+    networks:
+      - agile-network
+
+networks:
+  agile-network:
+    driver: bridge

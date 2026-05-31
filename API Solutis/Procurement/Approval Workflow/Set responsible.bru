@@ -1,0 +1,29 @@
+meta {
+  name: Set responsible
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:8000/api/approval/steps/responsible/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "name",
+    "email": "pedro.parametrize@gmail.com",
+    "workflowId": 1,
+    "stepId": 1
+  }
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}

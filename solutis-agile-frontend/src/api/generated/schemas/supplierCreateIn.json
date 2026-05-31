@@ -1,0 +1,346 @@
+{
+  "description": "Supplier creation payload.",
+  "properties": {
+    "legalName": { "title": "Legalname", "type": "string" },
+    "taxId": { "title": "Taxid", "type": "string" },
+    "tradeName": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Tradename"
+    },
+    "stateBusinessRegistration": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Statebusinessregistration"
+    },
+    "municipalBusinessRegistration": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Municipalbusinessregistration"
+    },
+    "classification": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Classification"
+    },
+    "category": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Category"
+    },
+    "riskLevel": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Risklevel"
+    },
+    "type": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Type"
+    },
+    "address": {
+      "anyOf": [
+        {
+          "description": "Address payload used in supplier create/update.",
+          "properties": {
+            "postalCode": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Postalcode"
+            },
+            "number": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Number"
+            },
+            "complement": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Complement"
+            },
+            "street": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Street"
+            },
+            "city": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "City"
+            },
+            "state": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "State"
+            },
+            "neighbourhood": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Neighbourhood"
+            }
+          },
+          "title": "AddressPayload",
+          "type": "object",
+          "x-readme-ref-name": "AddressPayload"
+        },
+        { "type": "null" }
+      ]
+    },
+    "contact": {
+      "anyOf": [
+        {
+          "description": "Contact payload used in supplier create/update.",
+          "properties": {
+            "name": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Name"
+            },
+            "email": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Email"
+            },
+            "phone": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Phone"
+            }
+          },
+          "title": "ContactPayload",
+          "type": "object",
+          "x-readme-ref-name": "ContactPayload"
+        },
+        { "type": "null" }
+      ]
+    },
+    "paymentDetails": {
+      "anyOf": [
+        {
+          "description": "Payment details payload used in supplier create/update.",
+          "properties": {
+            "paymentFrequency": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Paymentfrequency"
+            },
+            "paymentDate": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Paymentdate"
+            },
+            "contractTotalValue": {
+              "anyOf": [{ "type": "number" }, { "type": "null" }],
+              "title": "Contracttotalvalue"
+            },
+            "contractMonthlyValue": {
+              "anyOf": [{ "type": "number" }, { "type": "null" }],
+              "title": "Contractmonthlyvalue"
+            },
+            "checkingAccount": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Checkingaccount"
+            },
+            "bank": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Bank"
+            },
+            "bankCode": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Bankcode"
+            },
+            "agency": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Agency"
+            },
+            "paymentMethod": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Paymentmethod"
+            },
+            "pixKeyType": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Pixkeytype"
+            },
+            "pixKey": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Pixkey"
+            }
+          },
+          "title": "PaymentDetailsPayload",
+          "type": "object",
+          "x-readme-ref-name": "PaymentDetailsPayload"
+        },
+        { "type": "null" }
+      ]
+    },
+    "organizationalDetails": {
+      "anyOf": [
+        {
+          "description": "Organizational details payload used in supplier create/update.",
+          "properties": {
+            "costCenter": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Costcenter"
+            },
+            "businessUnit": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Businessunit"
+            },
+            "responsibleExecutive": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Responsibleexecutive"
+            },
+            "responsibleManager": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Responsiblemanager"
+            },
+            "payerType": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Payertype"
+            },
+            "businessSector": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Businesssector"
+            },
+            "taxpayerClassification": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Taxpayerclassification"
+            },
+            "publicEntity": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Publicentity"
+            }
+          },
+          "title": "OrganizationalDetailsPayload",
+          "type": "object",
+          "x-readme-ref-name": "OrganizationalDetailsPayload"
+        },
+        { "type": "null" }
+      ]
+    },
+    "fiscalDetails": {
+      "anyOf": [
+        {
+          "description": "Fiscal details payload used in supplier create/update.",
+          "properties": {
+            "issWithholding": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Isswithholding"
+            },
+            "issRegime": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Issregime"
+            },
+            "issTaxpayer": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Isstaxpayer"
+            },
+            "simplesNacionalParticipant": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Simplesnacionalparticipant"
+            },
+            "cooperativeMember": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Cooperativemember"
+            },
+            "withholdingTaxNature": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Withholdingtaxnature"
+            }
+          },
+          "title": "FiscalDetailsPayload",
+          "type": "object",
+          "x-readme-ref-name": "FiscalDetailsPayload"
+        },
+        { "type": "null" }
+      ]
+    },
+    "companyInformation": {
+      "anyOf": [
+        {
+          "description": "Company information payload used in supplier create/update.",
+          "properties": {
+            "companySize": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Companysize"
+            },
+            "icmsTaxpayer": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Icmstaxpayer"
+            },
+            "taxationRegime": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Taxationregime"
+            },
+            "incomeType": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Incometype"
+            },
+            "taxationMethod": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Taxationmethod"
+            },
+            "customerType": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Customertype"
+            },
+            "nit": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Nit"
+            }
+          },
+          "title": "CompanyInformationPayload",
+          "type": "object",
+          "x-readme-ref-name": "CompanyInformationPayload"
+        },
+        { "type": "null" }
+      ]
+    },
+    "contract": {
+      "anyOf": [
+        {
+          "description": "Contract payload used in supplier create/update.",
+          "properties": {
+            "objectContract": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Objectcontract"
+            },
+            "executedActivities": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Executedactivities"
+            },
+            "contractStartDate": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Contractstartdate"
+            },
+            "contractEndDate": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Contractenddate"
+            },
+            "contractType": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Contracttype"
+            },
+            "contractPeriod": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Contractperiod"
+            },
+            "hasContractRenewal": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Hascontractrenewal"
+            },
+            "warningContractRenewal": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Warningcontractrenewal"
+            },
+            "warningContractPeriod": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Warningcontractperiod"
+            },
+            "warningOnTermination": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Warningontermination"
+            },
+            "warningOnRenewal": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Warningonrenewal"
+            },
+            "warningOnPeriod": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Warningonperiod"
+            }
+          },
+          "title": "ContractPayload",
+          "type": "object",
+          "x-readme-ref-name": "ContractPayload"
+        },
+        { "type": "null" }
+      ]
+    }
+  },
+  "required": ["legalName", "taxId"],
+  "title": "SupplierCreateIn",
+  "type": "object",
+  "x-readme-ref-name": "SupplierCreateIn"
+}

@@ -1,0 +1,28 @@
+version: "3.1"
+
+services:
+  agile:
+    build:
+      context: .
+    ports:
+      - 8080:8080
+    volumes:
+      - ./src:/solutis-agile/src
+      - ./alembic:/solutis-agile/alembic
+      - ./templates:/solutis-agile/templates
+      - /mnt/storage:/storage
+      - .logs:/solutis-agile/logs
+      - ./.env:/solutis-agile/.env
+    command: sh -c "uv run uvicorn src.main:appAPI --host 0.0.0.0 --port 8080 --reload"
+    restart: always
+    env_file:
+      - ./.env
+    networks:
+      - agile-network
+
+networks:
+  agile-network:
+    external: true
+
+volumes:
+  storage:

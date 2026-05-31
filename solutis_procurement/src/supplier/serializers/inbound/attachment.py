@@ -1,0 +1,79 @@
+"""
+Serializer for SupplierAttachment model.
+This module provides serializers for creating and updating supplier attachments,
+including validation for supplier and attachment type existence, file size, and type.
+"""
+
+from src.shared.serializers import BaseSerializer
+from src.shared.validation import BaseValidationError
+from src.supplier.models.attachments import SupplierAttachment
+from src.supplier.models.domain import DomAttachmentType
+from src.supplier.models.supplier import Supplier
+from src.supplier.serializers.validators import validate_supplier
+
+
+class SupplierAttachmentInSerializer(BaseSerializer):
+    """
+    Serializer for SupplierAttachment model input.
+    Used for POST, PUT, and PATCH requests.
+    """
+
+    ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png"]
+
+    class Meta(BaseSerializer.Meta):
+        """
+        Meta options for the SupplierAttachment input serializer.
+        """
+
+        model = SupplierAttachment
+        fields = [
+            "supplier",
+            "attachment_type",
+            "file",
+            "description",
+        ]
+
+    def validate_supplier(self, value) -> Supplier:
+        """Validate that the supplier exists and is active."""
+        return validate_supplier(value)
+
+    def validate_attachment_type(self, value):
+        """Validate that the attachment type exists."""
+        try:
+            attachment_type = DomAttachmentType.objects.get(pk=value.pk)
+            return attachment_type
+        except DomAttachmentType.DoesNotExist as exc:
+            raise BaseValidationError(
+                "attachment_type", "Tipo de anexo não encontrado."
+            ) from exc
+
+    def validate_file(self, value):
+        """Validate the uploaded file."""
+        if not value:
+            raise BaseValidationError("file", "Arquivo é obrigatório.")
+
+        max_size = 10 * 1024 * 1024  # 10MB in bytes
+        if value.size > max_size:
+            raise BaseValidationError(
+                "file", "Arquivo muito grande. Tamanho máximo: 10MB."
+            )
+
+        if not any(value.name.lower().endswith(ext) for ext in self.ALLOWED_EXTENSIONS):
+            raise BaseValidationError("file", "Tipo de arquivo não permitido.")
+
+        return value
+
+
+class SupplierAttachmentTypeSerializer(BaseSerializer):
+    """
+    Serializer for SupplierAttachment model input with attachment type.
+    Used for POST, PUT, and PATCH requests.
+    """
+
+    class Meta(BaseSerializer.Meta):
+        """
+        Meta options for the SupplierAttachmentTypeSerializer.
+        """
+
+        model = DomAttachmentType
+        read_only_fields = ["id"]

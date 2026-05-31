@@ -1,0 +1,46 @@
+repos:
+  - repo: local
+    hooks:
+      - id: solutis-sync-precommit
+        name: solutis-sync pre-commit
+        entry: uvx pre-commit run --config solutis-sync/.pre-commit-config.yaml --files
+        language: system
+        files: ^solutis-sync/
+        pass_filenames: true
+
+      - id: solutis_manager_back-precommit
+        name: solutis_manager_back pre-commit
+        entry: uvx pre-commit run --config solutis_manager_back/.pre-commit-config.yaml --files
+        language: system
+        files: ^solutis_manager_back/
+        pass_filenames: true
+
+      - id: solutis_procurement-precommit
+        name: solutis_procurement pre-commit
+        entry: uvx pre-commit run --config solutis_procurement/.pre-commit-config.yaml --files
+        language: system
+        files: ^solutis_procurement/
+        pass_filenames: true
+
+      - id: solutis_procurement-pytest
+        name: solutis_procurement pytest
+        entry: uv --directory solutis_procurement run pytest --cov=src --cov-fail-under=70
+        language: system
+        files: ^solutis_procurement/
+        pass_filenames: false
+        always_run: true
+
+      - id: solutis_report-precommit
+        name: solutis_report pre-commit
+        entry: uvx pre-commit run --config solutis_report/.pre-commit-config.yaml --files
+        language: system
+        files: ^solutis_report/
+        pass_filenames: true
+
+      - id: solutis_report-pytest
+        name: solutis_report pytest
+        entry: uv --directory solutis_report run pytest --cov=src --cov-fail-under=80
+        language: system
+        files: ^solutis_report/
+        pass_filenames: false
+        always_run: true

@@ -1,0 +1,40 @@
+{
+  "description": "Organizational details payload used in supplier create/update.",
+  "properties": {
+    "costCenter": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Costcenter"
+    },
+    "businessUnit": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Businessunit"
+    },
+    "responsibleExecutive": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Responsibleexecutive"
+    },
+    "responsibleManager": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Responsiblemanager"
+    },
+    "payerType": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Payertype"
+    },
+    "businessSector": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Businesssector"
+    },
+    "taxpayerClassification": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Taxpayerclassification"
+    },
+    "publicEntity": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Publicentity"
+    }
+  },
+  "title": "OrganizationalDetailsPayload",
+  "type": "object",
+  "x-readme-ref-name": "OrganizationalDetailsPayload"
+}

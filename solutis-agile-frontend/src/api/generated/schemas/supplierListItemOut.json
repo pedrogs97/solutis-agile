@@ -1,0 +1,68 @@
+{
+  "description": "Supplier item returned by paginated list endpoint.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "legalName": { "title": "Legalname", "type": "string" },
+    "taxId": { "title": "Taxid", "type": "string" },
+    "situation": {
+      "description": "Supplier situation summary used in list responses.",
+      "properties": {
+        "status": {
+          "description": "Supplier status summary used in list responses.",
+          "properties": {
+            "name": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Name"
+            }
+          },
+          "title": "SupplierStatusSummaryOut",
+          "type": "object",
+          "x-readme-ref-name": "SupplierStatusSummaryOut"
+        }
+      },
+      "required": ["status"],
+      "title": "SupplierSituationSummaryOut",
+      "type": "object",
+      "x-readme-ref-name": "SupplierSituationSummaryOut"
+    },
+    "riskLevel": {
+      "description": "Supplier risk level summary used in list responses.",
+      "properties": {
+        "name": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "title": "Name"
+        }
+      },
+      "title": "SupplierRiskLevelSummaryOut",
+      "type": "object",
+      "x-readme-ref-name": "SupplierRiskLevelSummaryOut"
+    },
+    "contract": {
+      "description": "Supplier contract dates used in list responses.",
+      "properties": {
+        "contractStartDate": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "title": "Contractstartdate"
+        },
+        "contractEndDate": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "title": "Contractenddate"
+        }
+      },
+      "title": "SupplierContractSummaryOut",
+      "type": "object",
+      "x-readme-ref-name": "SupplierContractSummaryOut"
+    }
+  },
+  "required": [
+    "id",
+    "legalName",
+    "taxId",
+    "situation",
+    "riskLevel",
+    "contract"
+  ],
+  "title": "SupplierListItemOut",
+  "type": "object",
+  "x-readme-ref-name": "SupplierListItemOut"
+}

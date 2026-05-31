@@ -1,0 +1,16 @@
+{
+  "description": "Payload for evaluation criterion create/update.",
+  "properties": {
+    "name": { "title": "Name", "type": "string" },
+    "description": { "title": "Description", "type": "string" },
+    "weight": {
+      "anyOf": [{ "type": "number" }, { "type": "string" }],
+      "title": "Weight"
+    },
+    "order": { "default": 0, "title": "Order", "type": "integer" }
+  },
+  "required": ["name", "description", "weight"],
+  "title": "EvaluationCriterionIn",
+  "type": "object",
+  "x-readme-ref-name": "EvaluationCriterionIn"
+}

@@ -1,0 +1,32 @@
+{
+  "description": "Fiscal details payload used in supplier create/update.",
+  "properties": {
+    "issWithholding": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Isswithholding"
+    },
+    "issRegime": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Issregime"
+    },
+    "issTaxpayer": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Isstaxpayer"
+    },
+    "simplesNacionalParticipant": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Simplesnacionalparticipant"
+    },
+    "cooperativeMember": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Cooperativemember"
+    },
+    "withholdingTaxNature": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Withholdingtaxnature"
+    }
+  },
+  "title": "FiscalDetailsPayload",
+  "type": "object",
+  "x-readme-ref-name": "FiscalDetailsPayload"
+}

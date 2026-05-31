@@ -1,0 +1,62 @@
+{
+  "description": "Supplier payment details response.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "createdAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Createdat"
+    },
+    "updatedAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Updatedat"
+    },
+    "paymentFrequency": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Paymentfrequency"
+    },
+    "paymentDate": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Paymentdate"
+    },
+    "contractTotalValue": {
+      "anyOf": [{ "type": "number" }, { "type": "null" }],
+      "title": "Contracttotalvalue"
+    },
+    "contractMonthlyValue": {
+      "anyOf": [{ "type": "number" }, { "type": "null" }],
+      "title": "Contractmonthlyvalue"
+    },
+    "checkingAccount": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Checkingaccount"
+    },
+    "bank": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Bank"
+    },
+    "bankCode": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Bankcode"
+    },
+    "agency": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Agency"
+    },
+    "paymentMethod": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Paymentmethod"
+    },
+    "pixKeyType": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Pixkeytype"
+    },
+    "pixKey": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Pixkey"
+    }
+  },
+  "required": ["id"],
+  "title": "PaymentDetailsOut",
+  "type": "object",
+  "x-readme-ref-name": "PaymentDetailsOut"
+}

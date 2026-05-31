@@ -1,0 +1,11 @@
+{
+  "description": "Payload to approve or reprove a workflow step.",
+  "properties": {
+    "workflowId": { "title": "Workflowid", "type": "integer" },
+    "isApproved": { "default": true, "title": "Isapproved", "type": "boolean" }
+  },
+  "required": ["workflowId"],
+  "title": "ApproveCurrentStepIn",
+  "type": "object",
+  "x-readme-ref-name": "ApproveCurrentStepIn"
+}

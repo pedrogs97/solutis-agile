@@ -1,0 +1,66 @@
+{
+  "description": "Supplier contract response.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "createdAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Createdat"
+    },
+    "updatedAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Updatedat"
+    },
+    "objectContract": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Objectcontract"
+    },
+    "executedActivities": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Executedactivities"
+    },
+    "contractStartDate": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Contractstartdate"
+    },
+    "contractEndDate": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Contractenddate"
+    },
+    "contractType": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Contracttype"
+    },
+    "contractPeriod": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Contractperiod"
+    },
+    "hasContractRenewal": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Hascontractrenewal"
+    },
+    "warningContractRenewal": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Warningcontractrenewal"
+    },
+    "warningContractPeriod": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Warningcontractperiod"
+    },
+    "warningOnTermination": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Warningontermination"
+    },
+    "warningOnRenewal": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Warningonrenewal"
+    },
+    "warningOnPeriod": {
+      "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+      "title": "Warningonperiod"
+    }
+  },
+  "required": ["id"],
+  "title": "ContractOut",
+  "type": "object",
+  "x-readme-ref-name": "ContractOut"
+}

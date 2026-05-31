@@ -1,0 +1,46 @@
+{
+  "description": "Supplier company information response.",
+  "properties": {
+    "id": { "title": "Id", "type": "integer" },
+    "createdAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Createdat"
+    },
+    "updatedAt": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Updatedat"
+    },
+    "companySize": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Companysize"
+    },
+    "icmsTaxpayer": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Icmstaxpayer"
+    },
+    "taxationRegime": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Taxationregime"
+    },
+    "incomeType": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Incometype"
+    },
+    "taxationMethod": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Taxationmethod"
+    },
+    "customerType": {
+      "anyOf": [{ "type": "integer" }, { "type": "null" }],
+      "title": "Customertype"
+    },
+    "nit": {
+      "anyOf": [{ "type": "string" }, { "type": "null" }],
+      "title": "Nit"
+    }
+  },
+  "required": ["id"],
+  "title": "CompanyInformationOut",
+  "type": "object",
+  "x-readme-ref-name": "CompanyInformationOut"
+}

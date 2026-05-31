@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  solutis-procurement:
+    build:
+      context: .
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./src:/app/src
+      - ./config:/app/config
+      - ./manage.py:/app/manage.py
+      - /mnt/storage:/storage
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+      - ./db.sqlite3:/app/db.sqlite3
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput --clear &&
+             uvicorn config.asgi:application --host 0.0.0.0 --port 8001 --reload --workers 3"
+    restart: always
+    env_file:
+      - ./.env
+    networks:
+      - agile-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/api/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  agile-network:
+    external: true
+
+volumes:
+  storage:
