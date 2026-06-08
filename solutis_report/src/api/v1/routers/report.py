@@ -2,9 +2,9 @@
 
 from typing import Annotated
 
-from api.v1.depends.report import get_report_service
-from core.errors.exceptions import ReportException
-from fastapi import APIRouter, Depends, Response, status
+from api.v1.depends.report import get_report_service_by_type
+from core.utils.mappers import REPORT_FILENAMES
+from fastapi import APIRouter, Depends, Response
 from schemas.report import (
     ReportGenerateRequest,
     ReportGenerateResponse,
@@ -19,22 +19,17 @@ report_router = APIRouter(prefix="/reports", tags=["Reports"])
 @report_router.post("/generate", response_model=ReportGenerateResponse)
 async def generate_report(
     request: ReportGenerateRequest,
-    service: Annotated[ReportService, Depends(get_report_service)],
+    service: Annotated[ReportService, Depends(get_report_service_by_type)],
 ):
     """Generate a report and store it in cache.
 
     Args:
         request: Report generation request.
-        service: Report service.
+        service: Resolved report service.
 
     Returns:
         ReportGenerateResponse: Report generation response.
     """
-    if request.report_type != "supplier_evaluation":
-        raise ReportException(
-            "Tipo de relatório não suportado", status.HTTP_400_BAD_REQUEST
-        )
-
     cache_key, total = await service.generate_report(
         request.report_type, request.filters
     )
@@ -46,13 +41,13 @@ async def generate_report(
 @report_router.post("/list", response_model=ReportListResponse)
 async def list_report(
     request: ReportListRequest,
-    service: Annotated[ReportService, Depends(get_report_service)],
+    service: Annotated[ReportService, Depends(get_report_service_by_type)],
 ):
     """List paginated report.
 
     Args:
         request: Report generation request.
-        service: Report service.
+        service: Resolved report service.
 
     Returns:
         ReportListResponse: Report list response.
@@ -75,23 +70,22 @@ async def list_report(
 @report_router.post("/download")
 async def download_report(
     request: ReportGenerateRequest,
-    service: Annotated[ReportService, Depends(get_report_service)],
+    service: Annotated[ReportService, Depends(get_report_service_by_type)],
 ):
     """
     Download a report in Excel format.
 
     Args:
         request: Report generation request.
-        service: Report service.
+        service: Resolved report service.
 
     Returns:
         Response: Report download response.
     """
     excel_bytes = await service.download_excel(request.report_type, request.filters)
 
-    headers = {
-        "Content-Disposition": "attachment; filename=relatorio_fornecedores.xlsx"
-    }
+    filename = REPORT_FILENAMES.get(request.report_type, "relatorio.xlsx")
+    headers = {"Content-Disposition": f"attachment; filename={filename}"}
 
     return Response(
         content=excel_bytes.getvalue(),

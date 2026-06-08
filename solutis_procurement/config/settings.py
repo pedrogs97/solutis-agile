@@ -117,7 +117,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 def get_default_db():
-    use_sqlite = os.getenv("USE_SQLITE", "true").lower() == "true"
+    is_testing = (
+        "test" in sys.argv
+        or any("pytest" in arg for arg in sys.argv)
+        or "pytest" in sys.modules
+        or "PYTEST_CURRENT_TEST" in os.environ
+    )
+
+    use_sqlite = os.getenv("USE_SQLITE", "true").lower() == "true" or is_testing
     if use_sqlite:
         return {
             "ENGINE": "django.db.backends.sqlite3",

@@ -132,11 +132,121 @@ export const fetchReports = async ({
   delete filterCleaned.isListResponse
   delete filterCleaned.searchBy
   if (!filters.searchBy) return {}
+
+  if (filters.searchBy === 'Colaborador') {
+    const cleanFilters: Record<string, any> = {}
+    if (filterCleaned.start_date) cleanFilters.startPeriod = filterCleaned.start_date
+    if (filterCleaned.end_date) cleanFilters.endPeriod = filterCleaned.end_date
+    if (filterCleaned.employees_ids) cleanFilters.employeesIds = filterCleaned.employees_ids
+    if (filterCleaned.roles_ids) cleanFilters.rolesIds = filterCleaned.roles_ids
+    if (filterCleaned.cost_center_ids) cleanFilters.costCenterIds = filterCleaned.cost_center_ids
+    if (filterCleaned.bu) cleanFilters.bus = filterCleaned.bu
+    if (filterCleaned.projects) cleanFilters.projects = filterCleaned.projects
+    if (filterCleaned.business_executive) cleanFilters.businessExecutive = filterCleaned.business_executive
+    if (filterCleaned.workloads_ids) cleanFilters.workloadsIds = filterCleaned.workloads_ids
+    if (filterCleaned.register_number) cleanFilters.registerNumber = filterCleaned.register_number
+    if (filterCleaned.patterns) cleanFilters.patterns = filterCleaned.patterns
+    if (filterCleaned.status_ids) cleanFilters.statusIds = filterCleaned.status_ids
+
+    if (filters.isListResponse) {
+      const pageNumber = Number(filters.page) || 1
+      const limit = 10
+      const offset = (pageNumber - 1) * limit
+      const { data } = await axios.post('/proxy/report/v1/reports/list', {
+        reportType: 'employee',
+        filters: {
+          reportType: 'employee',
+          ...cleanFilters,
+        },
+        limit,
+        offset,
+      })
+
+      return {
+        items: data.data || [],
+        total: data.total || 0,
+        pages: Math.ceil((data.total || 0) / limit),
+        page: pageNumber,
+        size: limit,
+      }
+    }
+
+    const idNotification = notifications.show({
+      loading: true,
+      title: 'Realizando download',
+      message: 'O arquivo está sendo baixado, aguarde um momento...',
+      autoClose: false,
+      withCloseButton: false,
+    })
+    try {
+      const response = await axios.post(
+        '/proxy/report/v1/reports/download',
+        {
+          reportType: 'employee',
+          filters: {
+            reportType: 'employee',
+            ...cleanFilters,
+          },
+        },
+        {
+          responseType: 'blob',
+        },
+      )
+
+      if (response.status === 204) {
+        notifications.update({
+          id: idNotification,
+          loading: false,
+          autoClose: 3000,
+          title: 'Não foi possível baixar o arquivo',
+          message: 'Nenhum dado encontrado',
+          color: 'orange',
+        })
+        return {}
+      }
+
+      const disposition = response?.headers['content-disposition'] || ''
+      const filename =
+        disposition.split('filename=')[1]?.replace(/"/g, '') ||
+        'relatorio_colaboradores.xlsx'
+
+      const excelBlob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
+
+      const urlDownload = window.URL.createObjectURL(excelBlob)
+
+      const link = document.createElement('a')
+      link.href = urlDownload
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(urlDownload)
+      notifications.update({
+        id: idNotification,
+        loading: false,
+        autoClose: 500,
+        title: 'Download do documento',
+        message: 'O download do documento foi iniciado',
+        color: 'blue',
+      })
+    } catch {
+      notifications.update({
+        id: idNotification,
+        loading: false,
+        autoClose: 3000,
+        title: 'Erro ao baixar arquivo',
+        message: 'Ocorreu um erro ao baixar o arquivo',
+        color: 'red',
+      })
+    }
+    return {}
+  }
+
   if (filters.isListResponse) {
     url += 'list/'
-  }
-  if (filters.searchBy === 'Colaborador') {
-    url += 'by-employee/'
   }
   if (filters.searchBy === 'Equipamento') {
     url += 'by-asset/'
@@ -184,7 +294,7 @@ export const fetchReports = async ({
         message: 'Nenhum dado encontrado',
         color: 'orange',
       })
-      return
+      return {}
     }
 
     const filename = response?.headers['content-disposition']

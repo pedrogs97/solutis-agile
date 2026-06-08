@@ -1,6 +1,6 @@
 [project]
 name = "solutis-report"
-version = "1.2.2"
+version = "1.2.3"
 description = "Microsserviço de geração de relatórios"
 readme = "README.md"
 requires-python = "==3.13.*"

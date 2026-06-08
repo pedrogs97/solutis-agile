@@ -1,7 +1,11 @@
 from unittest.mock import MagicMock
 
 import pytest
-from api.v1.depends.report import get_report_cache, get_report_service
+from api.v1.depends.report import (
+    get_employee_report_service,
+    get_report_cache,
+    get_report_service,
+)
 from httpx import ASGITransport, AsyncClient
 from main import app
 from services.report_service import ReportService
@@ -29,8 +33,11 @@ def mock_service():
 
     service.download_excel.return_value = BytesIO(b"excel_data")
 
-    # Override FastAPI dependency
+    # Override FastAPI dependencies (both supplier and employee services)
     app.dependency_overrides[get_report_service] = lambda: service
+    app.dependency_overrides[get_employee_report_service] = lambda: MagicMock(
+        spec=ReportService
+    )
 
     yield service
 

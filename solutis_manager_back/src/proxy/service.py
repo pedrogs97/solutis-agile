@@ -150,7 +150,7 @@ class ProxyService:
 
         url = get_external_service_url(service_name, path)
         filtered_headers = self._filter_headers(headers)
-
+        logger.debug(f"url {url}")
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             for attempt in range(self.retry_attempts):
                 try:

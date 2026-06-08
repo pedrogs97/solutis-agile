@@ -7,3 +7,4 @@ class ReportType(str, Enum):
     """Report types"""
 
     SUPPLIER_EVALUATION = "supplier_evaluation"
+    EMPLOYEE = "employee"

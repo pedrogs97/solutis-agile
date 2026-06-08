@@ -13,7 +13,7 @@ from src.backends import (
     oauth2_bearer,
     token_is_valid,
 )
-from src.config import NOT_ALLOWED, SECRET_KEY
+from src.config import NOT_ALLOWED
 from src.proxy.service import INSUFFICIENT_PERMISSIONS_MSG, proxy_service
 
 proxy_router = APIRouter(prefix="/proxy", tags=["proxy"])
@@ -27,6 +27,7 @@ PROXY_PERMISSIONS = {
     "write": [
         PermissionSchema(module="procurement", model="supplier", action="add"),
         PermissionSchema(module="procurement", model="supplier", action="edit"),
+        PermissionSchema(module="report", model="report", action="view"),
     ],
 }
 
