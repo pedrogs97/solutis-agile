@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from core.database import get_session
+from core.database import get_adm_session, get_procurement_session
 from core.errors.exceptions import ReportException
 from fastapi import Depends, Request, status
 from models.enums import ReportType
@@ -29,7 +29,7 @@ def get_report_cache() -> AbstractCache:
 
 
 def get_report_service(
-    session: Annotated[AsyncSession, Depends(get_session)],
+    session: Annotated[AsyncSession, Depends(get_procurement_session)],
     cache: Annotated[AbstractCache, Depends(get_report_cache)],
 ) -> ReportService:
     """
@@ -48,7 +48,7 @@ def get_report_service(
 
 
 def get_employee_report_service(
-    session: Annotated[AsyncSession, Depends(get_session)],
+    session: Annotated[AsyncSession, Depends(get_adm_session)],
     cache: Annotated[AbstractCache, Depends(get_report_cache)],
 ) -> ReportService:
     """

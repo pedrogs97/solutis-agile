@@ -14,9 +14,9 @@ get_local_version() {
   local service_dir="$1"
   local file_type="$2"
   if [ "$file_type" = "json" ]; then
-    python3 -c "import json; print(json.load(open('$service_dir/package.json'))['version'])"
+    python3.11 -c "import json; print(json.load(open('$service_dir/package.json'))['version'])"
   else
-    python3 -c "import tomllib; print(tomllib.load(open('$service_dir/pyproject.toml', 'rb'))['project']['version'])"
+    python3.11 -c "import tomllib; print(tomllib.load(open('$service_dir/pyproject.toml', 'rb'))['project']['version'])"
   fi
 }
 

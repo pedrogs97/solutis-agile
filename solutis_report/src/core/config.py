@@ -15,7 +15,10 @@ class AppConfig(BaseSettings):
     SECRET_KEY: str = "default_secret"
     ORIGINS: List[str] = ["*"]
     VERSION: str = "1.0.0"
-    DATABASE_URL: str = "mysql+aiomysql://root:password@localhost/db"
+    DATABASE_URL_PROCUREMENT: str = (
+        "mysql+aiomysql://root:password@localhost/db_procurement"
+    )
+    DATABASE_ADM_URL: str = "mysql+aiomysql://root:password@localhost/db_adm"
     BASE_DIR: Path = Path(__file__).parent.parent.parent
     LOG_LEVEL: str = "DEBUG" if DEBUG else "INFO"
 
