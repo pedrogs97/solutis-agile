@@ -23,6 +23,7 @@ disable=
     E0307,  # invalid-str-returned (Django models podem retornar outros tipos)
     W0622,  # redefined-builtin
     W0221,  # arguments-differ
+    C0121,  # comparison-is-not-an-operation
 
 [FORMAT]
 # Configurações de formatação (delegadas ao black)

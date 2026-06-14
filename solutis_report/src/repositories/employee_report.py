@@ -92,14 +92,14 @@ class EmployeeReportRepository(
             .join(LendingStatus, Lending.status_id == LendingStatus.id)  # type: ignore
             .outerjoin(CostCenter, Lending.cost_center_id == CostCenter.id)  # type: ignore
             .outerjoin(EmployeeRole, Employee.role_id == EmployeeRole.id)  # type: ignore
-            .where(not Lending.deleted)
+            .where(Lending.deleted == False)  # type: ignore
         )
 
         # Date filters
         if filters.start_period:
-            query = query.where(Lending.created_at >= filters.start_period)
+            query = query.where(Lending.created_at >= filters.start_period)  # type: ignore
         if filters.end_period:
-            query = query.where(Lending.created_at <= filters.end_period)
+            query = query.where(Lending.created_at <= filters.end_period)  # type: ignore
 
         # Apply optional filters
         employees_ids = _parse_ids(filters.employees_ids)
