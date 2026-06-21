@@ -8,6 +8,7 @@ import sys
 
 SERVICES = {
     "solutis-agile-frontend": {"type": "json", "file": "package.json"},
+    "solutis-flow": {"type": "json", "file": "package.json"},
     "solutis-sync": {"type": "toml", "file": "pyproject.toml"},
     "solutis_manager_back": {"type": "toml", "file": "pyproject.toml"},
     "solutis_procurement": {"type": "toml", "file": "pyproject.toml"},

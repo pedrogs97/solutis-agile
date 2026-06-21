@@ -76,6 +76,7 @@ jobs:
           commit_message: "chore(version): auto-increment service versions [skip ci]"
           files:
             - "solutis-agile-frontend/package.json"
+            - "solutis-flow/package.json"
             - "solutis-sync/pyproject.toml"
             - "solutis_manager_back/pyproject.toml"
             - "solutis_procurement/pyproject.toml"
