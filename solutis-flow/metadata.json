@@ -1,0 +1,6 @@
+{
+  "name": "Flowta",
+  "description": "Plataforma de governança operacional, controle de atividades, produtividade, SLAs e padronização de execução.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
