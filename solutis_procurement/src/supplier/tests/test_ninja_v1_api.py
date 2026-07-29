@@ -55,6 +55,17 @@ def test_approval_step_manager_evaluation_department_is_gestor(approval_steps):
 
 
 @pytest.mark.django_db
+def test_approval_step_compliance_evaluation_department_is_compliance_e_sustentabilidade(
+    approval_steps,
+):
+    compliance_step = ApprovalStep.objects.filter(
+        name__icontains="Avaliação do compliance"
+    ).first()
+    assert compliance_step is not None
+    assert compliance_step.department == "Compliance e Sustentabilidade"
+
+
+@pytest.mark.django_db
 def test_ninja_v1_create_and_list_suppliers():
     baker.make(
         ApprovalStep,

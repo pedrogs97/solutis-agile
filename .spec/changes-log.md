@@ -1,5 +1,22 @@
 # Histórico de Alterações do Projeto
 
+## [2026-07-29] - Atualização do Departamento na Avaliação do Compliance | Sustentabilidade
+- **Descrição**: Alteração do departamento de "Financeiro" para "Compliance e Sustentabilidade" na etapa de "Avaliação do Compliance | Sustentabilidade" do fluxo de aprovação de fornecedores, aplicando a mudança tanto para novos fluxos quanto para os já existentes.
+- **Arquivos afetados**:
+  - `solutis_procurement/src/supplier/fixtures/approval_steps.json`
+  - `solutis_procurement/src/supplier/tests/conftest.py`
+  - `solutis_procurement/src/supplier/tests/test_ninja_v1_api.py`
+  - `solutis_procurement/src/supplier/migrations/0037_update_compliance_evaluation_department.py`
+  - `solutis_procurement/pyproject.toml`
+  - `solutis-agile-frontend/src/components/suppliers/form/approval-workflow-tab.tsx`
+  - `solutis-agile-frontend/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Fixtures e Testes**: Atualizado o departamento do passo `Avaliação do Compliance | Sustentabilidade` em `approval_steps.json` e `conftest.py` para `"Compliance e Sustentabilidade"`. Criado teste unitário dedicado em `test_ninja_v1_api.py`.
+  - **Migração do Banco de Dados**: Criada migração Django `0037_update_compliance_evaluation_department.py` em `solutis_procurement` para atualizar os registros existentes de `ApprovalStep` que contêm "Compliance" no nome para o novo departamento.
+  - **Exibição no Frontend**: Adicionada regra de fallback em `approval-workflow-tab.tsx` para garantir a exibição do nome `"Compliance e Sustentabilidade"` para a etapa de compliance no frontend.
+  - **Versões**: `solutis_procurement` (`2.18.1` ➡️ `2.18.2`), `solutis-agile-frontend` (`2.7.2` ➡️ `2.7.3`).
+
 ## [2026-07-29] - Automação da Execução de Migrations no Deploy dos Serviços de Backend
 - **Descrição**: Configuração do deploy dos serviços de backend (`solutis_manager_back` e `solutis_procurement`) para executarem automaticamente suas migrations de banco de dados (Alembic e Django Migrations) antes de iniciarem o servidor HTTP ao realizar o deploy de novas versões.
 - **Arquivos afetados**:

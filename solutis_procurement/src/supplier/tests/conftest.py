@@ -132,7 +132,7 @@ def approval_steps():
             "name": "Avaliação do compliance | Sustentabilidade",
             "description": "Avaliação de compliance e critérios de sustentabilidade do fornecedor",
             "order": 4,
-            "department": "Financeiro",
+            "department": "Compliance e Sustentabilidade",
             "is_mandatory": True,
         },
         {

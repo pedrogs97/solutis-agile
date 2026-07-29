@@ -408,7 +408,10 @@ export function ApprovalWorkflowTab({
                   {item.step.name.toLowerCase().includes('gestor') &&
                   item.step.department === 'Administrativo'
                     ? 'Gestor'
-                    : item.step.department}
+                    : item.step.name.toLowerCase().includes('compliance') &&
+                        item.step.department === 'Financeiro'
+                      ? 'Compliance e Sustentabilidade'
+                      : item.step.department}
                 </Text>
                 {item.approval ? (
                   <Stack gap={4}>
