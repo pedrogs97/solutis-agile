@@ -77,7 +77,16 @@ class TestProxyGateway(TestBase):
         # 3. Matching PUT supplier with ID rule
         rule = match_route_rule("procurement", "v1/supplier/45/", "PUT")
         assert rule["service_name"] == "procurement"
-        assert rule["path_pattern"] == r"^/v1/supplier/\d+/?$"
+
+        # 3b. Matching suppliers-list GET rule
+        rule = match_route_rule("procurement", "v1/suppliers-list/", "GET")
+        assert rule["service_name"] == "procurement"
+        assert rule["path_pattern"] == r"^/v1/suppliers-list/?$"
+
+        # 3c. Matching domain metadata GET rule
+        rule = match_route_rule("procurement", "v1/domain/categories/", "GET")
+        assert rule["service_name"] == "procurement"
+        assert rule["path_pattern"] == r"^/v1/domain/.*$"
 
         # 4. Matching public step approval route
         rule = match_route_rule("procurement", "v1/approval/step/approve", "POST")

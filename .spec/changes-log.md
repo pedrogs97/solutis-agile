@@ -1,6 +1,16 @@
 # Histórico de Alterações do Projeto
 
-## [2026-07-29] - Atualização de Versões dos Serviços do Monorepo (/update-services-version)
+## [2026-07-29] - Correção das Rotas de Proxy do Módulo de Fornecedores (`solutis_manager_back`)
+- **Descrição**: Resolução do erro 500 ao acessar a tela de fornecedores. Adicionadas as regras de roteamento proxy no `PROXY_ROUTES` do `solutis_manager_back` para os endpoints do microsserviço `procurement` (`/v1/suppliers-list/`, `/v1/suppliers/`, `/v1/domain/`, `/v1/approval/`, `/v1/attachments/`, `/v1/attachment-types/`, `/v1/responsibility-matrix/`, `/v1/evaluation/`).
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/proxy/routes.py`
+  - `solutis_manager_back/src/tests/test_proxy_gateway.py`
+  - `solutis_manager_back/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **`solutis_manager_back`**: Bump de versão de `1.26.1` ➡️ `1.26.2`.
+  - **Proxy Routing**: Corrigida a falha de correspondência em `match_route_rule` que retornava HTTP 403 (provocando o erro 500 no frontend ao renderizar o boundary da rota de fornecedores) por ausência do padrão regex para `/v1/suppliers-list/` e demais endpoints do procurement.
+  - **Cobertura de Testes**: Atualizado `test_proxy_gateway.py` para validar a correspondência das novas rotas de fornecedores e domínios no gateway.
 - **Descrição**: Atualização incremental das versões dos serviços modificados nos últimos commits seguindo as regras de versionamento semântico.
 - **Arquivos afetados**:
   - `solutis-agile-frontend/package.json`
