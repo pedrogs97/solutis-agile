@@ -239,6 +239,8 @@ export const employeeAddressSchema = object({
         message: 'Digite o complemento do endereço',
       })
       .trim()
-      .max(255),
+      .max(255)
+      .optional()
+      .or(z.literal('')),
   }),
 })

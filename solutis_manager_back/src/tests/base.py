@@ -1,5 +1,6 @@
 """Base test"""
 
+import os
 from datetime import datetime
 
 import pytest
@@ -40,37 +41,61 @@ class TestBase:
     client = None
     engine = None
 
+    _mysql_available = None
+
     @pytest.fixture
     def setup(self):
         """
         Initializes TestAuthModule class and creates a test database.
-
-        Inputs:
-        None
-
-        Outputs:
-        None
         """
-        if not self.engine_server:
-            self.engine_server = create_engine(get_database_url())
-        connection = self.engine_server.connect()
-        try:
-            connection.rollback()
-            connection.execute(text("CREATE DATABASE db_test"))
-            print("Created database")
-        except ProgrammingError as prog_err:
-            print(prog_err)
-            connection.rollback()
-        except OperationalError as op_err:
-            print(op_err)
-            connection.rollback()
-        connection.close()
+        db_url = get_database_url(test=True)
+        use_sqlite_env = os.getenv("USE_SQLITE_TEST", "true").lower() in (
+            "true",
+            "1",
+            "t",
+        )
+        is_sqlite = db_url.startswith("sqlite") or use_sqlite_env
 
-        if not self.engine:
-            self.engine = create_engine(
-                get_database_url(test=True), poolclass=StaticPool
-            )
-            Base.metadata.create_all(self.engine)
+        if not is_sqlite and TestBase._mysql_available is not False:
+            try:
+                if not self.engine_server:
+                    self.engine_server = create_engine(
+                        get_database_server_url(),
+                        connect_args={"connection_timeout": 1},
+                    )
+                connection = self.engine_server.connect()
+                try:
+                    connection.rollback()
+                    connection.execute(text("CREATE DATABASE IF NOT EXISTS db_test"))
+                except (ProgrammingError, OperationalError) as prog_err:
+                    connection.rollback()
+                connection.close()
+                TestBase._mysql_available = True
+            except Exception as exc:
+                print(
+                    f"Could not connect to MySQL server ({exc}). Falling back to SQLite for testing."
+                )
+                TestBase._mysql_available = False
+                is_sqlite = True
+        elif not is_sqlite and TestBase._mysql_available is False:
+            is_sqlite = True
+
+        self.use_sqlite_fallback = is_sqlite
+
+        if is_sqlite:
+            if not self.engine:
+                self.engine = create_engine(
+                    "sqlite:///:memory:",
+                    poolclass=StaticPool,
+                    connect_args={"check_same_thread": False},
+                )
+                Base.metadata.create_all(self.engine)
+        else:
+            if not self.engine:
+                self.engine = create_engine(
+                    get_database_url(test=True), poolclass=StaticPool
+                )
+                Base.metadata.create_all(self.engine)
         self.testing_session_local = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
         )
@@ -78,10 +103,13 @@ class TestBase:
 
         self.client = TestClient(appAPI)
         yield
-        connection = self.engine_server.connect()
-        connection.execute(text("DROP DATABASE db_test"))
-        connection.close()
-        print("Dropped database")
+        if not (is_sqlite or self.use_sqlite_fallback):
+            try:
+                connection = self.engine_server.connect()
+                connection.execute(text("DROP DATABASE IF EXISTS db_test"))
+                connection.close()
+            except Exception as exc:
+                print(f"Error dropping database: {exc}")
 
     def __override_get_db(self):
         """Get test database"""

@@ -3,11 +3,12 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from src.schemas import BaseSchema
 
 
 class EmployeeMatrimonialStatusSerializerSchema(BaseSchema):
+
     """
     Matrimonial status serializer schema
 
@@ -109,9 +110,10 @@ class NewEmployeeSchema(BaseSchema):
         alias="taxpayerIdentification",
         serialization_alias="taxpayer_identification",
     )
-    national_identification: str = Field(
+    national_identification: Optional[str] = Field(
         alias="nationalIdentification",
         serialization_alias="national_identification",
+        default="",
     )
     address: str
     cell_phone: str = Field(
@@ -159,6 +161,37 @@ class NewEmployeeSchema(BaseSchema):
         alias="hasOtherAsset",
         default=False,
     )
+
+    @field_validator("role", "code", mode="before")
+    @classmethod
+    def empty_str_to_none_int(cls, v):
+        if v == "" or v is None:
+            return None
+        return v
+
+    @field_validator(
+        "employer_contract_date", "employer_end_contract_date", mode="before"
+    )
+    @classmethod
+    def empty_str_to_none_date(cls, v):
+        if v == "" or v is None:
+            return None
+        return v
+
+    @field_validator(
+        "employer_number",
+        "employer_address",
+        "employer_contract_object",
+        "employer_name",
+        "manager",
+        "job_position",
+        mode="before",
+    )
+    @classmethod
+    def empty_str_to_none_str(cls, v):
+        if v == "" or v is None:
+            return None
+        return v
 
 
 class UpdateEmployeeSchema(BaseSchema):
@@ -264,7 +297,7 @@ class EmployeeSerializerSchema(BaseSchema):
         serialization_alias="maritalStatus",
         default=None,
     )
-    gender: EmployeeGenderSerializerSchema
+    gender: Optional[EmployeeGenderSerializerSchema] = None
     educational_level: Optional[EmployeeEducationalLevelSerializerSchema] = Field(
         serialization_alias="educationalLevel", default=None
     )
@@ -273,14 +306,18 @@ class EmployeeSerializerSchema(BaseSchema):
     status: str
     full_name: str = Field(serialization_alias="fullName")
     taxpayer_identification: str = Field(serialization_alias="taxpayerIdentification")
-    national_identification: str = Field(serialization_alias="nationalIdentification")
+    national_identification: Optional[str] = Field(
+        serialization_alias="nationalIdentification", default=""
+    )
     address: str
     cell_phone: str = Field(serialization_alias="cellPhone")
     email: str
     birthday: str
     manager: Optional[str] = None
     registration: Optional[str] = None
-    admission_date: Optional[str] = Field(serialization_alias="admissionDate")
+    admission_date: Optional[str] = Field(
+        serialization_alias="admissionDate", default=None
+    )
     legal_person: bool = Field(serialization_alias="legalPerson")
     employer_number: Optional[str] = Field(
         serialization_alias="employerNumber",

@@ -212,13 +212,23 @@ class PermissionChecker:
         self.required_permissions = required_permissions
 
     def check_perm(
-        self, perm_to_check: PermissionSchema, user_perm: PermissionModel
+        self,
+        perm_to_check: Union[PermissionSchema, PermissionDict],
+        user_perm: PermissionModel,
     ) -> bool:
         """Check if user has permission"""
+        if isinstance(perm_to_check, dict):
+            module = perm_to_check.get("module")
+            model = perm_to_check.get("model")
+            action = perm_to_check.get("action")
+        else:
+            module = getattr(perm_to_check, "module", None)
+            model = getattr(perm_to_check, "model", None)
+            action = getattr(perm_to_check, "action", None)
         return (
-            perm_to_check["module"] == user_perm.module
-            and perm_to_check["model"] == user_perm.model
-            and perm_to_check["action"] == user_perm.action
+            module == user_perm.module
+            and model == user_perm.model
+            and action == user_perm.action
         )
 
     def has_permissions(self, user: UserModel) -> bool:

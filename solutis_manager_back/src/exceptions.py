@@ -43,11 +43,18 @@ async def default_response_exception(
         line_number = last_traceback.lineno
         function_name = last_traceback.name
 
-        extra = {}
+        extra: dict = {}
         if request.method == "GET":
             extra["query_params"] = request.query_params
         elif request.method == "POST":
-            extra["body"] = await request.json()
+            try:
+                extra["body"] = await request.json()
+            except Exception:
+                try:
+                    body = await request.body()
+                    extra["body"] = body.decode("utf-8", errors="ignore")
+                except Exception:
+                    extra["body"] = "<unavailable>"
         extra["file"] = file_name
         extra["line"] = line_number
         extra["function"] = function_name

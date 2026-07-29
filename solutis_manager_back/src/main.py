@@ -46,21 +46,34 @@ from src.term.router import term_router
 from src.verification.router import verification_router
 
 tracemalloc.start()
-if not os.path.exists(f"{BASE_DIR}/logs/"):
-    os.makedirs(f"{BASE_DIR}/logs/")
+
+import sys
+
+is_testing = "pytest" in sys.modules or "unittest" in sys.modules
 
 log_level = "DEBUG" if DEBUG else "INFO"
 # Configurar loguru
 logger.remove()  # Remove handler padrão
-logger.add(
-    f"{BASE_DIR}/logs/{{time:YYYY-MM-DD}}.log",
-    rotation="00:00",  # Rotaciona à meia-noite
-    retention="30 days",  # Mantém logs por 30 dias
-    level=log_level,
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
+
+if is_testing:
+    logger.add(
+        sys.stderr,
+        level=log_level,
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}",
+    )
+else:
+    if not os.path.exists(f"{BASE_DIR}/logs/"):
+        os.makedirs(f"{BASE_DIR}/logs/")
+    logger.add(
+        f"{BASE_DIR}/logs/{{time:YYYY-MM-DD}}.log",
+        rotation="00:00",  # Rotaciona à meia-noite
+        retention="30 days",  # Mantém logs por 30 dias
+        level=log_level,
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}",
+        backtrace=True,
+        diagnose=True,
+    )
+
 
 exception_handlers = {
     500: default_response_exception,
@@ -90,6 +103,16 @@ def check_upgrade():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifesapn app"""
+    import sys
+
+    is_testing = "pytest" in sys.modules or "unittest" in sys.modules
+    if is_testing:
+        logger.info(
+            "Running in test environment. Skipping DB startup initialisation and scheduler."
+        )
+        yield
+        return
+
     logger.info("Service Version {}", app.version)
     create_permissions()
     create_super_user()

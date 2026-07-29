@@ -101,7 +101,7 @@ class TestAuthModule(TestBase):
         refresh_encode = {
             "iat": datetime.now().timestamp(),
             "exp": time.mktime((datetime.now() + timedelta(seconds=5)).timetuple()),
-            "sub": 0,
+            "sub": "0",
             "type": "refresh",
         }
 

@@ -24,11 +24,14 @@ def setup_logger() -> None:
         format=log_format,
     )
 
-    logger.add(
-        f"{_settings.BASE_DIR}/logs/{{time:YYYY-MM-DD}}.log",
-        rotation="00:00",  # Rotaciona à meia-noite
-        retention="30 days",  # Mantém logs por 30 dias
-        level=_settings.LOG_LEVEL,
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}",
-        diagnose=True,
-    )
+    try:
+        logger.add(
+            f"{_settings.BASE_DIR}/logs/{{time:YYYY-MM-DD}}.log",
+            rotation="00:00",  # Rotaciona à meia-noite
+            retention="30 days",  # Mantém logs por 30 dias
+            level=_settings.LOG_LEVEL,
+            format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}",
+            diagnose=True,
+        )
+    except (PermissionError, OSError) as exc:
+        sys.stderr.write(f"Warning: Could not initialize file log sink: {exc}\n")

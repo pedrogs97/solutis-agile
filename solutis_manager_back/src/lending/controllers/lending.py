@@ -101,19 +101,6 @@ class LendingController:
                     if uploaded_path:
                         created_file_paths.append(uploaded_path)
 
-            new_verification = []
-            if self.data.verification_answers:
-                verification_data = NewVerificationAnswerSchema(
-                    lendingId=new_lending.id,
-                    **self.data.verification_answers.model_dump(by_alias=True),
-                )
-                new_verification = self.verification_service.create_answer_verification(
-                    verification_data,
-                    self.db_session,
-                    self.authenticated_user,
-                    auto_commit=False,
-                )
-
             doc_data = NewLendingDocSchema(
                 lendingId=new_lending.id,
                 legalPerson=self.data.legal_person or False,
@@ -127,6 +114,19 @@ class LendingController:
             )
             if new_document.path:
                 created_file_paths.append(new_document.path)
+
+            new_verification = []
+            if self.data.verification_answers:
+                verification_data = NewVerificationAnswerSchema(
+                    lendingId=new_lending.id,
+                    **self.data.verification_answers.model_dump(by_alias=True),
+                )
+                new_verification = self.verification_service.create_answer_verification(
+                    verification_data,
+                    self.db_session,
+                    self.authenticated_user,
+                    auto_commit=False,
+                )
 
             self.db_session.commit()
 
@@ -144,9 +144,30 @@ class LendingController:
             }
         except HTTPException as error:
             self._cleanup_files(created_file_paths)
-            logger.error(
-                "Falha no fluxo de criação de comodato. status_code={}",
+
+            # Extract fields and errors for the warning log
+            fields: List[Any] = []
+            errors: List[Any] = []
+            if isinstance(error.detail, list):
+                for item in error.detail:
+                    if isinstance(item, dict):
+                        if "field" in item:
+                            fields.append(item["field"])
+                        if "error" in item:
+                            errors.append(item["error"])
+            elif isinstance(error.detail, dict):
+                if "field" in error.detail:
+                    fields.append(error.detail["field"])
+                if "error" in error.detail:
+                    errors.append(error.detail["error"])
+            else:
+                errors.append(error.detail)
+
+            logger.warning(
+                "Falha no fluxo de criação de comodato. status_code={}, campos={}, erros={}",
                 error.status_code,
+                fields,
+                errors,
             )
             self.db_session.rollback()
             raise
@@ -162,8 +183,10 @@ class LendingController:
             ) from error
         except Exception as error:
             self._cleanup_files(created_file_paths)
-            logger.error(
-                "Erro inesperado no fluxo de criação de comodato.",
+            logger.exception(
+                "Erro inesperado no fluxo de criação de comodato. erro={}, mensagem={}",
+                type(error).__name__,
+                str(error),
             )
             self.db_session.rollback()
             raise HTTPException(

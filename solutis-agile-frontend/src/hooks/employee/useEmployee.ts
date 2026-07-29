@@ -327,21 +327,51 @@ export default function useEmployee({
       }),
     )
 
-    const cep = dataCleaned.address.postalCode.replace(/\D/g, '')
+    const street = dataCleaned.address?.street ?? ''
+    const number = dataCleaned.address?.number ?? ''
+    const complement = dataCleaned.address?.complement ?? ''
+    const neighbourhood = dataCleaned.address?.neighbourhood ?? ''
+    const city = dataCleaned.address?.city ?? ''
+    const state = dataCleaned.address?.state ?? ''
+    const rawCep = dataCleaned.address?.postalCode ?? ''
+    const cep = rawCep.replace(/\D/g, '')
+
     dataCleaned.address =
-      `${dataCleaned.address.street};${dataCleaned.address.number};${dataCleaned.address.complement};${dataCleaned.address.neighbourhood};${dataCleaned.address.city};${dataCleaned.address.state};Brasil;${cep}`.toUpperCase()
-    dataCleaned.birthday = dataCleaned.birthday?.split('T')[0]
-    dataCleaned.employerContractDate =
-      dataCleaned.employerContractDate?.split('T')[0]
-    dataCleaned.employerEndContractDate =
-      dataCleaned.employerEndContractDate?.split('T')[0]
+      `${street};${number};${complement};${neighbourhood};${city};${state};Brasil;${cep}`.toUpperCase()
+
+    dataCleaned.birthday = dataCleaned.birthday
+      ? dataCleaned.birthday.split('T')[0]
+      : null
+
+    dataCleaned.employerContractDate = dataCleaned.employerContractDate
+      ? dataCleaned.employerContractDate.split('T')[0]
+      : null
+    if (!dataCleaned.employerContractDate) delete dataCleaned.employerContractDate
+
+    dataCleaned.employerEndContractDate = dataCleaned.employerEndContractDate
+      ? dataCleaned.employerEndContractDate.split('T')[0]
+      : null
+    if (!dataCleaned.employerEndContractDate) delete dataCleaned.employerEndContractDate
+
     dataCleaned.nationalIdentification =
       dataCleaned.nationalIdentification?.replace(/\D/g, '') ?? ''
     dataCleaned.taxpayerIdentification =
-      dataCleaned.taxpayerIdentification.replace(/\D/g, '')
-    dataCleaned.employerNumber = dataCleaned.employerNumber?.replace(/\D/g, '')
-    dataCleaned.fullName = dataCleaned.fullName.toUpperCase()
-    dataCleaned.cellPhone = dataCleaned.cellPhone.replace(/\D/g, '')
+      dataCleaned.taxpayerIdentification?.replace(/\D/g, '') ?? ''
+
+    dataCleaned.employerNumber = dataCleaned.employerNumber
+      ? dataCleaned.employerNumber.replace(/\D/g, '')
+      : null
+    if (!dataCleaned.employerNumber) delete dataCleaned.employerNumber
+
+    if (!dataCleaned.role) delete dataCleaned.role
+    if (!dataCleaned.jobPosition) delete dataCleaned.jobPosition
+
+    dataCleaned.fullName = dataCleaned.fullName
+      ? dataCleaned.fullName.toUpperCase()
+      : ''
+    dataCleaned.cellPhone = dataCleaned.cellPhone
+      ? dataCleaned.cellPhone.replace(/\D/g, '')
+      : ''
 
     if (id) {
       delete dataCleaned.status // Status não é editável

@@ -1,51 +1,39 @@
 """Proxy router with permission validation"""
 
-from typing import Generator, Union
+import re
+from typing import Any, Dict, Generator, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from loguru import logger
 from sqlalchemy.orm import Session, selectinload
 from src.auth.models import GroupModel, TokenModel, UserModel
-from src.auth.schemas import PermissionSchema
-from src.backends import (
-    PermissionChecker,
-    get_db_session,
-    oauth2_bearer,
-    token_is_valid,
-)
+from src.backends import PermissionChecker, get_db_session, token_is_valid
 from src.config import NOT_ALLOWED
+from src.proxy.routes import PROXY_ROUTES
 from src.proxy.service import INSUFFICIENT_PERMISSIONS_MSG, proxy_service
 
 proxy_router = APIRouter(prefix="/proxy", tags=["proxy"])
 
 
-PROXY_PERMISSIONS = {
-    "read": [
-        PermissionSchema(module="procurement", model="supplier", action="view"),
-        PermissionSchema(module="report", model="report", action="view"),
-    ],
-    "write": [
-        PermissionSchema(module="procurement", model="supplier", action="add"),
-        PermissionSchema(module="procurement", model="supplier", action="edit"),
-        PermissionSchema(module="report", model="report", action="view"),
-    ],
-}
-
-
-def get_permission_checker(permission_type: str = "read"):
-    """Get permission checker for specific permission type"""
-    if permission_type not in PROXY_PERMISSIONS:
-        raise ValueError(f"Unknown permission type: {permission_type}")
-
-    return PermissionChecker(PROXY_PERMISSIONS[permission_type])
-
-
 def get_proxy_authenticated_user(
-    token: str = Depends(oauth2_bearer),
+    request: Request,
     db_session: Session = Depends(get_db_session),
 ) -> Generator[Union[UserModel, None], None, None]:
-    """Authenticate proxy requests using opaque access token."""
+    """Authenticate proxy requests using opaque access token from headers."""
     try:
+        authorization = request.headers.get("Authorization")
+        if not authorization:
+            logger.warning("No Authorization header provided")
+            yield None
+            return
+
+        parts = authorization.split()
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            logger.warning("Invalid Authorization header format")
+            yield None
+            return
+
+        token = parts[1]
         token_db = (
             db_session.query(TokenModel).filter(TokenModel.token == token).first()
         )
@@ -68,23 +56,61 @@ def get_proxy_authenticated_user(
         db_session.close()
 
 
+def match_route_rule(service_name: str, path: str, method: str) -> Dict[str, Any]:
+    """Match request to a configured route rule in PROXY_ROUTES."""
+    normalized_path = "/" + path.lstrip("/")
+
+    for rule in PROXY_ROUTES:
+        if rule["service_name"] == service_name:
+            if method in rule["methods"]:
+                if re.match(rule["path_pattern"], normalized_path):
+                    return rule
+
+    logger.warning(
+        "No proxy route rule matched for service '{}', path '{}', method '{}'",
+        service_name,
+        normalized_path,
+        method,
+    )
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Acesso não configurado ou rota inválida para este microsserviço.",
+    )
+
+
 def authorize_proxy_access(
+    service_name: str,
+    path: str,
+    method: str,
     current_user: Union[UserModel, None],
-    permission_type: str,
 ) -> UserModel:
-    """Authorize proxy request and distinguish auth vs permission failures."""
+    """Authorize proxy request and distinguish auth vs permission failures dynamically."""
+    rule = match_route_rule(service_name, path, method)
+
+    if rule.get("is_public", False):
+
+        class SystemUser:
+            id = 0
+            email = "system@solutis.com.br"
+            group = type("Group", (), {"name": "system"})()
+            employee = type("Employee", (), {"full_name": "System"})()
+
+        return SystemUser()
+
     if not current_user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=NOT_ALLOWED,
         )
 
-    permission_checker = get_permission_checker(permission_type)
-    if not permission_checker.has_permissions(current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=INSUFFICIENT_PERMISSIONS_MSG,
-        )
+    required_permissions = rule.get("required_permissions", [])
+    if required_permissions:
+        permission_checker = PermissionChecker(required_permissions)
+        if not permission_checker.has_permissions(current_user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=INSUFFICIENT_PERMISSIONS_MSG,
+            )
 
     return current_user
 
@@ -101,37 +127,11 @@ async def proxy_get(
     current_user: Union[UserModel, None] = Depends(get_proxy_authenticated_user),
 ):
     """
-    Proxy GET requests to external service with permission validation.
-    Requires 'read' permission for proxy.external_service.
+    Proxy GET requests to external service with dynamic permission validation.
     """
-    authorized_user = authorize_proxy_access(current_user, "read")
+    authorized_user = authorize_proxy_access(service_name, path, "GET", current_user)
     return await proxy_service.proxy_get_request(
         service_name, path, request, authorized_user
-    )
-
-
-@proxy_router.post(
-    "/procurement/v1/approval/step/approve/",
-    summary="Public proxy endpoint to approve or reprove a supplier workflow step",
-)
-async def proxy_public_approve(
-    request: Request,
-):
-    """
-    Public proxy endpoint to approve or reprove a supplier workflow step.
-    Bypasses user login checks and injects system headers. Downstream service
-    handles verification of the approval token.
-    """
-
-    class SystemUser:
-        id = 0
-        email = "system@solutis.com.br"
-        group = type("Group", (), {"name": "system"})()
-        employee = type("Employee", (), {"full_name": "System"})()
-
-    system_user = SystemUser()
-    return await proxy_service.proxy_post_request(
-        "procurement", "v1/approval/step/approve/", request, system_user
     )
 
 
@@ -147,10 +147,9 @@ async def proxy_post(
     current_user: Union[UserModel, None] = Depends(get_proxy_authenticated_user),
 ):
     """
-    Proxy POST requests to external service with permission validation.
-    Requires 'write' permission for proxy.external_service.
+    Proxy POST requests to external service with dynamic permission validation.
     """
-    authorized_user = authorize_proxy_access(current_user, "write")
+    authorized_user = authorize_proxy_access(service_name, path, "POST", current_user)
     return await proxy_service.proxy_post_request(
         service_name, path, request, authorized_user
     )
@@ -168,10 +167,9 @@ async def proxy_put(
     current_user: Union[UserModel, None] = Depends(get_proxy_authenticated_user),
 ):
     """
-    Proxy PUT requests to external service with permission validation.
-    Requires 'write' permission for proxy.external_service.
+    Proxy PUT requests to external service with dynamic permission validation.
     """
-    authorized_user = authorize_proxy_access(current_user, "write")
+    authorized_user = authorize_proxy_access(service_name, path, "PUT", current_user)
     return await proxy_service.proxy_put_request(
         service_name, path, request, authorized_user
     )
@@ -189,10 +187,9 @@ async def proxy_patch(
     current_user: Union[UserModel, None] = Depends(get_proxy_authenticated_user),
 ):
     """
-    Proxy PATCH requests to external service with permission validation.
-    Requires 'write' permission for proxy.external_service.
+    Proxy PATCH requests to external service with dynamic permission validation.
     """
-    authorized_user = authorize_proxy_access(current_user, "write")
+    authorized_user = authorize_proxy_access(service_name, path, "PATCH", current_user)
     return await proxy_service.proxy_patch_request(
         service_name, path, request, authorized_user
     )
@@ -210,10 +207,9 @@ async def proxy_delete(
     current_user: Union[UserModel, None] = Depends(get_proxy_authenticated_user),
 ):
     """
-    Proxy DELETE requests to external service with permission validation.
-    Requires 'write' permission for proxy.external_service.
+    Proxy DELETE requests to external service with dynamic permission validation.
     """
-    authorized_user = authorize_proxy_access(current_user, "write")
+    authorized_user = authorize_proxy_access(service_name, path, "DELETE", current_user)
     return await proxy_service.proxy_delete_request(
         service_name, path, request, authorized_user
     )
@@ -229,7 +225,8 @@ async def proxy_health(
 ):
     """
     Check the health of the proxy service and external service connection.
-    Requires 'read' permission for proxy.external_service.
     """
-    authorized_user = authorize_proxy_access(current_user, "read")
+    authorized_user = authorize_proxy_access(
+        service_name, "health", "GET", current_user
+    )
     return await proxy_service.proxy_health_check(service_name, authorized_user)

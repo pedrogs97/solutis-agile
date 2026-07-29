@@ -13,6 +13,8 @@ DB_SERVER = os.getenv("MYSQL_SERVER", "localhost")
 
 def get_database_url(test=False):
     """Return database url"""
+    if test and os.getenv("TEST_DATABASE_URL"):
+        return os.getenv("TEST_DATABASE_URL")
     server = DB_SERVER if not test else os.getenv("MYSQL_SERVER_TEST", "localhost")
     db = os.getenv("MYSQL_DATABASE", "app") if not test else "db_test"
     user = (

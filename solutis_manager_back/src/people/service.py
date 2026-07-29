@@ -1,7 +1,7 @@
 """People service"""
 
 import random
-from typing import List, Union
+from typing import List, Optional, Union
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -151,14 +151,21 @@ class EmployeeService:
 
         return (role, nationality, marital_status, gender, educational_level)
 
-    def __generate_code(self, last_employee: EmployeeModel) -> str:
+    def __generate_code(
+        self,
+        last_employee: Union[EmployeeModel, None],
+        full_name: Optional[str] = None,
+    ) -> str:
         """Generate new code for employee"""
-        last_code = last_employee.id
+        last_code = last_employee.id if last_employee else 0
         new_code = last_code + 1
         str_code = str(new_code)
-        return "".join(
-            random.choice(last_employee.full_name.replace(" ", "")) for _ in range(3)
-        ) + str_code.zfill(13)
+        name_source = full_name or (last_employee.full_name if last_employee else "")
+        clean_chars = [c for c in name_source if c.isalnum()]
+        if not clean_chars:
+            clean_chars = ["E", "M", "P"]
+        prefix = "".join(random.choice(clean_chars) for _ in range(3))
+        return (prefix + str_code.zfill(13))[:16]
 
     def serialize_employee(self, employee: EmployeeModel) -> EmployeeSerializerSchema:
         """Serialize employee"""
@@ -181,7 +188,11 @@ class EmployeeService:
                 if employee.marital_status
                 else None
             ),
-            gender=EmployeeGenderSerializerSchema(**employee.gender.__dict__),
+            gender=(
+                EmployeeGenderSerializerSchema(**employee.gender.__dict__)
+                if employee.gender
+                else None
+            ),
             educational_level=(
                 EmployeeEducationalLevelSerializerSchema(
                     **employee.educational_level.__dict__
@@ -245,7 +256,6 @@ class EmployeeService:
             db_session.query(EmployeeModel)
             .filter(
                 EmployeeModel.taxpayer_identification == data.taxpayer_identification,
-                EmployeeModel.legal_person.is_(True),
             )
             .first()
         ):
@@ -267,17 +277,18 @@ class EmployeeService:
             educational_level,
         ) = self.__validate_nested(data, db_session)
 
-        new_registration = self.__generate_code(
+        last_emp = (
             db_session.query(EmployeeModel).order_by(EmployeeModel.id.desc()).first()
         )
+        new_registration = self.__generate_code(last_emp, full_name=data.full_name)
 
         new_emplyoee = EmployeeModel(
             registration=new_registration,
             code=data.code,
             full_name=data.full_name,
             taxpayer_identification=data.taxpayer_identification,
-            national_identification=data.national_identification,
-            address=data.address,
+            national_identification=(data.national_identification or "")[:15],
+            address=data.address[:255] if data.address else "",
             cell_phone=data.cell_phone,
             email=data.email,
             birthday=data.birthday,
