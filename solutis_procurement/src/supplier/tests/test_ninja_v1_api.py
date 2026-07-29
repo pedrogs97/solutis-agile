@@ -46,6 +46,15 @@ def test_ninja_v1_requires_proxy_headers():
 
 
 @pytest.mark.django_db
+def test_approval_step_manager_evaluation_department_is_gestor(approval_steps):
+    manager_step = ApprovalStep.objects.filter(
+        name__icontains="Avaliação do gestor"
+    ).first()
+    assert manager_step is not None
+    assert manager_step.department == "Gestor"
+
+
+@pytest.mark.django_db
 def test_ninja_v1_create_and_list_suppliers():
     baker.make(
         ApprovalStep,

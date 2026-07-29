@@ -405,7 +405,10 @@ export function ApprovalWorkflowTab({
             <Card withBorder radius="md" p="md" shadow="sm">
               <Stack gap="xs">
                 <Text size="sm" c="dimmed">
-                  {item.step.department}
+                  {item.step.name.toLowerCase().includes('gestor') &&
+                  item.step.department === 'Administrativo'
+                    ? 'Gestor'
+                    : item.step.department}
                 </Text>
                 {item.approval ? (
                   <Stack gap={4}>

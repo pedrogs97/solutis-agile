@@ -1,5 +1,19 @@
 # Histórico de Alterações do Projeto
 
+## [2026-07-29] - Atualização do Departamento na Avaliação do Gestor (Fluxo de Aprovação de Fornecedores)
+- **Descrição**: Alteração do departamento de "Administrativo" para "Gestor" na etapa de "Avaliação do Gestor" do fluxo de aprovação de fornecedores.
+- **Arquivos afetados**:
+  - `solutis_procurement/src/supplier/fixtures/approval_steps.json`
+  - `solutis_procurement/src/supplier/tests/conftest.py`
+  - `solutis_procurement/src/supplier/tests/test_ninja_v1_api.py`
+  - `solutis_procurement/src/supplier/migrations/0036_update_manager_evaluation_department.py`
+  - `solutis-agile-frontend/src/components/suppliers/form/approval-workflow-tab.tsx`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Fixtures e Testes**: Atualizado o departamento do passo `Avaliação do Gestor` em `approval_steps.json` e `conftest.py` para `"Gestor"`.
+  - **Migração do Banco de Dados**: Criada migração Django `0036_update_manager_evaluation_department.py` em `solutis_procurement` para atualizar os registros existentes de `ApprovalStep` com nome "Avaliação do Gestor" no banco de dados.
+  - **Exibição no Frontend**: Ajustada a renderização em `approval-workflow-tab.tsx` para garantir a exibição de `"Gestor"` para o passo "Avaliação do Gestor".
+
 ## [2026-07-29] - Correção TDD na Criação de Colaboradores e Tratamento de Erros da API
 - **Descrição**: Solução dos problemas de criação de colaboradores no formulário (etapa de Endereço) e aprimoramento da normalização de mensagens de erro FastAPI na interface frontend via TDD.
 - **Arquivos afetados**:

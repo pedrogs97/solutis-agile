@@ -139,7 +139,7 @@ def approval_steps():
             "name": "Avaliação do gestor",
             "description": "Avaliação e aprovação do gestor responsável",
             "order": 5,
-            "department": "Administrativo",
+            "department": "Gestor",
             "is_mandatory": True,
         },
         {

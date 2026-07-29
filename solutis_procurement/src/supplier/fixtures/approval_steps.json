@@ -71,7 +71,7 @@
             "name": "Avaliação do Gestor",
             "description": "Avaliação e aprovação do gestor responsável",
             "order": 6,
-            "department": "Administrativo",
+            "department": "Gestor",
             "is_mandatory": true,
             "created_at": "2025-09-28T00:00:00Z",
             "updated_at": "2025-09-28T00:00:00Z"
