@@ -1,5 +1,17 @@
 # Histórico de Alterações do Projeto
 
+## [2026-07-29] - Automação da Execução de Migrations no Deploy dos Serviços de Backend
+- **Descrição**: Configuração do deploy dos serviços de backend (`solutis_manager_back` e `solutis_procurement`) para executarem automaticamente suas migrations de banco de dados (Alembic e Django Migrations) antes de iniciarem o servidor HTTP ao realizar o deploy de novas versões.
+- **Arquivos afetados**:
+  - `docker-compose.prod.yml`
+  - `docker-compose.dev.yml`
+  - `deploy.sh`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **`docker-compose.prod.yml`**: Atualizado o comando de inicialização do container `agile-back` (`solutis_manager_back`) para executar `uv run alembic upgrade head` antes de iniciar o `uvicorn`. Mantida a execução de `python manage.py migrate --noinput` para o `solutis-procurement`.
+  - **`docker-compose.dev.yml`**: Atualizada a inicialização do `agile-back` em ambiente dev/local para também rodar `uv run alembic upgrade head` antes de iniciar o servidor com `--reload`.
+  - **`deploy.sh`**: Incluídos logs explicativos no fluxo de deploy para sinalizar a execução de migrations do banco de dados quando novas versões dos microsserviços de backend forem implantadas.
+
 ## [2026-07-29] - Correção do Erro de Validação de Data na Criação de Colaboradores (`solutis_manager_back` & `solutis-agile-frontend`)
 - **Descrição**: Solução do erro de validação `"Input should be a valid date or datetime, invalid character in year"` exibido ao submeter o formulário de cadastro/edição de colaboradores.
 - **Arquivos afetados**:

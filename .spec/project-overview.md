@@ -43,5 +43,5 @@ Serviço base e coração da solução com toda a lógica de autenticação e au
 
 ## Convenções do Monorepo
 - **Gerenciamento de Dependências Python**: Utiliza `uv` e `pyproject.toml` individual em cada microsserviço.
-- **Deploy**: Pipeline automatizado via `deploy.sh` e `docker-compose.prod.yml` com detecção de versão por serviço.
+- **Deploy**: Pipeline automatizado via `deploy.sh` e `docker-compose.prod.yml` com detecção de versão por serviço e execução automática de migrations de banco de dados (`alembic` no `solutis_manager_back` e `django migrate` no `solutis_procurement`).
 - **Documentação viva**: Mantida na pasta `.spec/` e atualizada a cada alteração via skills do agente (`spec-updater` e `spec-reader`).

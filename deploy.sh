@@ -67,6 +67,10 @@ for item in "${SERVICES[@]}"; do
       # Build only the changed service
       docker compose -f docker-compose.prod.yml build "$compose_service"
 
+      if [ "$compose_service" = "agile-back" ] || [ "$compose_service" = "solutis-procurement" ]; then
+        echo "🔄 Executing database migrations and starting container for $compose_service..."
+      fi
+
       # Recreate container without touching others
       docker compose -f docker-compose.prod.yml up -d --no-deps "$compose_service"
 
