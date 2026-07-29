@@ -51,6 +51,33 @@ export type FormEmployeeData = z.infer<typeof employeeSchema>
 
 export type FormEmployeeAddressData = z.infer<typeof employeeAddressSchema>
 
+function formatDateToISO(value: unknown): string | null {
+  if (!value) return null
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) return null
+    const year = value.getFullYear()
+    const month = String(value.getMonth() + 1).padStart(2, '0')
+    const day = String(value.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (!trimmed || trimmed === 'undefined' || trimmed === 'null') return null
+    const brMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/)
+    if (brMatch) {
+      const [_, day, month, year] = brMatch
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    }
+    if (trimmed.includes('T')) {
+      return trimmed.split('T')[0]
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return trimmed
+    }
+  }
+  return null
+}
+
 export default function useEmployee({
   searchParams,
   isDetail,
@@ -339,19 +366,25 @@ export default function useEmployee({
     dataCleaned.address =
       `${street};${number};${complement};${neighbourhood};${city};${state};Brasil;${cep}`.toUpperCase()
 
-    dataCleaned.birthday = dataCleaned.birthday
-      ? dataCleaned.birthday.split('T')[0]
-      : null
+    const rawFormValues = form.getValues()
+    const birthdayVal = formatDateToISO(rawFormValues.birthday) || formatDateToISO(dataCleaned.birthday)
+    if (birthdayVal) {
+      dataCleaned.birthday = birthdayVal
+    }
 
-    dataCleaned.employerContractDate = dataCleaned.employerContractDate
-      ? dataCleaned.employerContractDate.split('T')[0]
-      : null
-    if (!dataCleaned.employerContractDate) delete dataCleaned.employerContractDate
+    const employerContractDateVal = formatDateToISO(rawFormValues.employerContractDate) || formatDateToISO(dataCleaned.employerContractDate)
+    if (employerContractDateVal) {
+      dataCleaned.employerContractDate = employerContractDateVal
+    } else {
+      delete dataCleaned.employerContractDate
+    }
 
-    dataCleaned.employerEndContractDate = dataCleaned.employerEndContractDate
-      ? dataCleaned.employerEndContractDate.split('T')[0]
-      : null
-    if (!dataCleaned.employerEndContractDate) delete dataCleaned.employerEndContractDate
+    const employerEndContractDateVal = formatDateToISO(rawFormValues.employerEndContractDate) || formatDateToISO(dataCleaned.employerEndContractDate)
+    if (employerEndContractDateVal) {
+      dataCleaned.employerEndContractDate = employerEndContractDateVal
+    } else {
+      delete dataCleaned.employerEndContractDate
+    }
 
     dataCleaned.nationalIdentification =
       dataCleaned.nationalIdentification?.replace(/\D/g, '') ?? ''

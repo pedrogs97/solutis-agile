@@ -234,3 +234,25 @@ class TestPeopleModule(TestBase):
         assert res.full_name == "COLABORADOR ENDERECO LIMPO"
         assert "UNDEFINED" not in res.address
         assert res.role is None
+
+    def test_new_employee_schema_parses_brazilian_dates(self, setup):
+        """Test NewEmployeeSchema correctly parses Brazilian DD/MM/YYYY date strings into date objects."""
+        db_session = self.testing_session_local()
+        nested = self._seed_nested_models(db_session)
+        data = NewEmployeeSchema(
+            fullName="TESTE DATA BRASILEIRA",
+            taxpayerIdentification="99900011122",
+            address="RUA BRASIL, 123",
+            cellPhone="71999998888",
+            email="databr@solutis.com.br",
+            birthday="15/05/1995",
+            employerContractDate="01/02/2020",
+            employerEndContractDate="31/12/2025",
+            nationalityId=nested["nationality"].id,
+            maritalStatusId=nested["marital_status"].id,
+            genderId=nested["gender"].id,
+            educationalLevelId=nested["educational_level"].id,
+        )
+        assert data.birthday == date(1995, 5, 15)
+        assert data.employer_contract_date == date(2020, 2, 1)
+        assert data.employer_end_contract_date == date(2025, 12, 31)

@@ -1,6 +1,19 @@
 # Histórico de Alterações do Projeto
 
-## [2026-07-29] - Correção das Rotas de Proxy do Módulo de Fornecedores (`solutis_manager_back`)
+## [2026-07-29] - Correção do Erro de Validação de Data na Criação de Colaboradores (`solutis_manager_back` & `solutis-agile-frontend`)
+- **Descrição**: Solução do erro de validação `"Input should be a valid date or datetime, invalid character in year"` exibido ao submeter o formulário de cadastro/edição de colaboradores.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/people/schemas.py`
+  - `solutis_manager_back/src/tests/test_people.py`
+  - `solutis_manager_back/pyproject.toml`
+  - `solutis-agile-frontend/src/hooks/employee/useEmployee.ts`
+  - `solutis-agile-frontend/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Tratamento de Datas no Frontend**: Criada a função `formatDateToISO` em `useEmployee.ts` para converter de forma segura qualquer formato de data (`Date` objeto, string no padrão brasileiro `DD/MM/YYYY`, ou timestamp ISO) para o formato padrão ISO `YYYY-MM-DD` antes do envio da requisição.
+  - **Parsing Flexível de Datas no Backend**: Adicionado `@field_validator` com `mode="before"` em `NewEmployeeSchema` e `UpdateEmployeeSchema` no backend para aceitar e converter strings de data no formato brasileiro `DD/MM/YYYY`, timestamps ISO (`YYYY-MM-DDTHH:MM:SS`) e strings vazias/indefinidas (`""`, `"undefined"`, `None`) antes da validação do Pydantic.
+  - **Cobertura de Testes (TDD)**: Adicionado o teste `test_new_employee_schema_parses_brazilian_dates` em `test_people.py` para garantir a conversão correta de datas no formato `DD/MM/YYYY` sem lançar erro de validação.
+  - **Versões**: `solutis_manager_back` (`1.26.2` ➡️ `1.26.3`), `solutis-agile-frontend` (`2.7.1` ➡️ `2.7.2`).
 - **Descrição**: Resolução do erro 500 ao acessar a tela de fornecedores. Adicionadas as regras de roteamento proxy no `PROXY_ROUTES` do `solutis_manager_back` para os endpoints do microsserviço `procurement` (`/v1/suppliers-list/`, `/v1/suppliers/`, `/v1/domain/`, `/v1/approval/`, `/v1/attachments/`, `/v1/attachment-types/`, `/v1/responsibility-matrix/`, `/v1/evaluation/`).
 - **Arquivos afetados**:
   - `solutis_manager_back/src/proxy/routes.py`

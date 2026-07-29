@@ -170,12 +170,26 @@ class NewEmployeeSchema(BaseSchema):
         return v
 
     @field_validator(
-        "employer_contract_date", "employer_end_contract_date", mode="before"
+        "birthday",
+        "employer_contract_date",
+        "employer_end_contract_date",
+        mode="before",
     )
     @classmethod
-    def empty_str_to_none_date(cls, v):
+    def parse_flexible_date(cls, v):
         if v == "" or v is None:
             return None
+        if isinstance(v, str):
+            v_str = v.strip()
+            if not v_str or v_str.lower() in ("none", "null", "undefined"):
+                return None
+            if "/" in v_str:
+                parts = v_str.split("/")
+                if len(parts) == 3:
+                    day, month, year = parts
+                    return f"{year.zfill(4)}-{month.zfill(2)}-{day.zfill(2)}"
+            if "T" in v_str:
+                return v_str.split("T")[0]
         return v
 
     @field_validator(
@@ -285,6 +299,29 @@ class UpdateEmployeeSchema(BaseSchema):
         alias="hasOtherAsset",
         default=False,
     )
+
+    @field_validator(
+        "birthday",
+        "employer_contract_date",
+        "employer_end_contract_date",
+        mode="before",
+    )
+    @classmethod
+    def parse_flexible_date(cls, v):
+        if v == "" or v is None:
+            return None
+        if isinstance(v, str):
+            v_str = v.strip()
+            if not v_str or v_str.lower() in ("none", "null", "undefined"):
+                return None
+            if "/" in v_str:
+                parts = v_str.split("/")
+                if len(parts) == 3:
+                    day, month, year = parts
+                    return f"{year.zfill(4)}-{month.zfill(2)}-{day.zfill(2)}"
+            if "T" in v_str:
+                return v_str.split("T")[0]
+        return v
 
 
 class EmployeeSerializerSchema(BaseSchema):
