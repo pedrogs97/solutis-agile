@@ -1,5 +1,19 @@
 # Histórico de Alterações do Projeto
 
+## [2026-07-29] - Atualização de Versões dos Serviços do Monorepo (/update-services-version)
+- **Descrição**: Atualização incremental das versões dos serviços modificados nos últimos commits seguindo as regras de versionamento semântico.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/package.json`
+  - `solutis_manager_back/pyproject.toml`
+  - `solutis_procurement/pyproject.toml`
+  - `solutis_report/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **`solutis-agile-frontend`**: `2.7.0` ➡️ `2.7.1`
+  - **`solutis_manager_back`**: `1.26.0` ➡️ `1.26.1`
+  - **`solutis_procurement`**: `2.18.0` ➡️ `2.18.1`
+  - **`solutis_report`**: `1.3.1` ➡️ `1.3.2`
+
 ## [2026-07-29] - Atualização do Departamento na Avaliação do Gestor (Fluxo de Aprovação de Fornecedores)
 - **Descrição**: Alteração do departamento de "Administrativo" para "Gestor" na etapa de "Avaliação do Gestor" do fluxo de aprovação de fornecedores.
 - **Arquivos afetados**:
