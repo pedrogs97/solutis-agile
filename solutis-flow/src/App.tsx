@@ -25,14 +25,30 @@ import { ReportsView } from './components/ReportsView';
 import { ContinuousImprovement, ImprovementIdea } from './components/ContinuousImprovement';
 import { ManagerApprovals } from './components/ManagerApprovals';
 import { CalendarView, SharedMeeting } from './components/CalendarView';
+import { FlowProvider, useFlow } from './context/FlowContext';
 import { 
   Layers, BarChart3, Settings as SettingsIcon, Kanban, 
   Calendar, Clock, CheckCircle, Bell, Plus, ShieldCheck, Zap, FolderKanban, LogOut, FileText,
   Lightbulb, ShieldAlert
 } from 'lucide-react';
 
-export default function App() {
-  // Load initial states from localStorage if existing
+function MainAppContent() {
+  const {
+    currentUser,
+    isLoggedIn,
+    login,
+    logout,
+    switchRole,
+    demands,
+    projects,
+    metrics,
+    addDemand,
+    changeDemandStatus,
+    transferDemand,
+    sendFeedback,
+    addProject,
+  } = useFlow();
+
   const [users] = useState<User[]>(mockUsers);
   
   const [ideas, setIdeas] = useState<ImprovementIdea[]>(() => {
@@ -90,7 +106,7 @@ export default function App() {
         id: 'meet-1',
         title: 'Reunião de Alinhamento de SLA e POP Compras',
         description: 'Pauta: Revisão técnica passo a passo das regras do procedimento operacional padrão de compras.',
-        date: new Date().toISOString().split('T')[0], // Hoje
+        date: new Date().toISOString().split('T')[0],
         time: '14:00',
         hostId: 'usr-gestor',
         hostName: 'Beatriz Mello (Gestor)',
@@ -102,7 +118,7 @@ export default function App() {
         id: 'meet-2',
         title: 'Sincronização de Encerramento Financeiro Mensal',
         description: 'Auditoria cruzada sobre os centros de custo e custos de mão de obra de junho.',
-        date: new Date().toISOString().split('T')[0], // Hoje
+        date: new Date().toISOString().split('T')[0],
         time: '16:30',
         hostId: 'usr-gestor',
         hostName: 'Beatriz Mello (Gestor)',
@@ -111,39 +127,6 @@ export default function App() {
         status: 'PENDENTE'
       }
     ];
-  });
-  
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    return localStorage.getItem('flowta_is_logged_in') === 'true';
-  });
-
-  const [currentUser, setCurrentUser] = useState<User>(() => {
-    const saved = localStorage.getItem('flowta_user');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const exists = mockUsers.find(u => u.id === parsed.id);
-        if (exists) return exists;
-      } catch (e) {}
-    }
-    return mockUsers[1]; // Default to Gestor context for deep features
-  });
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    localStorage.removeItem('flowta_is_logged_in');
-    localStorage.removeItem('flowta_user');
-    setLastNotification('Até breve! Logout efetuado na sessão sandbox.');
-  };
-
-  const [demands, setDemands] = useState<Demand[]>(() => {
-    const saved = localStorage.getItem('flowta_demands');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return mockInitialDemands;
   });
 
   const [automations, setAutomations] = useState<Automation[]>(() => {
@@ -164,16 +147,6 @@ export default function App() {
       } catch (e) {}
     }
     return mockInitialRecurringTasks;
-  });
-
-  const [projects, setProjects] = useState<Project[]>(() => {
-    const saved = localStorage.getItem('flowta_projects');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return mockInitialProjects;
   });
 
   const [kanbanColumns, setKanbanColumns] = useState(() => {
@@ -204,6 +177,9 @@ export default function App() {
   // Layout states
   const [activeTab, setActiveTab] = useState<string>('DASHBOARD');
   const [initialStatusFilter, setInitialStatusFilter] = useState<string>('TODOS');
+  const [selectedDemandId, setSelectedDemandId] = useState<string | null>(null);
+  const [lastNotification, setLastNotification] = useState<string>('');
+  const [quickCreateModal, setQuickCreateModal] = useState(false);
 
   const handleDashboardNavigate = (tab: string, filters?: { status?: string }) => {
     if (filters?.status) {
@@ -214,46 +190,10 @@ export default function App() {
     setActiveTab(tab);
   };
 
-  const [selectedDemandId, setSelectedDemandId] = useState<string | null>(null);
-  const [lastNotification, setLastNotification] = useState<string>('');
-  const [quickCreateModal, setQuickCreateModal] = useState(false);
-
-  // Save states to localStorage on change
-  useEffect(() => {
-    localStorage.setItem('flowta_user', JSON.stringify(currentUser));
-  }, [currentUser]);
-
-  useEffect(() => {
-    localStorage.setItem('flowta_demands', JSON.stringify(demands));
-  }, [demands]);
-
-  useEffect(() => {
-    localStorage.setItem('flowta_automations', JSON.stringify(automations));
-  }, [automations]);
-
-  useEffect(() => {
-    localStorage.setItem('flowta_recurring', JSON.stringify(recurringTasks));
-  }, [recurringTasks]);
-
-  useEffect(() => {
-    localStorage.setItem('flowta_projects', JSON.stringify(projects));
-  }, [projects]);
-
-  useEffect(() => {
-    localStorage.setItem('flowta_kanban_columns', JSON.stringify(kanbanColumns));
-  }, [kanbanColumns]);
-
-  useEffect(() => {
-    localStorage.setItem('flowta_sla_configs', JSON.stringify(slaConfigs));
-  }, [slaConfigs]);
-
-  useEffect(() => {
-    localStorage.setItem('flowta_ideas', JSON.stringify(ideas));
-  }, [ideas]);
-
-  useEffect(() => {
-    localStorage.setItem('flowta_meetings', JSON.stringify(meetings));
-  }, [meetings]);
+  const handleLogout = () => {
+    logout();
+    setLastNotification('Até breve! Logout efetuado na sessão sandbox.');
+  };
 
   // Adjust default screen depending on Role switches
   useEffect(() => {
@@ -266,7 +206,7 @@ export default function App() {
     }
   }, [currentUser]);
 
-  // deep-link handler for demandId and projectId URL search parameters on boot
+  // Deep-link handler
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const dId = urlParams.get('demandId');
@@ -284,725 +224,405 @@ export default function App() {
     }
   }, []);
 
-  // Real-time Simulation: Every 15 seconds, simulate tick on non-completed demands to increment SLA
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDemands(prev => {
-        let changed = false;
-        const updated = prev.map(d => {
-          if (d.status !== 'CONCLUIDO') {
-            changed = true;
-            const newSla = d.slaSpentHours + 1;
-            
-            // Check if automation triggers on SLA vencimento!
-            if (newSla > d.slaLimitHours && d.slaSpentHours <= d.slaLimitHours) {
-              // Trigger SLA overdue notification
-              const activeSlaAutos = automations.filter(a => a.trigger === 'AO_SLA_VENCER' && a.isActive);
-              if (activeSlaAutos.length > 0) {
-                setLastNotification(`⚠️ ALTA GRAVIDADE: SLA estourou na demanda ${d.id}! Gestor de plantão notificado por automação.`);
-              }
-            }
-
-            return { ...d, slaSpentHours: newSla };
-          }
-          return d;
-        });
-        return changed ? updated : prev;
-      });
-    }, 15000);
-
-    return () => clearInterval(interval);
-  }, [automations]);
-
-  // Handle addition of a new demand and process rule triggers (Automation Core)
-  const handleAddNewDemand = (newDemand: Demand) => {
-    // Process Trigger: AO_CRIAR automations
-    let processedDemand = { ...newDemand };
-    let triggeredAutoName = '';
-
-    const activeCreateAutos = automations.filter(a => a.trigger === 'AO_CRIAR' && a.isActive);
-    
-    activeCreateAutos.forEach(auto => {
-      if (auto.conditionField === 'value' && auto.conditionOperator === '>') {
-        // Parse value from description e.g., "Valor Estimado: R$ 15.000,00"
-        const valueMatch = newDemand.description.match(/Valor Estimado:\s*R\$\s*([\d.,]+)/);
-        if (valueMatch) {
-          const val = Number(valueMatch[1].replace(/\./g, '').replace(',', '.'));
-          const limit = Number(auto.conditionValue) || 0;
-          if (val > limit) {
-            triggeredAutoName = auto.name;
-            if (auto.action === 'ENVIAR_APROVACAO_DIRETORIA') {
-              processedDemand.approvalStatus = 'AGUARDANDO_APROVACAO';
-              processedDemand.assigneeId = 'usr-aprovador'; // Direct routing to director
-            }
-          }
-        }
-      } else if (auto.conditionField === 'type' && auto.conditionOperator === '==') {
-        if (newDemand.type === auto.conditionValue) {
-          triggeredAutoName = auto.name;
-          if (auto.action === 'ATRIBUIR_ANALISTA') {
-            processedDemand.assigneeId = auto.destinationUserOrRole || 'usr-analista';
-          }
-        }
-      }
-    });
-
-    if (triggeredAutoName) {
-      processedDemand.history.push({
-        id: `hst-auto-${Date.now()}`,
-        userId: 'usr-admin',
-        action: `⚙️ Automação Executada: "${triggeredAutoName}"`,
-        date: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-      });
-      setLastNotification(`⚡ Automação disparada: "${triggeredAutoName}"`);
-    } else {
-      setLastNotification(`✅ Nova demanda ${newDemand.id} criada. Triagem acionada.`);
+  const handleAddNewDemand = async (newDemandData: Demand) => {
+    try {
+      const created = await addDemand(newDemandData);
+      setLastNotification(`✅ Nova demanda ${created.id} registrada com sucesso.`);
+    } catch (err: any) {
+      setLastNotification(`⚠️ Erro ao registrar demanda: ${err.message}`);
     }
-
-    setDemands(prev => [processedDemand, ...prev]);
   };
 
-  // Update a single demand in depth
-  const handleUpdateDemand = (updatedDemand: Demand) => {
-    // Find original to detect observer actions or updates to trigger alerts
-    const oldDemand = demands.find(d => d.id === updatedDemand.id);
-    if (oldDemand) {
-      const addedObservers = (updatedDemand.observerIds || []).filter(id => !(oldDemand.observerIds || []).includes(id));
-      const removedObservers = (oldDemand.observerIds || []).filter(id => !(updatedDemand.observerIds || []).includes(id));
-      
-      if (addedObservers.length > 0) {
-        const names = addedObservers.map(id => users.find(u => u.id === id)?.name || id).join(', ');
-        setLastNotification(`👥 Novo colaborador convidado para acompanhar a demanda ${updatedDemand.id}: ${names}. Notificações ativas.`);
-      } else if (removedObservers.length > 0) {
-        const names = removedObservers.map(id => users.find(u => u.id === id)?.name || id).join(', ');
-        setLastNotification(`👥 Acompanhamento de ${names} encerrado para a demanda ${updatedDemand.id}.`);
-      } else {
-        const statusChanged = oldDemand.status !== updatedDemand.status;
-        const commentAdded = (updatedDemand.comments || []).length > (oldDemand.comments || []).length;
-        
-        if ((updatedDemand.observerIds || []).length > 0) {
-          if (statusChanged) {
-            setLastNotification(`📢 Alerta de Acompanhamento: Status da demanda ${updatedDemand.id} mudou para ${updatedDemand.status === 'EM_ANDAMENTO' ? '🟠 EM ANDAMENTO' : '🟢 CONCLUÍDO'}. Co-pilotos notificados.`);
-          } else if (commentAdded) {
-            setLastNotification(`💬 Alerta de Acompanhamento: Novo comentário/registro na demanda ${updatedDemand.id}. Co-pilotos notificados.`);
-          }
-        }
-      }
+  const handleUpdateDemand = async (updatedDemand: Demand) => {
+    try {
+      await changeDemandStatus(
+        updatedDemand.id,
+        updatedDemand.status,
+        updatedDemand.evidenceDescription,
+        updatedDemand.evidenceAttachmentId
+      );
+      setLastNotification(`📢 Demanda #${updatedDemand.id} atualizada.`);
+    } catch (err: any) {
+      setLastNotification(`⚠️ ${err.message}`);
     }
-    setDemands(prev => prev.map(d => d.id === updatedDemand.id ? updatedDemand : d));
   };
 
-  // Continuous Improvement handlers
   const handleAddIdea = (newIdea: ImprovementIdea) => {
     setIdeas(prev => [newIdea, ...prev]);
     setLastNotification(`💡 Proposta de melhoria registrada! Seus pontos de avaliação foram atualizados.`);
   };
 
-  const handleUpdateIdea = (updatedIdea: ImprovementIdea) => {
-    setIdeas(prev => prev.map(i => i.id === updatedIdea.id ? updatedIdea : i));
+  const handleToggleLikeIdea = (ideaId: string) => {
+    setIdeas(prev => prev.map(idea => {
+      if (idea.id === ideaId) {
+        return { ...idea, likes: idea.likes + 1 };
+      }
+      return idea;
+    }));
   };
 
-  // Shared meetings calendar handlers
-  const handleAddMeeting = (meet: SharedMeeting) => {
-    setMeetings(prev => [meet, ...prev]);
-    setLastNotification(`📅 Reunião "${meet.title}" enviada para o calendário cooperativo.`);
+  const handleScheduleMeeting = (newMeeting: SharedMeeting) => {
+    setMeetings(prev => [newMeeting, ...prev]);
+    setLastNotification(`📅 Reunião "${newMeeting.title}" agendada com sucesso!`);
   };
 
   const handleUpdateMeetingStatus = (meetingId: string, status: 'ACEITO' | 'RECUSADO') => {
     setMeetings(prev => prev.map(m => m.id === meetingId ? { ...m, status } : m));
-    setLastNotification(status === 'ACEITO' ? '✅ Convite de reunião confirmado com sucesso!' : '❌ Convite de reunião declinado.');
+    setLastNotification(`📅 Convite de reunião ${status.toLowerCase()}!`);
   };
-
-  // Projects core handlers
-  const handleAddProject = (newProjData: Omit<Project, 'id'>) => {
-    const newProj: Project = {
-      ...newProjData,
-      id: `prj-${Date.now()}`,
-      creatorId: currentUser.id
-    };
-    setProjects(prev => [newProj, ...prev]);
-    setLastNotification(`💼 Novo projeto "${newProj.name}" planejado com sucesso.`);
-  };
-
-  const handleUpdateProject = (updatedProj: Project) => {
-    setProjects(prev => prev.map(p => p.id === updatedProj.id ? updatedProj : p));
-  };
-
-  const handleDeleteProject = (projectId: string) => {
-    setProjects(prev => prev.filter(p => p.id !== projectId));
-    setDemands(prev => prev.map(d => d.projectId === projectId ? { ...d, projectId: null } : d));
-    setLastNotification(`🗑️ Projeto excluído. Atividades vinculadas foram liberadas.`);
-  };
-
-  const handleLinkDemand = (demandId: string, projectId: string | null) => {
-    setDemands(prev => prev.map(d => d.id === demandId ? {
-      ...d,
-      projectId,
-      history: [
-        ...d.history,
-        {
-          id: `hst-lnk-${Date.now()}`,
-          userId: currentUser.id,
-          action: projectId 
-            ? `Atividade vinculada ao projeto: ${projects.find(p => p.id === projectId)?.name || projectId}`
-            : 'Atividade desvinculada de projetos corporativos',
-          date: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        }
-      ]
-    } : d));
-  };
-
-  const handleQuickTransition = (id: string, newStatus: DemandStatus) => {
-    const target = demands.find(d => d.id === id);
-    if (!target) return;
-
-    const previous = target.status;
-    const updated: Demand = {
-      ...target,
-      status: newStatus,
-      currentStageIndex: newStatus === 'EM_ANDAMENTO' ? 1 : target.currentStageIndex,
-      history: [
-        ...target.history,
-        {
-          id: `hst-quick-${Date.now()}`,
-          userId: currentUser.id,
-          action: `Transição rápida para ${newStatus}`,
-          prevStatus: previous,
-          nextStatus: newStatus,
-          date: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        }
-      ]
-    };
-    handleUpdateDemand(updated);
-  };
-
-  // Automations callbacks
-  const handleAddAutomation = (newAuto: Automation) => {
-    setAutomations(prev => [...prev, newAuto]);
-    setLastNotification(`Regra de automação "${newAuto.name}" adicionada.`);
-  };
-
-  const handleToggleAutomation = (id: string) => {
-    setAutomations(prev => prev.map(a => a.id === id ? { ...a, isActive: !a.isActive } : a));
-  };
-
-  const handleDeleteAutomation = (id: string) => {
-    setAutomations(prev => prev.filter(a => a.id !== id));
-  };
-
-  // Recurring core callbacks
-  const handleAddRecurringTask = (newTask: RecurringTask) => {
-    setRecurringTasks(prev => [...prev, newTask]);
-    setLastNotification(`Rotina periódica "${newTask.title}" programada com sucesso.`);
-  };
-
-  // Calculated generic badge stats
-  const totalInRiskSla = demands.filter(d => {
-    return d.status !== 'CONCLUIDO' && (d.slaLimitHours - d.slaSpentHours <= 6);
-  }).length;
 
   if (!isLoggedIn) {
     return (
       <Login 
         users={users} 
-        onLoginSuccess={(user) => {
-          setCurrentUser(user);
-          setIsLoggedIn(true);
-          localStorage.setItem('flowta_is_logged_in', 'true');
-          setLastNotification(`Sessão iniciada como ${user.name}`);
+        onSelectUser={(user) => {
+          login(user);
+          setLastNotification(`Bem-vindo, ${user.name}! Sessão iniciada como ${user.role}.`);
         }} 
       />
     );
   }
 
+  const selectedDemand = demands.find(d => d.id === selectedDemandId);
+
   return (
-    <div id="flowta-app-shell" className="min-h-screen bg-slate-100 flex flex-col font-sans select-none antialiased">
-      
-      {/* 1. Header Role Switcher Bar */}
-      <RoleSwitcher 
-        currentUser={currentUser} 
-        onUserChange={setCurrentUser} 
-        users={users} 
-        onLogout={handleLogout}
-      />
-
-      {/* Primary Container layout */}
-      <div className="max-w-7xl mx-auto w-full flex-1 p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
-        
-        {/* Left Side menu sidebar layout for large devices */}
-        <aside id="layout-sidebar" className="w-full lg:w-64 space-y-6 shrink-0 text-left">
-          
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
-            
-            <div className="flex items-center gap-2.5 pb-3.5 border-b border-slate-100">
-              <div className="bg-blue-600 text-white p-2 rounded-md">
-                <Layers className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-sm font-bold text-slate-800 leading-tight">Flowta Workspace</h2>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold font-mono">Gestão de Governança</p>
-              </div>
-            </div>
-
-            {/* Notification alert banner */}
-            <AnimatePresence>
-              {lastNotification && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0, y: -10 }}
-                  animate={{ opacity: 1, height: 'auto', y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -10 }}
-                  transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-                  className="p-3 bg-indigo-50 border border-indigo-150 rounded-lg flex items-start gap-2 text-indigo-900 text-[11px] leading-snug relative overflow-hidden shadow-xs"
-                >
-                  <Bell className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5 animate-bounce" />
-                  <div className="flex-1">
-                    <strong className="font-extrabold">Notificação:</strong> {lastNotification}
-                  </div>
-                  <button onClick={() => setLastNotification('')} className="absolute top-1.5 right-1.5 text-indigo-400 hover:text-indigo-700 font-extrabold text-[10.5px] cursor-pointer">✕</button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Create Demand CTA Button in Sidebar */}
-            <button
-              id="sidebar-create-demand-btn"
-              onClick={() => setQuickCreateModal(true)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 px-4 rounded-md flex items-center justify-center gap-1.5 transition shadow-xs font-display cursor-pointer"
-            >
-              <Plus className="w-4 h-4" /> Cadastrar Demanda
-            </button>
-
-            {/* Tab navigation links list */}
-            <nav className="space-y-1">
-              {currentUser.role !== 'SOLICITANTE' ? (
-                <>
-                  <button
-                    id="nav-dashboard"
-                    onClick={() => setActiveTab('DASHBOARD')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'DASHBOARD' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <BarChart3 className="w-4 h-4" /> BI Executive Dashboard
-                    </span>
-                  </button>
-
-                  <button
-                    id="nav-demands"
-                    onClick={() => setActiveTab('DEMANDS')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'DEMANDS' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Layers className="w-4 h-4" /> Demandas Ativas
-                    </span>
-                    <span className="text-[10px] font-mono bg-slate-100 text-slate-600 py-0.5 px-1.5 rounded font-bold border border-slate-205">
-                      {demands.length}
-                    </span>
-                  </button>
-
-                  <button
-                    id="nav-projects"
-                    onClick={() => setActiveTab('PROJECTS')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'PROJECTS' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <FolderKanban className="w-4 h-4" /> Projetos Corporativos
-                    </span>
-                    <span className="text-[10px] font-mono bg-indigo-55 text-indigo-750 py-0.5 px-1.5 rounded font-bold border border-indigo-150">
-                      {projects.length}
-                    </span>
-                  </button>
-
-                  <button
-                    id="nav-kanban"
-                    onClick={() => setActiveTab('KANBAN')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'KANBAN' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Kanban className="w-4 h-4" /> Board Kanban Jirista
-                    </span>
-                    {totalInRiskSla > 0 && (
-                      <span className="text-[9px] bg-red-600 text-white px-1.5 py-0.2 rounded font-extrabold animate-bounce">
-                        {totalInRiskSla} Risco
-                      </span>
-                    )}
-                  </button>
-
-                  <button
-                    id="nav-reports"
-                    onClick={() => setActiveTab('REPORTS')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'REPORTS' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <FileText className="w-4 h-4" /> Relatórios e Auditoria
-                    </span>
-                    <span className="text-[10px] font-mono bg-indigo-50 text-indigo-700 py-0.5 px-1.5 rounded font-bold border border-indigo-120">
-                      Novo
-                    </span>
-                  </button>
-
-                  <button
-                    id="nav-settings"
-                    onClick={() => setActiveTab('SETTINGS')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'SETTINGS' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <SettingsIcon className="w-4 h-4" /> Configurações e Automação
-                    </span>
-                  </button>
-
-                  {(currentUser.role === 'GESTOR' || currentUser.role === 'ADMIN' || currentUser.role === 'APROVADOR') && (
-                    <button
-                      id="nav-approvals"
-                      onClick={() => setActiveTab('APPROVALS')}
-                      className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                        activeTab === 'APPROVALS' 
-                          ? 'bg-indigo-600 text-white shadow-sm font-bold' 
-                          : 'text-slate-655 hover:text-slate-800 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-indigo-500 shrink-0" /> Painel de Aprovações
-                      </span>
-                      {demands.filter(d => d.approvalStatus === 'AGUARDANDO_APROVACAO').length > 0 && (
-                        <span className="text-[10px] font-mono bg-rose-100 text-rose-700 py-0.5 px-1.5 rounded font-bold border border-rose-150 animate-pulse">
-                          {demands.filter(d => d.approvalStatus === 'AGUARDANDO_APROVACAO').length}
-                        </span>
-                      )}
-                    </button>
-                  )}
-
-                  <button
-                    id="nav-improvements"
-                    onClick={() => setActiveTab('IMPROVEMENTS')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'IMPROVEMENTS' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Lightbulb className="w-4 h-4 text-yellow-500" /> Melhoria Contínua
-                    </span>
-                    <span className="text-[9px] bg-amber-100 text-amber-800 py-0.2 px-1 rounded uppercase font-black text-center">
-                      Ideias
-                    </span>
-                  </button>
-
-                  <button
-                    id="nav-calendar"
-                    onClick={() => setActiveTab('CALENDAR')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'CALENDAR' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-emerald-500" /> Calendário e Meetings
-                    </span>
-                  </button>
-                </>
-              ) : (
-                <div className="space-y-1">
-                  <button
-                    id="nav-portal"
-                    onClick={() => setActiveTab('PORTAL')}
-                    className={`w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center gap-2 transition ${
-                      activeTab === 'PORTAL'
-                        ? 'bg-blue-600 text-white font-bold shadow-sm'
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <ShieldCheck className="w-4 h-4" /> Portal do Solicitante
-                  </button>
-
-                  <button
-                    id="nav-projects-solicitante"
-                    onClick={() => setActiveTab('PROJECTS')}
-                    className={`w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'PROJECTS' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <FolderKanban className="w-4 h-4" /> Projetos Corporativos
-                    </span>
-                    <span className="text-[10px] font-mono bg-indigo-55 text-indigo-750 py-0.5 px-1.5 rounded font-bold border border-indigo-150">
-                      {projects.length}
-                    </span>
-                  </button>
-
-                  <button
-                    id="nav-improvements-solic"
-                    onClick={() => setActiveTab('IMPROVEMENTS')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'IMPROVEMENTS' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Lightbulb className="w-4 h-4 text-yellow-500" /> Melhoria Contínua
-                    </span>
-                  </button>
-
-                  <button
-                    id="nav-calendar-solic"
-                    onClick={() => setActiveTab('CALENDAR')}
-                    className={`nav-btn w-full text-left font-semibold text-xs py-2.5 px-3 rounded-md flex items-center justify-between transition ${
-                      activeTab === 'CALENDAR' 
-                        ? 'bg-blue-600 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-emerald-500" /> Calendário e Meetings
-                    </span>
-                  </button>
-                </div>
-              )}
-            </nav>
-
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+      {/* Top Bar */}
+      <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-lg">
+        <div className="flex items-center space-x-3">
+          <div className="bg-gradient-to-tr from-indigo-600 to-purple-600 p-2 rounded-xl text-white shadow-indigo-500/20 shadow-lg">
+            <Layers className="w-6 h-6" />
           </div>
-
-          {/* Quick status indicators card block */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-3 shadow-xs">
-            <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Regras de Negócio de Reunião</h4>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>3 Status Oficiais unicamente</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Anexo e Justificativa mandatórios em Conclusão</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Mudar responsável exige justificativa e veto gestor</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Tempo medido vs estimado na auditoria</span>
-              </div>
-            </div>
+          <div>
+            <span className="font-bold text-lg text-slate-100 tracking-tight flex items-center gap-2">
+              Solutis Flow
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                v2.0 Backend Integrated
+              </span>
+            </span>
+            <p className="text-xs text-slate-400">Governança Operacional & Demanda em Tempo Real</p>
           </div>
+        </div>
 
-          {/* Quick logout option in bottom sidebar */}
-          <button
-            onClick={handleLogout}
-            className="w-full mt-2 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 font-bold text-xs py-2.5 px-4 border border-slate-200 hover:border-rose-200 rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-rose-500 group"
+        {/* Global Notification Banner */}
+        {lastNotification && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="hidden md:flex items-center space-x-2 bg-indigo-950/60 border border-indigo-500/30 text-indigo-200 text-xs px-3 py-1.5 rounded-full shadow-inner"
           >
-            <LogOut className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-rose-500 transition-colors" />
-            <span>Desconectar Sessão</span>
+            <Bell className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+            <span className="truncate max-w-xs">{lastNotification}</span>
+            <button onClick={() => setLastNotification('')} className="text-indigo-400 hover:text-white ml-1">✕</button>
+          </motion.div>
+        )}
+
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => setQuickCreateModal(true)}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center space-x-1.5 transition shadow-lg shadow-indigo-600/30"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Nova Demanda</span>
           </button>
 
+          <RoleSwitcher 
+            currentUser={currentUser} 
+            users={users} 
+            onSwitchRole={switchRole} 
+          />
+
+          <button 
+            onClick={handleLogout}
+            title="Encerrar Sessão"
+            className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar Navigation */}
+        <aside className="w-64 bg-slate-900/50 border-r border-slate-800 flex flex-col p-4 space-y-1">
+          <div className="text-xs font-semibold text-slate-500 px-3 py-2 uppercase tracking-wider">
+            Navegação Principal
+          </div>
+
+          {currentUser.role === 'SOLICITANTE' ? (
+            <>
+              <button 
+                onClick={() => setActiveTab('PORTAL')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'PORTAL' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <Plus className="w-4 h-4" />
+                <span>Portal de Requisições</span>
+              </button>
+              
+              <button 
+                onClick={() => setActiveTab('PROJECTS')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'PROJECTS' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <FolderKanban className="w-4 h-4" />
+                <span>Projetos & Atividades</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => setActiveTab('DASHBOARD')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'DASHBOARD' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Dashboard Executivo</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('DEMANDS')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'DEMANDS' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <FileText className="w-4 h-4" />
+                <span>Gestão de Demandas</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('KANBAN')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'KANBAN' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <Kanban className="w-4 h-4" />
+                <span>Quadro Kanban</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('PROJECTS')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'PROJECTS' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <FolderKanban className="w-4 h-4" />
+                <span>Projetos Operacionais</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('MANAGER_APPROVALS')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'MANAGER_APPROVALS' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Aprovações de Gestão</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('CALENDAR')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'CALENDAR' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Calendário & Alinhamentos</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('CONTINUOUS_IMPROVEMENT')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'CONTINUOUS_IMPROVEMENT' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <Lightbulb className="w-4 h-4 text-amber-400" />
+                <span>Ideias & Melhorias</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('REPORTS')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'REPORTS' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Relatórios & Governança</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('SETTINGS')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition ${activeTab === 'SETTINGS' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+              >
+                <SettingsIcon className="w-4 h-4" />
+                <span>Configurações & SLA</span>
+              </button>
+            </>
+          )}
+
+          <div className="mt-auto pt-4 border-t border-slate-800/80">
+            <div className="bg-slate-900/90 rounded-xl p-3 border border-slate-800 flex items-center space-x-3">
+              <img 
+                src={currentUser.avatar} 
+                alt={currentUser.name} 
+                className="w-9 h-9 rounded-full object-cover border border-indigo-500/30"
+              />
+              <div className="overflow-hidden">
+                <div className="text-xs font-semibold text-slate-200 truncate">{currentUser.name}</div>
+                <div className="text-[10px] text-slate-400 flex items-center space-x-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+                  <span className="uppercase tracking-wider font-mono">{currentUser.role}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </aside>
 
-        {/* Right Main workspace core */}
-        <main id="layout-workspace-core" className="flex-1 min-w-0">
-          
-          {/* Main workspace action sheets */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-              className="space-y-6"
-            >
-              
-              {activeTab === 'DASHBOARD' && (
-                <Dashboard 
-                  demands={demands} 
-                  costCenters={mockCostCenters} 
-                  areas={mockAreas} 
-                  projects={projects}
-                  currentUser={currentUser}
-                  onSelectDemand={setSelectedDemandId} 
-                  onNavigate={handleDashboardNavigate}
-                />
-              )}
+        {/* Dynamic Main Workspace View Area */}
+        <main className="flex-1 overflow-y-auto bg-slate-950 p-6">
+          {activeTab === 'PORTAL' && (
+            <Portal 
+              demands={demands}
+              currentUser={currentUser}
+              onSelectDemand={(id) => setSelectedDemandId(id)}
+              onCreateDemand={() => setQuickCreateModal(true)}
+            />
+          )}
 
-              {activeTab === 'PROJECTS' && (
-                <ProjectsView
-                  projects={projects}
-                  demands={demands}
-                  areas={mockAreas}
-                  currentUser={currentUser}
-                  onAddProject={handleAddProject}
-                  onUpdateProject={handleUpdateProject}
-                  onDeleteProject={handleDeleteProject}
-                  onLinkDemand={handleLinkDemand}
-                />
-              )}
+          {activeTab === 'DASHBOARD' && (
+            <Dashboard 
+              demands={demands} 
+              currentUser={currentUser} 
+              onNavigate={handleDashboardNavigate} 
+              onSelectDemand={(id) => {
+                setSelectedDemandId(id);
+                setActiveTab('DEMANDS');
+              }}
+            />
+          )}
 
-              {activeTab === 'DEMANDS' && (
-                <DemandList 
-                  demands={demands} 
-                  users={users} 
-                  costCenters={mockCostCenters} 
-                  areas={mockAreas} 
-                  onSelectDemand={setSelectedDemandId} 
-                  currentUser={currentUser}
-                  onQuickCreateClick={() => setQuickCreateModal(true)}
-                  initialStatusFilter={initialStatusFilter}
-                  onClearInitialStatusFilter={() => setInitialStatusFilter('TODOS')}
-                />
-              )}
+          {activeTab === 'DEMANDS' && (
+            <DemandList 
+              demands={demands} 
+              currentUser={currentUser} 
+              initialStatusFilter={initialStatusFilter}
+              onSelectDemand={(id) => setSelectedDemandId(id)}
+              onCreateDemand={() => setQuickCreateModal(true)}
+            />
+          )}
 
-              {activeTab === 'KANBAN' && (
-                <KanbanBoard 
-                  demands={demands} 
-                  users={users} 
-                  onSelectDemand={setSelectedDemandId} 
-                  onQuickTransition={handleQuickTransition}
-                  currentUser={currentUser}
-                  kanbanColumns={kanbanColumns}
-                />
-              )}
+          {activeTab === 'KANBAN' && (
+            <KanbanBoard 
+              demands={demands} 
+              currentUser={currentUser} 
+              columns={kanbanColumns}
+              onSelectDemand={(id) => setSelectedDemandId(id)}
+              onUpdateDemand={handleUpdateDemand}
+            />
+          )}
 
-              {activeTab === 'SETTINGS' && (
-                <Settings 
-                  automations={automations} 
-                  recurringTasks={recurringTasks} 
-                  slaConfigs={slaConfigs} 
-                  currentUser={currentUser}
-                  onAddAutomation={handleAddAutomation}
-                  onToggleAutomation={handleToggleAutomation}
-                  onDeleteAutomation={handleDeleteAutomation}
-                  onAddRecurringTask={handleAddRecurringTask}
-                  onAddDemand={handleAddNewDemand}
-                  kanbanColumns={kanbanColumns}
-                  onUpdateKanbanColumns={setKanbanColumns}
-                  onUpdateSlaConfigs={setSlaConfigs}
-                />
-              )}
+          {activeTab === 'PROJECTS' && (
+            <ProjectsView 
+              demands={demands}
+              projects={projects}
+              currentUser={currentUser}
+              areas={mockAreas}
+              onSelectDemand={(id) => {
+                setSelectedDemandId(id);
+                setActiveTab('DEMANDS');
+              }}
+              onAddProject={addProject}
+              onUpdateDemand={handleUpdateDemand}
+            />
+          )}
 
-              {activeTab === 'PORTAL' && (
-                <Portal 
-                  demands={demands} 
-                  users={users} 
-                  costCenters={mockCostCenters} 
-                  areas={mockAreas} 
-                  currentUser={currentUser}
-                  onAddDemand={handleAddNewDemand}
-                  onSelectDemand={setSelectedDemandId}
-                />
-              )}
+          {activeTab === 'MANAGER_APPROVALS' && (
+            <ManagerApprovals 
+              demands={demands}
+              currentUser={currentUser}
+              users={users}
+              onSelectDemand={(id) => {
+                setSelectedDemandId(id);
+                setActiveTab('DEMANDS');
+              }}
+              onUpdateDemand={handleUpdateDemand}
+            />
+          )}
 
-              {activeTab === 'REPORTS' && (
-                <ReportsView
-                  demands={demands}
-                  projects={projects}
-                  recurringTasks={recurringTasks}
-                  costCenters={mockCostCenters}
-                  areas={mockAreas}
-                  users={users}
-                  ideas={ideas}
-                />
-              )}
+          {activeTab === 'CALENDAR' && (
+            <CalendarView 
+              meetings={meetings}
+              demands={demands}
+              currentUser={currentUser}
+              users={users}
+              onScheduleMeeting={handleScheduleMeeting}
+              onUpdateMeetingStatus={handleUpdateMeetingStatus}
+              onSelectDemand={(id) => {
+                setSelectedDemandId(id);
+                setActiveTab('DEMANDS');
+              }}
+            />
+          )}
 
-              {activeTab === 'APPROVALS' && (
-                <ManagerApprovals
-                  demands={demands}
-                  users={users}
-                  areas={mockAreas}
-                  costCenters={mockCostCenters}
-                  currentUser={currentUser}
-                  onUpdateDemand={handleUpdateDemand}
-                />
-              )}
+          {activeTab === 'CONTINUOUS_IMPROVEMENT' && (
+            <ContinuousImprovement 
+              ideas={ideas}
+              currentUser={currentUser}
+              onAddIdea={handleAddIdea}
+              onLikeIdea={handleToggleLikeIdea}
+            />
+          )}
 
-              {activeTab === 'IMPROVEMENTS' && (
-                <ContinuousImprovement
-                  ideas={ideas}
-                  currentUser={currentUser}
-                  users={users}
-                  areas={mockAreas}
-                  onAddIdea={handleAddIdea}
-                  onUpdateIdea={handleUpdateIdea}
-                />
-              )}
+          {activeTab === 'REPORTS' && (
+            <ReportsView 
+              demands={demands}
+              users={users}
+              areas={mockAreas}
+              costCenters={mockCostCenters}
+            />
+          )}
 
-              {activeTab === 'CALENDAR' && (
-                <CalendarView
-                  demands={demands}
-                  users={users}
-                  currentUser={currentUser}
-                  meetings={meetings}
-                  onAddMeeting={handleAddMeeting}
-                  onUpdateMeetingStatus={handleUpdateMeetingStatus}
-                />
-              )}
-
-            </motion.div>
-          </AnimatePresence>
-
+          {activeTab === 'SETTINGS' && (
+            <Settings 
+              automations={automations} 
+              onUpdateAutomations={setAutomations}
+              recurringTasks={recurringTasks}
+              onUpdateRecurringTasks={setRecurringTasks}
+              kanbanColumns={kanbanColumns}
+              onUpdateKanbanColumns={setKanbanColumns}
+              slaConfigs={slaConfigs}
+              onUpdateSlaConfigs={setSlaConfigs}
+              currentUser={currentUser}
+            />
+          )}
         </main>
-
       </div>
 
-      {/* 2. Side sheet details modal */}
+      {/* Modal - Demand Details */}
       <AnimatePresence>
-        {selectedDemandId && (
+        {selectedDemand && (
           <DemandDetail 
-            demandId={selectedDemandId} 
-            demands={demands} 
-            currentUser={currentUser} 
-            onClose={() => setSelectedDemandId(null)} 
-            onUpdateDemand={handleUpdateDemand}
-            costCenters={mockCostCenters}
+            demand={selectedDemand}
+            currentUser={currentUser}
+            users={users}
             areas={mockAreas}
-            projects={projects}
+            costCenters={mockCostCenters}
+            onClose={() => setSelectedDemandId(null)}
+            onUpdateDemand={handleUpdateDemand}
           />
         )}
       </AnimatePresence>
 
-      {/* 3. Create Demand registration modal */}
-      <CreateDemandModal 
-        isOpen={quickCreateModal}
-        onClose={() => setQuickCreateModal(false)}
-        users={users}
-        demands={demands}
-        costCenters={mockCostCenters}
-        areas={mockAreas}
-        projects={projects}
-        currentUser={currentUser}
-        onAddDemand={handleAddNewDemand}
-      />
-
-      {/* Footer corporativo */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-center text-xs mt-auto">
-        <p>© 2026 Flowta Co. • Todos os direitos reservados. Plataforma de Governança Operacional e Automatação de Atividades.</p>
-      </footer>
-
+      {/* Modal - Quick Create Demand */}
+      <AnimatePresence>
+        {quickCreateModal && (
+          <CreateDemandModal 
+            currentUser={currentUser}
+            users={users}
+            areas={mockAreas}
+            costCenters={mockCostCenters}
+            projects={projects}
+            onClose={() => setQuickCreateModal(false)}
+            onSave={(newDemand) => {
+              handleAddNewDemand(newDemand);
+              setQuickCreateModal(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <FlowProvider>
+      <MainAppContent />
+    </FlowProvider>
   );
 }

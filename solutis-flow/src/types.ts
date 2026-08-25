@@ -6,7 +6,7 @@
 export type UserRole = 'ADMIN' | 'GESTOR' | 'ANALISTA' | 'SOLICITANTE' | 'APROVADOR' | 'OBSERVADOR';
 
 export interface User {
-  id: string;
+  id: string; // Accepts string or stringified numeric ID
   name: string;
   role: UserRole;
   email: string;
@@ -114,6 +114,15 @@ export interface Demand {
   projectId?: string | null;
 }
 
+export interface DashboardMetrics {
+  totalDemands: number;
+  pending: number;
+  inProgress: number;
+  completed: number;
+  totalEstimatedHours: number;
+  totalSpentHours: number;
+}
+
 export type AutomationTrigger = 
   | 'AO_CRIAR' 
   | 'AO_SLA_VENCER' 
@@ -130,9 +139,9 @@ export interface Automation {
   id: string;
   name: string;
   trigger: AutomationTrigger;
-  conditionField?: string; // e.g., 'value' or 'slaTimeLeft'
+  conditionField?: string;
   conditionOperator?: '>' | '<' | '==';
-  conditionValue?: string; // e.g., '10000' or '0'
+  conditionValue?: string;
   action: AutomationAction;
   destinationUserOrRole?: string;
   isActive: boolean;

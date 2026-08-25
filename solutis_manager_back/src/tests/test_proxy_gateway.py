@@ -96,6 +96,10 @@ class TestProxyGateway(TestBase):
         rule = match_route_rule("report", "v1/reports/generate", "POST")
         assert rule["service_name"] == "report"
 
+        # 5b. Matching flow route
+        rule = match_route_rule("flow", "v1/demands", "GET")
+        assert rule["service_name"] == "flow"
+
         # 6. Unmatched route raises HTTPException with 403 status
         with pytest.raises(Exception) as excinfo:
             match_route_rule("procurement", "v1/invalid-route", "GET")

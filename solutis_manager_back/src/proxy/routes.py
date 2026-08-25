@@ -170,6 +170,13 @@ PROXY_ROUTES: List[Dict[str, Any]] = [
             PermissionSchema(module="report", model="report", action="view")
         ],
     },
+    # --- MICROSSERVIÇO: FLOW (Governança e Demandas) ---
+    {
+        "service_name": "flow",
+        "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+        "path_pattern": r"^/v1/(demands|events|areas|cost-centers|projects|dashboard|acl)(/.*)?$",
+        "required_permissions": [],  # Autenticação garantida via gateway; permissões refinadas internas no flow_back
+    },
     # --- ROTAS DE HEALTH CHECK (Qualquer usuário autenticado) ---
     {
         "service_name": "procurement",
@@ -179,6 +186,12 @@ PROXY_ROUTES: List[Dict[str, Any]] = [
     },
     {
         "service_name": "report",
+        "methods": ["GET"],
+        "path_pattern": r"^/health/?$",
+        "required_permissions": [],
+    },
+    {
+        "service_name": "flow",
         "methods": ["GET"],
         "path_pattern": r"^/health/?$",
         "required_permissions": [],

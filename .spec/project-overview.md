@@ -20,8 +20,9 @@ Serviço base e coração da solução com toda a lógica de autenticação e au
 ### 💻 `solutis-agile-frontend` (Portal Frontend Principal)
 - Frontend principal da aplicação. Contempla a interface de todos os módulos e consome todos os microsserviços do ecossistema.
 
-### 🌊 `solutis-flow` (Novo Frontend de Gestão de Atividades)
-- Frontend de uma nova aplicação voltada para a gestão de atividades.
+### 🌊 `solutis-flow` & `solutis_flow_back` (Plataforma de Governança Operacional e Gestão de Demandas)
+- **`solutis-flow`**: Frontend React/TypeScript de governança operacional, Kanban, acompanhamento de SLAs e alertas.
+- **`solutis_flow_back`**: Novo microsserviço backend de governança operacional e orquestração de processos baseada em eventos (Event-Driven com Dramatiq workers e Server-Sent Events - SSE em tempo real), com banco de dados isolado e referências a usuários via IDs inteiros indexados.
 
 ### ⚡ `solutis-sync` (Sync Service)
 - Serviço de sincronização assíncrona responsável por extrair e atualizar dados do banco do ERP TOTVS para o banco de dados da aplicação.
@@ -35,13 +36,15 @@ Serviço base e coração da solução com toda a lógica de autenticação e au
 | **`solutis_manager_back`** | Python 3.13, FastAPI, SQLAlchemy, Alembic | Serviço base e coração da solução (Auth/Authz, Auth Proxy, Clicksign, Ativos, Comodatos, etc.) |
 | **`solutis_procurement`** | Python, Django, Uvicorn, Pydantic | Módulo de Fornecedores |
 | **`solutis_report`** | Python 3.13, FastAPI, SQLModel, OpenPyXL | v2 dos Relatórios da Aplicação |
+| **`solutis_flow_back`** | Python 3.13, FastAPI, SQLModel, Dramatiq, Redis, SSE | Backend de Governança Operacional, Demandas e Eventos |
 | **`solutis-agile-frontend`** | React 19, TypeScript, Mantine UI, TanStack Router | Frontend principal da aplicação (unifica todos os módulos) |
-| **`solutis-flow`** | React / TypeScript | Frontend da nova aplicação para Gestão de Atividades |
+| **`solutis-flow`** | React / TypeScript | Frontend da aplicação de Gestão de Atividades e Governança Operacional |
 | **`solutis-sync`** | Python 3.13, FastAPI, SQLModel, APScheduler | Sincronizador do banco da TOTVS ➡️ Banco da aplicação |
 
 ---
 
 ## Convenções do Monorepo
 - **Gerenciamento de Dependências Python**: Utiliza `uv` e `pyproject.toml` individual em cada microsserviço.
+- **Qualidade de Código & Linting**: Utiliza obrigatoriamente `pre-commit` com `ruff` (linter `ruff --fix` e formatador `ruff-format`) em todos os microsserviços Python do repositório (`.pre-commit-config.yaml`).
 - **Deploy**: Pipeline automatizado via `deploy.sh` e `docker-compose.prod.yml` com detecção de versão por serviço e execução automática de migrations de banco de dados (`alembic` no `solutis_manager_back` e `django migrate` no `solutis_procurement`).
 - **Documentação viva**: Mantida na pasta `.spec/` e atualizada a cada alteração via skills do agente (`spec-updater` e `spec-reader`).

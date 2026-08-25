@@ -1,5 +1,85 @@
 # Histórico de Alterações do Projeto
 
+## [2026-08-25] - Refatoração do `solutis-flow` (SOLID, React TS Vite Best Practices & Integração `solutis_flow_back`)
+- **Descrição**: Refatoração arquitetural do projeto frontend `solutis-flow` aplicando os princípios SOLID da skill `react-ts-vite-best-practices` (Context Splitting, Custom Hooks, utilitário `cn`, State Colocation) e integração completa aos endpoints do microsserviço `solutis_flow_back` via API Gateway.
+- **Arquivos afetados**:
+  - `solutis-flow/src/utils/cn.ts`
+  - `solutis-flow/src/types.ts`
+  - `solutis-flow/src/services/api.ts`
+  - `solutis-flow/src/hooks/useAuth.ts`
+  - `solutis-flow/src/hooks/useDemands.ts`
+  - `solutis-flow/src/hooks/useProjects.ts`
+  - `solutis-flow/src/hooks/useDashboardMetrics.ts`
+  - `solutis-flow/src/hooks/useSSE.ts`
+  - `solutis-flow/src/context/FlowContext.tsx`
+  - `solutis-flow/src/App.tsx`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Context Splitting**: Implementado `FlowContext` dividindo estado (`FlowStateContext`) e ações (`FlowDispatchContext`) para eliminar Prop Drilling e otimizar re-renders.
+  - **Arquitetura de Custom Hooks**: Lógica de negócios centralizada nos hooks `useAuth`, `useDemands`, `useProjects`, `useDashboardMetrics` e `useSSE`.
+  - **Integração Backend Completa**: `api.ts` atualizado para integrar com `/demands`, `/demands/{id}/status`, `/demands/{id}/transfer`, `/demands/{id}/feedback`, `/areas`, `/cost-centers`, `/projects`, `/dashboard/metrics` e `/events/stream` do `solutis_flow_back`.
+  - **Validação Estrita de Evidência**: Trata a obrigatoriedade de descrição de evidência/anexo exigida pelo backend ao alterar o status para `CONCLUIDO`.
+
+## [2026-08-25] - Adição de Boas Práticas do Tailwind CSS na Skill `react-ts-vite-best-practices`
+- **Descrição**: Ampliação da skill `react-ts-vite-best-practices` incluindo guia de boas práticas para Tailwind CSS (utilitário `cn()`, CVA para gerenciamento de variantes, mapeamento estático no JIT, dark mode com variáveis CSS) e atualização do template de componentes.
+- **Arquivos afetados**:
+  - `.agents/skills/react-ts-vite-best-practices/SKILL.md`
+  - `.agents/skills/react-ts-vite-best-practices/references/tailwind-best-practices.md`
+  - `.agents/skills/react-ts-vite-best-practices/templates/component-solid-template.tsx`
+  - `.agents/skills/react-ts-vite-best-practices/templates/utils/cn.ts`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - Adicionado guia de boas práticas em Tailwind CSS cobrindo prevenção de conflitos de especificidade, suporte a CVA e organização de estilos.
+
+## [2026-08-25] - Criação da Skill `react-ts-vite-best-practices`
+- **Descrição**: Criação de uma skill completa de desenvolvimento para aplicações ReactJS com TypeScript e Vite, focada nos princípios SOLID, otimização de Custom Hooks e Context API, State Colocation e eliminação de Prop Drilling.
+- **Arquivos afetados**:
+  - `.agents/skills/react-ts-vite-best-practices/SKILL.md`
+  - `.agents/skills/react-ts-vite-best-practices/references/solid-in-react.md`
+  - `.agents/skills/react-ts-vite-best-practices/references/state-and-context.md`
+  - `.agents/skills/react-ts-vite-best-practices/references/custom-hooks-architecture.md`
+  - `.agents/skills/react-ts-vite-best-practices/references/vite-performance-optimization.md`
+  - `.agents/skills/react-ts-vite-best-practices/templates/component-solid-template.tsx`
+  - `.agents/skills/react-ts-vite-best-practices/templates/custom-hook-template.ts`
+  - `.agents/skills/react-ts-vite-best-practices/templates/context-template.tsx`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Skill de Agente**: Disponibilizado guia completo de boas práticas, padrões arquiteturais SOLID, templates reutilizáveis e referências detalhadas para acelerar e padronizar o desenvolvimento frontend React/TS no repositório.
+
+## [2026-08-25] - Criação do Microsserviço `solutis_flow_back` (Governança Operacional, Event-Driven SSE & ACL Independente)
+- **Descrição**: Criação completa do novo microsserviço backend `solutis_flow_back` (Python 3.13 + FastAPI + SQLModel + Dramatiq + SSE), com banco de dados isolado, controle de ACL local independente do `manager_back`, referências a usuários via IDs inteiros indexados, integração ao API Gateway do `solutis_manager_back` e conexões em tempo real para o frontend `solutis-flow`.
+- **Arquivos afetados**:
+  - `solutis_flow_back/pyproject.toml`
+  - `solutis_flow_back/.pre-commit-config.yaml`
+  - `solutis_flow_back/Dockerfile`
+  - `solutis_flow_back/src/config.py`
+  - `solutis_flow_back/src/database.py`
+  - `solutis_flow_back/src/security.py`
+  - `solutis_flow_back/src/models/` (`demand.py`, `area.py`, `cost_center.py`, `project.py`, `demand_observer.py`, `transfer_request.py`, `feedback.py`, `alert.py`, `sop.py`, `recurring_task.py`, `attachment.py`, `comment.py`, `acl.py`)
+  - `solutis_flow_back/src/schemas/demand.py`
+  - `solutis_flow_back/src/events/` (`broker.py`, `sse_manager.py`, `actors.py`)
+  - `solutis_flow_back/src/worker.py`
+  - `solutis_flow_back/src/api/v1/` (`demands.py`, `events.py`, `areas.py`, `projects.py`, `dashboard.py`, `acl.py`)
+  - `solutis_flow_back/src/main.py`
+  - `solutis_flow_back/src/tests/` (`conftest.py`, `test_demands.py`, `test_events.py`, `test_security.py`, `test_acl.py`)
+  - `solutis_manager_back/src/proxy/config.py`
+  - `solutis_manager_back/src/proxy/routes.py`
+  - `solutis_manager_back/src/tests/test_proxy_gateway.py`
+  - `docker-compose.dev.yml`
+  - `solutis-flow/src/services/api.ts`
+  - `solutis-flow/src/hooks/useSSE.ts`
+  - `solutis-flow/src/App.tsx`
+  - `.spec/project-overview.md`
+  - `.spec/architecture.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Novo Microsserviço**: `solutis_flow_back` criado e estruturado com suporte a TDD.
+  - **Arquitetura Baseada em Eventos**: Fila assíncrona gerenciada via Dramatiq worker com broker Redis e fallback `StubBroker` para testes.
+  - **Notificações SSE**: Transmissão em tempo real via Server-Sent Events (`/api/v1/events/stream`) com filtragem de permissões por usuário.
+  - **Validação Estrita de Evidências**: Bloqueio no backend que impede transição para status `CONCLUIDO` se não houver descrição de justificativa/evidência de prova (retorna HTTP 400).
+  - **Gateway Roteado**: Configurado o `solutis_manager_back` como Auth Proxy Gateway para todas as rotas `/v1/flow/...`.
+  - **Banco de Dados Desacoplado**: Banco isolado do `solutis_flow_back` com campos `user_id` inteiros indexados sem FKs inter-bancos.
+
 ## [2026-07-29] - Atualização do Departamento na Avaliação do Compliance | Sustentabilidade
 - **Descrição**: Alteração do departamento de "Financeiro" para "Compliance e Sustentabilidade" na etapa de "Avaliação do Compliance | Sustentabilidade" do fluxo de aprovação de fornecedores, aplicando a mudança tanto para novos fluxos quanto para os já existentes.
 - **Arquivos afetados**:

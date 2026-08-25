@@ -15,3 +15,5 @@
    - Sempre use a abordagem TDD (Test-Driven Development) ao implementar novas funcionalidades ou realizar correções de bugs neste repositório.
    - Garanta que a suíte de testes seja otimizada e possua alta performance de execução.
 
+4. **Qualidade de Código e Pre-commit (`ruff`)**:
+   - Para qualquer microsserviço Python novo ou existente neste repositório, você DEVE incluir/manter o arquivo `.pre-commit-config.yaml` padronizado utilizando `ruff` (linter `ruff --fix` e `ruff-format`).

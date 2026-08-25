@@ -93,6 +93,44 @@ services:
     networks:
       - agile-network
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - agile-network
+
+  solutis-flow-back:
+    build:
+      context: ./solutis_flow_back
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./solutis_flow_back/src:/solutis-flow-back/src
+      - ./solutis_flow_back/.env:/solutis-flow-back/.env
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8004 --workers 2 --reload
+    restart: always
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    networks:
+      - agile-network
+
+  solutis-flow-worker:
+    build:
+      context: ./solutis_flow_back
+      dockerfile: Dockerfile
+    volumes:
+      - ./solutis_flow_back/src:/solutis-flow-back/src
+      - ./solutis_flow_back/.env:/solutis-flow-back/.env
+    command: uv run dramatiq src.worker
+    restart: always
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    networks:
+      - agile-network
+
 networks:
   agile-network:
     driver: bridge
