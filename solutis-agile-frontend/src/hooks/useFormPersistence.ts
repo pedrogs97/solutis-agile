@@ -100,7 +100,7 @@ export function useFormPersistence<T extends FieldValues>({
   debounceMs = DEFAULT_DEBOUNCE_MS,
   excludeFields = [],
 }: UseFormPersistenceOptions<T>) {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const storageKey = `form_draft_${key}`
   const metadataKey = `form_draft_${key}_metadata`
 
