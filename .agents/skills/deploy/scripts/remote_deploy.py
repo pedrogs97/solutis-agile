@@ -274,7 +274,8 @@ def execute_remote_deploy(
         channel = transport.open_session()
         # Solicita PTY para suportar prompts interativos como sudo
         channel.get_pty()
-        channel.settimeout(timeout)
+        # Permite execução longa para build e deploy de containers sem timeout prematuro
+        channel.settimeout(None)
         channel.exec_command(full_cmd)
 
         buffer = ""
