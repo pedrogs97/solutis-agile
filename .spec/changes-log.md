@@ -1,5 +1,81 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-05] - Atualização de Versões dos Serviços e Preparação para Deploy Remoto
+- **Descrição**: Incremento semântico das versões dos serviços que receberam alterações de código (`solutis-agile-frontend` e `solutis_manager_back`), aprimoramento da detecção de versões já incrementadas localmente no script `update_versions.py` e validação com suíte de testes.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/package.json`
+  - `solutis_manager_back/pyproject.toml`
+  - `.agents/update_versions.py`
+  - `.agents/skills/deploy/scripts/remote_deploy.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Incremento de Versões**:
+    - `solutis-agile-frontend`: `2.7.3` ➡️ `2.7.4`
+    - `solutis_manager_back`: `1.26.3` ➡️ `1.26.4`
+  - **Otimização no Versionamento**:
+    - `update_versions.py` agora compara a versão dos serviços em alteração local com a do `HEAD` do git, evitando bumps redundantes quando a versão já foi atualizada.
+    - `remote_deploy.py` atualizado para integrar a checagem com o comportamento local idempotente.
+  - **Qualidade e Testes**:
+    - Suíte de testes unitários do backend `test_document_master_permissions.py` (6 testes) e de deploy `test_remote_deploy.py` (11 testes) executados com 100% de sucesso. Formatação com `ruff` aplicada.
+
+## [2026-09-05] - Criação da Tool e Skill de Deploy Remoto via SSH (Host Solutis)
+- **Descrição**: Criação de uma tool dedicada (`remote_deploy.py`) e da skill `deploy` para executar o script `deploy.sh` remotamente no servidor `Solutis` (`172.21.3.225`) via SSH com canal PTY para comandos `sudo`, incorporando verificação prévia de versões dos serviços, protocolo estrito de sigilo de credenciais e diagnóstico orientativo de VPN.
+- **Arquivos afetados**:
+  - `.agents/skills/deploy/scripts/remote_deploy.py`
+  - `.agents/skills/deploy/tests/test_remote_deploy.py`
+  - `.agents/skills/deploy/tests/__init__.py`
+  - `.agents/skills/deploy/SKILL.md`
+  - `.agents/AGENTS.md`
+  - `.spec/project-overview.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Tool Executável (`remote_deploy.py`)**:
+    - Resolve configurações SSH a partir do arquivo `~/.ssh/config` para o alias `Solutis` (`172.21.3.225`, `pedro`, `22`).
+    - **Garantia de Versões**: Analisa os serviços via `.agents/update_versions.py` e impede deploys se houver alterações de código sem incremento de versão correspondente (com opção de `--auto-bump`).
+    - **Segurança de Senhas**: Consome a senha com segurança (`SOLUTIS_SSH_PASSWORD` ou prompt) e aplica filtros de mascaramento absoluto em tempo real em todas as saídas, prevenindo qualquer vazamento em logs ou mensagens de erro.
+    - **Suporte a Sudo**: Inicia sessão SSH com canal PTY via `paramiko`, intercepta os prompts de sudo (`[sudo] password for...`) e transmite a senha de forma automatizada e protegida.
+    - **Diagnóstico de VPN**: Trata timeouts e falhas de conexão de rede emitindo mensagem amigável e direta para que o usuário verifique se a VPN corporativa da Solutis está conectada.
+  - **Skill de Agente (`deploy/SKILL.md`)**:
+    - Padroniza o fluxo do agente: obriga a leitura de especificações (`spec-reader`), checagem prévia de versões, solicitação formal da senha ao usuário antes de qualquer comando remoto e atualização do histórico (`spec-updater`).
+  - **Cobertura de Testes (TDD)**:
+    - 11 testes unitários automatizados em `test_remote_deploy.py` validando resolução SSH, segurança de senhas, checagem de versões, envio de sudo e tratamento de erro de conexão com VPN.
+
+## [2026-09-05] - Permissão MASTER para Alteração e Remoção de Arquivos de Comodato e Distrato (SoftDelete)
+- **Descrição**: Implementação de controle estrito de permissão para que **apenas o grupo de usuários MASTER** possa alterar ou remover arquivos já enviados de comodato e distrato. O usuário MASTER pode remover o documento anterior (com SoftDelete) ou subir um novo diretamente (com modal de confirmação de substituição alertando sobre a exclusão do arquivo anterior).
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/document/service.py`
+  - `solutis_manager_back/src/document/router.py`
+  - `solutis_manager_back/src/tests/test_document_master_permissions.py`
+  - `solutis-agile-frontend/src/hooks/lending/useContractTab.ts`
+  - `solutis-agile-frontend/src/components/lendings/tabs/contract-tab.tsx`
+  - `solutis-agile-frontend/src/hooks/lending/useRevokeTab.ts`
+  - `solutis-agile-frontend/src/components/lendings/tabs/revoke-tab.tsx`
+  - `solutis-agile-frontend/src/components/lendings/tabs/contract-tab.master.test.tsx`
+  - `solutis-agile-frontend/src/components/lendings/tabs/revoke-tab.master.test.tsx`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Backend (`solutis_manager_back`)**:
+    - `upload_contract` e `upload_revoke_contract`: Validação para barrar (HTTP 403 Forbidden) usuários não pertencentes ao grupo MASTER quando já existir um documento ativo no comodato/distrato.
+    - Endpoints `DELETE /documents/contracts/{lending_id}/file/` e `DELETE /documents/contracts/revoke/{lending_id}/file/`: Permite que apenas o grupo MASTER remova arquivos com SoftDelete (`deleted = True` em `DocumentModel`), desvinculando do comodato e retornando o status para pendente ("Arquivo pendente" ou "Arquivo de distrato pendente"), revertendo o status do ativo para `EM_COMODATO` no caso do distrato.
+    - Testes unitários dedicados em `test_document_master_permissions.py` validando os bloqueios de usuários não-MASTER e a correta execução de substituição e exclusão pelo MASTER.
+  - **Frontend (`solutis-agile-frontend`)**:
+    - Verificação de perfil `isMasterUser = profile?.group?.toUpperCase() === 'MASTER'`.
+    - Exibição de botão "Remover Contrato" / "Remover Distrato" com modal de confirmação do Mantine (`modals.openConfirmModal`).
+    - Exibição e habilitação da seção de upload para o usuário MASTER mesmo em contratos e distratos já assinados.
+    - Modal de confirmação informativa antes da substituição de arquivo existente ("Já existe um contrato/distrato assinado... Deseja substituí-lo?").
+    - Testes unitários com Vitest em `contract-tab.master.test.tsx` e `revoke-tab.master.test.tsx`.
+
+## [2026-09-05] - Adaptação da Skill `user-alert-validation` e Inclusão nas Regras do Agente
+- **Descrição**: Customização da skill `user-alert-validation` para os componentes do monorepo Solutis Agile (`solutis-agile-frontend` e `solutis-flow`) e inclusão da diretriz obrigatória de segurança nas regras globais de agente (`.agents/AGENTS.md`), prevenindo a exposição de tokens JWT, credenciais externas (Clicksign, ERP TOTVS), senhas e erros brutos de backend na interface do usuário.
+- **Arquivos afetados**:
+  - `.agents/skills/user-alert-validation/SKILL.md`
+  - `.agents/AGENTS.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Regra Obrigatória do Workspace**: Inserida a regra 5 em `.agents/AGENTS.md` tornando compulsório o cumprimento das diretrizes de `user-alert-validation` em qualquer alteração de alertas, toasts ou modais nos frontends.
+  - **Contextualização para o Monorepo**: Substituição das referências a projetos legados pelos frontends ativos do ecossistema (`solutis-agile-frontend` com Mantine UI e `solutis-flow` com `useToast`).
+  - **Tratamento de Erros e APIs**: Alinhamento com o utilitário `normalizeApiErrors` e boas práticas de mensagens ao usuário final para respostas dos microsserviços (`manager_back`, `flow_back`, `procurement`, `report`, `sync`).
+
 ## [2026-08-25] - Refatoração do `solutis-flow` (SOLID, React TS Vite Best Practices & Integração `solutis_flow_back`)
 - **Descrição**: Refatoração arquitetural do projeto frontend `solutis-flow` aplicando os princípios SOLID da skill `react-ts-vite-best-practices` (Context Splitting, Custom Hooks, utilitário `cn`, State Colocation) e integração completa aos endpoints do microsserviço `solutis_flow_back` via API Gateway.
 - **Arquivos afetados**:

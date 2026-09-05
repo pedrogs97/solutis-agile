@@ -46,5 +46,5 @@ Serviço base e coração da solução com toda a lógica de autenticação e au
 ## Convenções do Monorepo
 - **Gerenciamento de Dependências Python**: Utiliza `uv` e `pyproject.toml` individual em cada microsserviço.
 - **Qualidade de Código & Linting**: Utiliza obrigatoriamente `pre-commit` com `ruff` (linter `ruff --fix` e formatador `ruff-format`) em todos os microsserviços Python do repositório (`.pre-commit-config.yaml`).
-- **Deploy**: Pipeline automatizado via `deploy.sh` e `docker-compose.prod.yml` com detecção de versão por serviço e execução automática de migrations de banco de dados (`alembic` no `solutis_manager_back` e `django migrate` no `solutis_procurement`).
+- **Deploy**: Pipeline automatizado via `deploy.sh` e `docker-compose.prod.yml` com detecção de versão por serviço e execução automática de migrations de banco de dados (`alembic` no `solutis_manager_back` e `django migrate` no `solutis_procurement`). Suporte a deploy remoto via SSH ao servidor `Solutis` (`172.21.3.225`) com a tool `.agents/skills/deploy/scripts/remote_deploy.py` e skill `deploy` (com validação prévia de versões, diagnóstico de VPN e proteção contra exposição de senhas).
 - **Documentação viva**: Mantida na pasta `.spec/` e atualizada a cada alteração via skills do agente (`spec-updater` e `spec-reader`).

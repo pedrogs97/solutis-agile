@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 
 import { validateSignerPair } from '@/hooks/useSignerEmails'
+import { normalizeApiErrors } from '@/lib/api-errors'
 import axios from '@/lib/axios'
 
 import { handleFileUploadError } from './useLendingDocuments'
@@ -129,6 +130,38 @@ export function useContractTab({
     }
   }, [file, lendingId, clearFile, onInvalidate])
 
+  const onDeleteContractDocument = useCallback(async () => {
+    if (!lendingId) return
+
+    setIsSubmitting(true)
+    try {
+      await axios.delete(`/documents/contracts/${lendingId}/file/`)
+
+      notifications.show({
+        title: 'Sucesso',
+        message: 'Contrato de comodato removido com sucesso',
+        color: 'green',
+        autoClose: 5000,
+      })
+      clearFile()
+      onInvalidate()
+    } catch (err: any) {
+      const apiErrors = normalizeApiErrors(err?.response?.data)
+      const message =
+        apiErrors[0]?.error ||
+        err?.response?.data?.detail ||
+        'Não foi possível remover o contrato'
+      notifications.show({
+        title: 'Erro ao remover',
+        message,
+        color: 'red',
+        autoClose: 5000,
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [lendingId, clearFile, onInvalidate])
+
   const onDownloadVerification = useCallback(async () => {
     if (!lendingId) return
 
@@ -153,6 +186,8 @@ export function useContractTab({
     onDownloadContract,
     onRecreateContract,
     onUploadSignedContract,
+    onDeleteContractDocument,
     onDownloadVerification,
   }
 }
+

@@ -1627,6 +1627,17 @@ class DocumentService:
         db_session.add(new_doc)
         db_session.commit()
 
+        if lending.document and not lending.document.deleted:
+            is_master = (
+                authenticated_user.group
+                and authenticated_user.group.name.upper() == "MASTER"
+            )
+            if not is_master:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Apenas usuários do grupo MASTER podem alterar o documento de comodato.",
+                )
+
         if lending.document:
             old_doc = lending.document
             old_doc.deleted = True
@@ -1699,6 +1710,17 @@ class DocumentService:
 
         db_session.add(new_doc)
         db_session.commit()
+
+        if lending.document and not lending.document.deleted:
+            is_master = (
+                authenticated_user.group
+                and authenticated_user.group.name.upper() == "MASTER"
+            )
+            if not is_master:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Apenas usuários do grupo MASTER podem alterar o documento de comodato.",
+                )
 
         if lending.document:
             old_doc = lending.document
@@ -2048,6 +2070,17 @@ class DocumentService:
         db_session.add(lending)
         db_session.commit()
         db_session.flush()
+
+        if lending.document_revoke and not lending.document_revoke.deleted:
+            is_master = (
+                authenticated_user.group
+                and authenticated_user.group.name.upper() == "MASTER"
+            )
+            if not is_master:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Apenas usuários do grupo MASTER podem alterar o documento de distrato.",
+                )
 
         if lending.document_revoke:
             old_doc = lending.document_revoke
@@ -2404,3 +2437,124 @@ class DocumentService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={"field": "lendingId", "error": "Erro ao assinar contrato"},
             ) from error
+
+    def delete_contract_document(
+        self,
+        lending_id: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> dict:
+        """Delete contract document with SoftDelete (only MASTER group)"""
+        is_master = (
+            authenticated_user.group
+            and authenticated_user.group.name.upper() == "MASTER"
+        )
+        if not is_master:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Apenas usuários do grupo MASTER podem remover o documento de comodato.",
+            )
+
+        lending = self.__get_lending_or_404(lending_id, db_session)
+        if not lending.document or lending.document.deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Documento de comodato não encontrado para exclusão.",
+            )
+
+        old_doc = lending.document
+        old_doc.deleted = True
+        db_session.add(old_doc)
+
+        lending.document = None
+        lending.document_id = None
+        lending.signed_date = None
+
+        pending_status = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Arquivo pendente")
+            .first()
+        )
+        if pending_status:
+            lending.status = pending_status
+
+        db_session.add(lending)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Exclusão de Contrato {old_doc.doc_type}",
+            old_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Deleted Contract Document SoftDelete. {}", str(old_doc))
+
+        return {"message": "Documento de comodato removido com sucesso."}
+
+    def delete_revoke_contract_document(
+        self,
+        lending_id: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> dict:
+        """Delete revoke contract document with SoftDelete (only MASTER group)"""
+        is_master = (
+            authenticated_user.group
+            and authenticated_user.group.name.upper() == "MASTER"
+        )
+        if not is_master:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Apenas usuários do grupo MASTER podem remover o documento de distrato.",
+            )
+
+        lending = self.__get_lending_or_404(lending_id, db_session)
+        if not lending.document_revoke or lending.document_revoke.deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Documento de distrato não encontrado para exclusão.",
+            )
+
+        old_doc = lending.document_revoke
+        old_doc.deleted = True
+        db_session.add(old_doc)
+
+        lending.document_revoke = None
+        lending.document_revoke_id = None
+        lending.revoke_signed_date = None
+
+        pending_revoke_status = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Arquivo de distrato pendente")
+            .first()
+        )
+        if pending_revoke_status:
+            lending.status = pending_revoke_status
+
+        if lending.asset:
+            AssetService().update_asset_status(
+                lending.asset,
+                db_session.query(AssetStatusModel).get(
+                    AssetStatusEnum.EM_COMODATO.value
+                ),
+                db_session,
+            )
+
+        db_session.add(lending)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Exclusão de Distrato {old_doc.doc_type}",
+            old_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Deleted Revoke Document SoftDelete. {}", str(old_doc))
+
+        return {"message": "Documento de distrato removido com sucesso."}

@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 
 import { validateSignerPair } from '@/hooks/useSignerEmails'
+import { normalizeApiErrors } from '@/lib/api-errors'
 import axios from '@/lib/axios'
 
 import { handleFileUploadError } from './useLendingDocuments'
@@ -215,6 +216,38 @@ export function useRevokeTab({
     }
   }, [fileRevoke, lendingId, clearRevokeFile, onInvalidate])
 
+  const onDeleteRevokeDocument = useCallback(async () => {
+    if (!lendingId) return
+
+    setIsSubmitting(true)
+    try {
+      await axios.delete(`/documents/contracts/revoke/${lendingId}/file/`)
+
+      notifications.show({
+        title: 'Sucesso',
+        message: 'Distrato de comodato removido com sucesso',
+        color: 'green',
+        autoClose: 5000,
+      })
+      clearRevokeFile()
+      onInvalidate()
+    } catch (err: any) {
+      const apiErrors = normalizeApiErrors(err?.response?.data)
+      const message =
+        apiErrors[0]?.error ||
+        err?.response?.data?.detail ||
+        'Não foi possível remover o distrato'
+      notifications.show({
+        title: 'Erro ao remover',
+        message,
+        color: 'red',
+        autoClose: 5000,
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [lendingId, clearRevokeFile, onInvalidate])
+
   return {
     fileRevoke,
     setFileRevoke,
@@ -225,5 +258,7 @@ export function useRevokeTab({
     onDownloadRevokeContract,
     onRecreateRevokeContract,
     onUploadSignedRevoke,
+    onDeleteRevokeDocument,
   }
 }
+

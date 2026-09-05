@@ -1,5 +1,6 @@
 import { Box, Button, Grid, Group, Stack, Text } from '@mantine/core'
-import { Check, FileDown, FileX2, RotateCcw, UploadCloud } from 'lucide-react'
+import { modals } from '@mantine/modals'
+import { Check, FileDown, FileX2, RotateCcw, Trash2, UploadCloud } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { FormProvider, type UseFormReturn, useWatch } from 'react-hook-form'
 
@@ -8,6 +9,7 @@ import { WitnessSelection } from '@/components/lendings/witness-selection'
 import { useRevokeTab } from '@/hooks/lending/useRevokeTab'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { fetchEmployeeSelect } from '@/services/api/employee'
+import { useProfileStore } from '@/store/persisted/useProfileStore'
 
 interface RevokeTabProps {
   lendingId?: string
@@ -58,6 +60,7 @@ export default function RevokeTab({
     onDownloadRevokeContract,
     onRecreateRevokeContract,
     onUploadSignedRevoke,
+    onDeleteRevokeDocument,
   } = useRevokeTab({
     lendingId,
     lendingData,
@@ -67,9 +70,47 @@ export default function RevokeTab({
     onValidationError: handleWitnessValidation,
   })
   const { getSecondaryTextColor } = useThemeColors()
+  const profile = useProfileStore((state: any) => state.profile)
+  const isMasterUser = profile?.group?.toUpperCase() === 'MASTER'
 
   const hasDistrato = Boolean(lendingData?.documentRevoke)
   const isDistratoSigned = Boolean(lendingData?.revokeSignedDate)
+
+  const handleConfirmDeleteRevoke = () => {
+    modals.openConfirmModal({
+      title: 'Confirmar Remoção do Distrato',
+      children: (
+        <Text size="sm">
+          Deseja realmente remover o distrato assinado deste comodato? O arquivo será excluído com SoftDelete e o status retornará para distrato pendente.
+        </Text>
+      ),
+      labels: { confirm: 'Remover', cancel: 'Cancelar' },
+      confirmProps: { color: 'red' },
+      onConfirm: () => {
+        onDeleteRevokeDocument()
+      },
+    })
+  }
+
+  const handleUploadSignedRevoke = () => {
+    if (isDistratoSigned) {
+      modals.openConfirmModal({
+        title: 'Confirmar Substituição de Arquivo',
+        children: (
+          <Text size="sm">
+            Já existe um distrato assinado cadastrado. Deseja substituí-lo pelo novo arquivo? O arquivo anterior será substituído.
+          </Text>
+        ),
+        labels: { confirm: 'Substituir arquivo', cancel: 'Cancelar' },
+        confirmProps: { color: 'blue' },
+        onConfirm: () => {
+          onUploadSignedRevoke()
+        },
+      })
+    } else {
+      onUploadSignedRevoke()
+    }
+  }
 
   const witnessesRevokeId = useWatch({
     control: form.control,
@@ -168,13 +209,21 @@ export default function RevokeTab({
         ) : (
           <>
             <FileUploadSection
-              title="Distrato Assinado"
-              description="Carregue o distrato assinado (PDF até 5MB)"
+              title={
+                isDistratoSigned
+                  ? 'Substituir Distrato Assinado'
+                  : 'Distrato Assinado'
+              }
+              description={
+                isDistratoSigned
+                  ? 'Carregue o novo distrato assinado para substituir o anterior (PDF até 5MB)'
+                  : 'Carregue o distrato assinado (PDF até 5MB)'
+              }
               file={fileRevoke}
               onFileChange={setFileRevoke}
               onClearFile={clearRevokeFile}
               resetRef={resetRevokeRef as any}
-              disabled={!canEdit || isSubmitting || isDistratoSigned}
+              disabled={!canEdit || isSubmitting || (!isMasterUser && isDistratoSigned)}
             />
 
             {!isDistratoSigned && (
@@ -197,7 +246,7 @@ export default function RevokeTab({
                     color="green"
                     radius="md"
                     size="sm"
-                    onClick={onUploadSignedRevoke}
+                    onClick={handleUploadSignedRevoke}
                     disabled={!canEdit || isSubmitting}
                     loading={isSubmitting}
                   >
@@ -205,6 +254,26 @@ export default function RevokeTab({
                     &nbsp;Confirmar envio
                   </Button>
                 )}
+              </Group>
+            )}
+
+            {isDistratoSigned && isMasterUser && fileRevoke && (
+              <Group gap="sm">
+                <Button
+                  type="button"
+                  color="green"
+                  radius="md"
+                  size="sm"
+                  onClick={handleUploadSignedRevoke}
+                  disabled={!canEdit || isSubmitting}
+                  loading={isSubmitting}
+                >
+                  <UploadCloud size={16} />
+                  &nbsp;Confirmar envio
+                </Button>
+                <Text size="sm" c="dimmed">
+                  {fileRevoke.name}
+                </Text>
               </Group>
             )}
 
@@ -225,6 +294,21 @@ export default function RevokeTab({
                   ? 'Visualizar Distrato Assinado'
                   : 'Visualizar Distrato'}
               </Button>
+              {isDistratoSigned && isMasterUser && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  color="red"
+                  radius="md"
+                  size="sm"
+                  onClick={handleConfirmDeleteRevoke}
+                  disabled={!canEdit || isSubmitting}
+                  loading={isSubmitting}
+                >
+                  <Trash2 size={16} />
+                  &nbsp;Remover Distrato
+                </Button>
+              )}
               {isDistratoSigned && (
                 <Box>
                   <Text size="xs" c={getSecondaryTextColor()}>

@@ -17,3 +17,15 @@
 
 4. **Qualidade de Código e Pre-commit (`ruff`)**:
    - Para qualquer microsserviço Python novo ou existente neste repositório, você DEVE incluir/manter o arquivo `.pre-commit-config.yaml` padronizado utilizando `ruff` (linter `ruff --fix` e `ruff-format`).
+
+5. **Segurança e Validação de Alertas e Mensagens na UI (`user-alert-validation`)**:
+   - Ao implementar, alterar ou revisar alertas, toasts, notificações, modais ou banners nos frontends (`solutis-agile-frontend` e `solutis-flow`), você DEVE seguir a skill `user-alert-validation`.
+   - NUNCA exponha tokens JWT, credenciais de integrações externas (Clicksign, ERP TOTVS), senhas, stack traces de backend ou mensagens técnicas brutas de exceção na UI do usuário final.
+
+6. **Deploy Remoto Seguro e Atualização de Versões (`deploy`)**:
+   - Ao realizar deploys para o servidor `Solutis` (`172.21.3.225`), você DEVE seguir obrigatoriamente a skill `deploy`.
+   - **Garantia de Versões**: Garanta que o incremento de versões dos serviços modificados foi realizado antes de iniciar o deploy (`remote_deploy.py --check-versions-only` ou `--auto-bump`).
+   - **Solicitação Obrigatória de Senha**: NUNCA tente executar o deploy remoto sem antes solicitar de forma explícita a senha do servidor e `sudo` ao usuário no chat.
+   - **Sigilo de Credenciais**: NUNCA exponha, versione ou repita a senha recebida nas respostas, logs ou resumos.
+   - **Diagnóstico de VPN**: Em caso de falha de conexão ou timeout com o host `Solutis`, oriente imediatamente o usuário a verificar se a VPN corporativa da Solutis está ativa e conectada.
+

@@ -207,6 +207,38 @@ def get_current_version(service_dir, service_cfg):
     return None
 
 
+def get_head_version(service_name, service_cfg):
+    """Parse the version from git HEAD for a given service."""
+    file_type = service_cfg["type"]
+    file_name = service_cfg["file"]
+    git_path = f"{service_name}/{file_name}"
+    content = run_git_command(["show", f"HEAD:{git_path}"])
+    if not content:
+        return None
+
+    if file_type == "json":
+        try:
+            data = json.loads(content)
+            return data.get("version")
+        except Exception:
+            return None
+    elif file_type == "toml":
+        in_project = False
+        for line in content.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("[project]"):
+                in_project = True
+            elif stripped.startswith("[") and stripped != "[project]":
+                in_project = False
+
+            if in_project:
+                match = re.match(r'^\s*version\s*=\s*["\']([^"\']+)["\']', line)
+                if match:
+                    return match.group(1)
+
+    return None
+
+
 def update_json_version(file_path, new_version):
     """Update version in package.json preserving structure and indentation."""
     with open(file_path, "r", encoding="utf-8") as f:
@@ -320,11 +352,30 @@ def main():
                 f"🔍 Analyzing commit '{args.commit}'. Found {len(changed_files)} changed files."
             )
 
+        service_has_code_changes = {s: False for s in SERVICES}
         for f in changed_files:
             # Match top-level service directories
             parts = f.split("/")
             if len(parts) > 0 and parts[0] in SERVICES:
-                changed_services.add(parts[0])
+                service = parts[0]
+                service_cfg = SERVICES[service]
+                if f != f"{service}/{service_cfg['file']}":
+                    service_has_code_changes[service] = True
+
+        for service, has_code_changes in service_has_code_changes.items():
+            if not has_code_changes:
+                continue
+            if args.local and not args.all:
+                service_cfg = SERVICES[service]
+                service_path = os.path.join(workspace_root, service)
+                current_ver = get_current_version(service_path, service_cfg)
+                head_ver = get_head_version(service, service_cfg)
+                if head_ver and current_ver and current_ver != head_ver:
+                    print(
+                        f"  ℹ️ {service}: Já atualizado em relação ao HEAD ({head_ver} ➡️ {current_ver})."
+                    )
+                    continue
+            changed_services.add(service)
 
     if not changed_services:
         print("⏭️ No modified services found. Nothing to update.")
@@ -368,12 +419,12 @@ def main():
                     update_json_version(file_path, new_version)
                 else:
                     update_toml_version(file_path, new_version)
-                print(f"     ✅ Saved successfully.")
+                print("     ✅ Saved successfully.")
                 updates_made += 1
             except Exception as e:
                 print(f"     ❌ Failed to save version update: {e}", file=sys.stderr)
         else:
-            print(f"     🔍 [DRY RUN] Would update version file.")
+            print("     🔍 [DRY RUN] Would update version file.")
 
     if args.dry_run:
         print("\n🔍 Dry-run complete. No changes made.")
