@@ -87,11 +87,9 @@ describe('ContractTab - MASTER group permissions', () => {
       document: 10,
     })
 
-    expect(screen.getByText('Visualizar Contrato Assinado')).toBeInTheDocument()
-    expect(screen.queryByText('Remover Contrato')).not.toBeInTheDocument()
-    expect(
-      screen.queryByText('Substituir Contrato Assinado'),
-    ).not.toBeInTheDocument()
+    expect(screen.getByText('Visualizar Contrato Assinado')).toBeTruthy()
+    expect(screen.queryByText('Remover Contrato')).toBeNull()
+    expect(screen.queryByText('Substituir Contrato Assinado')).toBeNull()
   })
 
   it('shows remove button and replace upload section to MASTER users when contract is signed', () => {
@@ -102,11 +100,9 @@ describe('ContractTab - MASTER group permissions', () => {
       document: 10,
     })
 
-    expect(screen.getByText('Visualizar Contrato Assinado')).toBeInTheDocument()
-    expect(screen.getByText('Remover Contrato')).toBeInTheDocument()
-    expect(
-      screen.getByText('Substituir Contrato Assinado'),
-    ).toBeInTheDocument()
+    expect(screen.getByText('Visualizar Contrato Assinado')).toBeTruthy()
+    expect(screen.getByText('Remover Contrato')).toBeTruthy()
+    expect(screen.getByText('Substituir Contrato Assinado')).toBeTruthy()
   })
 
   it('opens confirmation modal when MASTER user clicks Remover Contrato', async () => {
@@ -122,12 +118,12 @@ describe('ContractTab - MASTER group permissions', () => {
 
     expect(
       await screen.findByText('Confirmar Remoção do Contrato'),
-    ).toBeInTheDocument()
+    ).toBeTruthy()
     expect(
       screen.getByText(
         'Deseja realmente remover o contrato assinado deste comodato? O arquivo será excluído com SoftDelete e o status retornará para pendente.',
       ),
-    ).toBeInTheDocument()
+    ).toBeTruthy()
   })
 
   it('opens confirmation modal when MASTER user submits a replacement file', async () => {
@@ -146,11 +142,11 @@ describe('ContractTab - MASTER group permissions', () => {
 
     expect(
       await screen.findByText('Confirmar Substituição de Arquivo'),
-    ).toBeInTheDocument()
+    ).toBeTruthy()
     expect(
       screen.getByText(
         'Já existe um contrato assinado cadastrado. Deseja substituí-lo pelo novo arquivo? O arquivo anterior será substituído.',
       ),
-    ).toBeInTheDocument()
+    ).toBeTruthy()
   })
 })

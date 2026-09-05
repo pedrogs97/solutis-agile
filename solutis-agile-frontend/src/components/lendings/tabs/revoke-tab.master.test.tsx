@@ -102,8 +102,8 @@ describe('RevokeTab - MASTER group permissions', () => {
       revokeSignedDate: '2026-09-02',
     })
 
-    expect(screen.getByText('Visualizar Distrato Assinado')).toBeInTheDocument()
-    expect(screen.queryByText('Remover Distrato')).not.toBeInTheDocument()
+    expect(screen.getByText('Visualizar Distrato Assinado')).toBeTruthy()
+    expect(screen.queryByText('Remover Distrato')).toBeNull()
   })
 
   it('shows remove button to MASTER users when distrato is signed', () => {
@@ -114,8 +114,8 @@ describe('RevokeTab - MASTER group permissions', () => {
       revokeSignedDate: '2026-09-02',
     })
 
-    expect(screen.getByText('Visualizar Distrato Assinado')).toBeInTheDocument()
-    expect(screen.getByText('Remover Distrato')).toBeInTheDocument()
+    expect(screen.getByText('Visualizar Distrato Assinado')).toBeTruthy()
+    expect(screen.getByText('Remover Distrato')).toBeTruthy()
   })
 
   it('opens confirmation modal when MASTER clicks Remover Distrato', async () => {
@@ -131,12 +131,12 @@ describe('RevokeTab - MASTER group permissions', () => {
 
     expect(
       await screen.findByText('Confirmar Remoção do Distrato'),
-    ).toBeInTheDocument()
+    ).toBeTruthy()
     expect(
       screen.getByText(
         'Deseja realmente remover o distrato assinado deste comodato? O arquivo será excluído com SoftDelete e o status retornará para distrato pendente.',
       ),
-    ).toBeInTheDocument()
+    ).toBeTruthy()
   })
 
   it('opens confirmation modal when MASTER submits replacement distrato file', async () => {
@@ -155,11 +155,11 @@ describe('RevokeTab - MASTER group permissions', () => {
 
     expect(
       await screen.findByText('Confirmar Substituição de Arquivo'),
-    ).toBeInTheDocument()
+    ).toBeTruthy()
     expect(
       screen.getByText(
         'Já existe um distrato assinado cadastrado. Deseja substituí-lo pelo novo arquivo? O arquivo anterior será substituído.',
       ),
-    ).toBeInTheDocument()
+    ).toBeTruthy()
   })
 })
