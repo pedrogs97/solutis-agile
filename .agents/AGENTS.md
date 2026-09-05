@@ -25,7 +25,10 @@
 6. **Deploy Remoto Seguro e Atualização de Versões (`deploy`)**:
    - Ao realizar deploys para o servidor `Solutis` (`172.21.3.225`), você DEVE seguir obrigatoriamente a skill `deploy`.
    - **Garantia de Versões**: Garanta que o incremento de versões dos serviços modificados foi realizado antes de iniciar o deploy (`remote_deploy.py --check-versions-only` ou `--auto-bump`).
+   - **Commit e Push Prévios**: Realize obrigatoriamente o commit e o push das alterações para o repositório remoto antes de conectar ao servidor para o deploy.
+   - **Git Pull no Servidor**: O deploy remoto deve obrigatoriamente sincronizar o repositório remoto no host (`~/solutis-agile`) via `git checkout main && git pull origin main` antes de disparar o `./deploy.sh`.
    - **Solicitação Obrigatória de Senha**: NUNCA tente executar o deploy remoto sem antes solicitar de forma explícita a senha do servidor e `sudo` ao usuário no chat.
    - **Sigilo de Credenciais**: NUNCA exponha, versione ou repita a senha recebida nas respostas, logs ou resumos.
    - **Diagnóstico de VPN**: Em caso de falha de conexão ou timeout com o host `Solutis`, oriente imediatamente o usuário a verificar se a VPN corporativa da Solutis está ativa e conectada.
+
 

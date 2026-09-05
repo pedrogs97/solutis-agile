@@ -2,6 +2,7 @@
 
 from datetime import date
 from io import BytesIO
+
 import pytest
 from fastapi import HTTPException
 from fastapi.datastructures import UploadFile
