@@ -1694,7 +1694,7 @@ source = { virtual = "." }
 
 [[package]]
 name = "solutis-manager-back"
-version = "1.26.4"
+version = "1.26.5"
 source = { virtual = "solutis_manager_back" }
 dependencies = [
     { name = "aiofiles" },
@@ -1781,7 +1781,7 @@ dev = [
 
 [[package]]
 name = "solutis-procurement"
-version = "2.18.2"
+version = "2.18.3"
 source = { virtual = "solutis_procurement" }
 dependencies = [
     { name = "aiohappyeyeballs" },

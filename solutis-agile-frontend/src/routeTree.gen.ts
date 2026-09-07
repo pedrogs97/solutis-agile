@@ -48,6 +48,12 @@ import { Route as DashboardGroupsAndPermissionsEditIdRouteImport } from './route
 import { Route as DashboardEmployeesEditIdRouteImport } from './routes/_dashboard/employees/edit/$id'
 import { Route as DashboardAssetsEditIdRouteImport } from './routes/_dashboard/assets/edit/$id'
 import { Route as DashboardSuppliersEditIdIndexRouteImport } from './routes/_dashboard/suppliers/edit/$id/index'
+import { Route as DashboardAssetEvaluationsIndexRouteImport } from './routes/_dashboard/asset-evaluations/index'
+import { Route as DashboardAssetEvaluationsNewIndexRouteImport } from './routes/_dashboard/asset-evaluations/new/index'
+import { Route as DashboardAssetEvaluationsIdRouteImport } from './routes/_dashboard/asset-evaluations/$id'
+import { Route as DashboardPurchaseProcessesIndexRouteImport } from './routes/_dashboard/purchase-processes/index'
+import { Route as DashboardPurchaseProcessesNewIndexRouteImport } from './routes/_dashboard/purchase-processes/new/index'
+import { Route as DashboardPurchaseProcessesIdRouteImport } from './routes/_dashboard/purchase-processes/$id'
 
 const ErrorRoute = ErrorRouteImport.update({
   id: '/error',
@@ -254,6 +260,42 @@ const DashboardSuppliersEditIdIndexRoute =
   DashboardSuppliersEditIdIndexRouteImport.update({
     id: '/suppliers/edit/$id/',
     path: '/suppliers/edit/$id/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardAssetEvaluationsIndexRoute =
+  DashboardAssetEvaluationsIndexRouteImport.update({
+    id: '/asset-evaluations/',
+    path: '/asset-evaluations/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardAssetEvaluationsNewIndexRoute =
+  DashboardAssetEvaluationsNewIndexRouteImport.update({
+    id: '/asset-evaluations/new/',
+    path: '/asset-evaluations/new/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardAssetEvaluationsIdRoute =
+  DashboardAssetEvaluationsIdRouteImport.update({
+    id: '/asset-evaluations/$id',
+    path: '/asset-evaluations/$id',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardPurchaseProcessesIndexRoute =
+  DashboardPurchaseProcessesIndexRouteImport.update({
+    id: '/purchase-processes/',
+    path: '/purchase-processes/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardPurchaseProcessesNewIndexRoute =
+  DashboardPurchaseProcessesNewIndexRouteImport.update({
+    id: '/purchase-processes/new/',
+    path: '/purchase-processes/new/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardPurchaseProcessesIdRoute =
+  DashboardPurchaseProcessesIdRouteImport.update({
+    id: '/purchase-processes/$id',
+    path: '/purchase-processes/$id',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
 
@@ -809,6 +851,12 @@ interface DashboardRouteRouteChildren {
   DashboardTermsAddIndexRoute: typeof DashboardTermsAddIndexRoute
   DashboardUsersAddIndexRoute: typeof DashboardUsersAddIndexRoute
   DashboardSuppliersEditIdIndexRoute: typeof DashboardSuppliersEditIdIndexRoute
+  DashboardAssetEvaluationsIndexRoute: typeof DashboardAssetEvaluationsIndexRoute
+  DashboardAssetEvaluationsNewIndexRoute: typeof DashboardAssetEvaluationsNewIndexRoute
+  DashboardAssetEvaluationsIdRoute: typeof DashboardAssetEvaluationsIdRoute
+  DashboardPurchaseProcessesIndexRoute: typeof DashboardPurchaseProcessesIndexRoute
+  DashboardPurchaseProcessesNewIndexRoute: typeof DashboardPurchaseProcessesNewIndexRoute
+  DashboardPurchaseProcessesIdRoute: typeof DashboardPurchaseProcessesIdRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
@@ -843,6 +891,13 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardTermsAddIndexRoute: DashboardTermsAddIndexRoute,
   DashboardUsersAddIndexRoute: DashboardUsersAddIndexRoute,
   DashboardSuppliersEditIdIndexRoute: DashboardSuppliersEditIdIndexRoute,
+  DashboardAssetEvaluationsIndexRoute: DashboardAssetEvaluationsIndexRoute,
+  DashboardAssetEvaluationsNewIndexRoute: DashboardAssetEvaluationsNewIndexRoute,
+  DashboardAssetEvaluationsIdRoute: DashboardAssetEvaluationsIdRoute,
+  DashboardPurchaseProcessesIndexRoute: DashboardPurchaseProcessesIndexRoute,
+  DashboardPurchaseProcessesNewIndexRoute:
+    DashboardPurchaseProcessesNewIndexRoute,
+  DashboardPurchaseProcessesIdRoute: DashboardPurchaseProcessesIdRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(

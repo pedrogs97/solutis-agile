@@ -102,6 +102,14 @@ PROXY_ROUTES: List[Dict[str, Any]] = [
             PermissionSchema(module="procurement", model="supplier", action="view")
         ],
     },
+    {
+        "service_name": "procurement",
+        "methods": ["GET"],
+        "path_pattern": r"^/v1/purchase-processes.*$",
+        "required_permissions": [
+            PermissionSchema(module="procurement", model="supplier", action="view")
+        ],
+    },
     # Rotas de cadastro / criação (POST)
     {
         "service_name": "procurement",
@@ -138,6 +146,22 @@ PROXY_ROUTES: List[Dict[str, Any]] = [
     {
         "service_name": "procurement",
         "methods": ["POST"],
+        "path_pattern": r"^/v1/purchase-processes/?$",
+        "required_permissions": [
+            PermissionSchema(module="procurement", model="supplier", action="add")
+        ],
+    },
+    {
+        "service_name": "procurement",
+        "methods": ["POST"],
+        "path_pattern": r"^/v1/purchase-processes/.*$",
+        "required_permissions": [
+            PermissionSchema(module="procurement", model="supplier", action="edit")
+        ],
+    },
+    {
+        "service_name": "procurement",
+        "methods": ["POST"],
         "path_pattern": r"^/v1/(approval|attachments|responsibility-matrix).*$",
         "required_permissions": [
             PermissionSchema(module="procurement", model="supplier", action="edit")
@@ -147,7 +171,7 @@ PROXY_ROUTES: List[Dict[str, Any]] = [
     {
         "service_name": "procurement",
         "methods": ["PUT", "PATCH"],
-        "path_pattern": r"^/v1/(suppliers|supplier|approval|attachments|attachment-types|responsibility-matrix|evaluation)(/.*)?$",
+        "path_pattern": r"^/v1/(suppliers|supplier|approval|attachments|attachment-types|responsibility-matrix|evaluation|purchase-processes)(/.*)?$",
         "required_permissions": [
             PermissionSchema(module="procurement", model="supplier", action="edit")
         ],
@@ -156,7 +180,7 @@ PROXY_ROUTES: List[Dict[str, Any]] = [
     {
         "service_name": "procurement",
         "methods": ["DELETE"],
-        "path_pattern": r"^/v1/(suppliers|supplier|approval|attachments|attachment-types|evaluation)(/.*)?$",
+        "path_pattern": r"^/v1/(suppliers|supplier|approval|attachments|attachment-types|evaluation|purchase-processes)(/.*)?$",
         "required_permissions": [
             PermissionSchema(module="procurement", model="supplier", action="delete")
         ],

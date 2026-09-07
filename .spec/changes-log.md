@@ -1,5 +1,122 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-06] - Atualização de Versões dos Serviços e Preparação para Deploy Remoto (FO-AD-01)
+- **Descrição**: Incremento semântico das versões dos microsserviços e frontend afetados pela implementação do módulo FO-AD-01 (`solutis_procurement`, `solutis-agile-frontend` e `solutis_manager_back`), e preparação do fluxo de deploy remoto no host Solutis.
+- **Arquivos afetados**:
+  - `solutis_procurement/pyproject.toml`
+  - `solutis-agile-frontend/package.json`
+  - `solutis_manager_back/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Incremento de Versões**:
+    - `solutis_procurement`: `2.18.2` ➡️ `2.18.3`
+    - `solutis-agile-frontend`: `2.7.4` ➡️ `2.7.5`
+    - `solutis_manager_back`: `1.26.4` ➡️ `1.26.5`
+  - **Deploy**: Serviços sincronizados e preparados para execução do deploy remoto via SSH.
+
+## [2026-09-06] - Implementação do Módulo de Análise e Decisão de Compras (FO-AD-01)
+- **Descrição**: Integração completa do formulário e painel executivo de Análise e Decisão de Compras (FO-AD-01) baseado no `dev-package` ao módulo de Compras do ecossistema Solutis Agile. Implementação de modelo Django, schemas NinjaAPI, rotas REST e migration em `solutis_procurement`, roteamento no API Gateway `solutis_manager_back`, interface rica em React 19 + Mantine UI no `solutis-agile-frontend` e suíte de testes unitários automatizados (TDD).
+- **Arquivos afetados**:
+  - `solutis_procurement/src/supplier/models/purchase_process.py`
+  - `solutis_procurement/src/supplier/models/__init__.py`
+  - `solutis_procurement/src/api/v1/schemas/purchase_process.py`
+  - `solutis_procurement/src/api/v1/routers/purchase_process.py`
+  - `solutis_procurement/src/api/v1/api.py`
+  - `solutis_procurement/src/supplier/migrations/0038_add_purchase_process.py`
+  - `solutis_procurement/src/supplier/tests/test_purchase_process.py`
+  - `solutis_manager_back/src/proxy/routes.py`
+  - `solutis-agile-frontend/src/types/PurchaseProcess.ts`
+  - `solutis-agile-frontend/src/services/api/purchase-process.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessCalculations.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessCalculations.test.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessList.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessForm.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessMetrics.ts`
+  - `solutis-agile-frontend/src/components/purchase-processes/executive-dashboard.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/process-table.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/print-view.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/process-form.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-identification.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-suppliers-quote.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-items-detail.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-decision-approval.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-supplier-evaluation.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/purchase-processes/index.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/purchase-processes/new/index.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/purchase-processes/$id.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/dashboard/index.tsx`
+  - `solutis-agile-frontend/src/routeTree.gen.ts`
+  - `.spec/project-overview.md`
+  - `.spec/architecture.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Backend (`solutis_procurement`)**:
+    - Modelo `PurchaseProcess` com indexação de status, categoria, datas e payloads JSON para identificação, fornecedores, itens, decisão, aprovação e avaliação de fornecedores.
+    - Endpoints NinjaAPI `/v1/purchase-processes/` (CRUD completo), `/v1/purchase-processes/metrics/` (KPIs consolidados de tickets, valor aprovado, economia identificada, aging e distribuições) e `/v1/purchase-processes/{id}/decision/` (decisão executiva).
+    - Migration Django `0038_add_purchase_process.py`.
+    - Testes unitários em `test_purchase_process.py` cobrindo cálculos de CTA, economia, índice geral de satisfação e endpoints REST.
+  - **Auth Proxy Gateway (`solutis_manager_back`)**:
+    - Configuração de rotas no `PROXY_ROUTES` encaminhando requisições `/v1/purchase-processes.*` para o microsserviço de procurement.
+  - **Frontend (`solutis-agile-frontend`)**:
+    - Painel Executivo com KPIs, gráficos de barra e tendência mensal SVG, fila de aging aguardando decisão e avaliação de desempenho.
+    - Formulário FO-AD-01 modular em 5 abas (Identificação, Cotação de Fornecedores / Mapa Comparativo com cálculo de CTA em tempo real, Detalhamento dos Itens Cotados com matriz de preços, Decisão & Aprovação com os 15 motivos pré-definidos de exceção de cotação e justificativa automática, Avaliação do Fornecedor pós-compra com índice de satisfação e classificação de desempenho).
+    - Suporte à impressão formatada em PDF do documento FO-AD-01.
+    - Navegação integrada com novo link sob o card "Compras" na Dashboard Principal.
+
+## [2026-09-06] - Implementação do Módulo FO-PAT-02 e Painel Executivo no `solutis-agile-frontend`
+- **Descrição**: Desenvolvimento completo da interface do formulário FO-PAT-02 (Avaliação Técnica, Reaproveitamento, Descarte e Baixa Patrimonial) e do Painel Executivo de Sustentabilidade (ESG) e Eficiência Financeira no portal principal `solutis-agile-frontend`.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
+  - `solutis-agile-frontend/src/services/api/asset-evaluation.ts`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationList.ts`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationCalculations.test.ts`
+  - `solutis-agile-frontend/src/components/asset-evaluations/executive-dashboard.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/evaluations-table.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/summary-kpi-bar.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/identification-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/technical-evaluation-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/components-matrix-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/esg-weight-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/financial-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/compliance-attachments-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/approvals-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/evaluation-form.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/asset-evaluations/index.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/asset-evaluations/new/index.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/asset-evaluations/$id.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/dashboard/index.tsx`
+  - `.spec/project-overview.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Painel Executivo ESG**: Cards agregados de KPIs e visualização em gráfico circular (RingProgress) da Taxa Média de Reaproveitamento ESG, Redução de Resíduos Eletrônicos e Balanço de Massa (kg reaproveitado, reciclado e descartado).
+  - **Formulário FO-PAT-02 Modular**: Estrutura modular em 7 seções com autopreenchimento de bens cadastrados, matriz dinâmica de peças com autocompletar do catálogo compartilhado, cálculo reativo de % de reaproveitamento e economia estimada em R$, checklist de conformidade com upload de evidências e rascunho em localStorage.
+  - **Aprovação e Baixa**: Modal de confirmação para aprovação formal integrada à baixa do ativo no backend.
+  - **Navegação Integrada**: Adicionado link na dashboard principal sob o grupo Patrimônio e rotas dedicadas (`/_dashboard/asset-evaluations`, `new/` e `$id`).
+  - **Exportação CSV e Impressão**: Suporte nativo à exportação de planilhas CSV e impressão formatada do laudo técnico.
+
+## [2026-09-05] - Implementação Completa do Módulo FO-PAT-02 (Avaliação Técnica, Reaproveitamento e Baixa Patrimonial)
+- **Descrição**: Criação do módulo `asset_evaluation` no `solutis_manager_back` para emissão do formulário FO-PAT-02, cálculos ESG de taxa de reaproveitamento e economia estimada financeira, matriz dinâmica de componentes com catálogo de autocompletar, anexos comprobatórios, Painel Executivo com KPIs consolidados, aprovação e baixa real do ativo (status `DESCARTE`), migration Alembic e suíte de testes unitários automatizados (TDD).
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/src/asset_evaluation/schemas.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/src/asset_evaluation/router.py`
+  - `solutis_manager_back/src/asset_evaluation/__init__.py`
+  - `solutis_manager_back/src/asset/models.py`
+  - `solutis_manager_back/src/main.py`
+  - `solutis_manager_back/alembic/versions/2026-09-05_200000_add_asset_evaluation_tables.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `.spec/project-overview.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Módulo `asset_evaluation`**: Submódulo com arquitetura desacoplada implementando regras de negócio do FO-PAT-02 e protocolo `FO-PAT-02-YYYYMMDD-XXXX`.
+  - **Modelos e Tabelas**: Criação das tabelas `asset_technical_evaluation`, `asset_evaluation_component`, `asset_catalog_component` e `asset_evaluation_attachment` com migration Alembic (`a1e4c02f09b1`) e carga inicial de 17 componentes padrão.
+  - **Painel Executivo e Cálculos**: Agregação de métricas em `/v1/asset-evaluations/metrics/` (% ESG médio, pesos reaproveitados/descartados/reciclados e economia estimada).
+  - **Baixa do Ativo**: Fluxo de aprovação em `/v1/asset-evaluations/{id}/approve/` que atualiza o `AssetModel` para `active=False` e status `DESCARTE (8)`.
+  - **Rotas e API Gateway**: Router registrado sob o prefixo `/v1/asset-evaluations` no `main.py`.
+  - **Cobertura de Testes**: Suíte em `test_asset_evaluation.py` cobrindo geração de protocolo, cálculos ESG/financeiros, autopreenchimento de ativos, catálogo e endpoints REST.
+
 ## [2026-09-05] - Atualização de Versões dos Serviços e Preparação para Deploy Remoto
 - **Descrição**: Incremento semântico das versões dos serviços que receberam alterações de código (`solutis-agile-frontend` e `solutis_manager_back`), aprimoramento da detecção de versões já incrementadas localmente no script `update_versions.py` e validação com suíte de testes.
 - **Arquivos afetados**:

@@ -122,6 +122,9 @@ class AssetModel(Base):
     maintenances: Mapped[List["MaintenanceModel"]] = relationship(viewonly=True)
     upgrades: Mapped[List["UpgradeModel"]] = relationship(viewonly=True)
     disposals: Mapped[List["AssetDisposalModel"]] = relationship(viewonly=True)
+    evaluations: Mapped[List["AssetTechnicalEvaluationModel"]] = relationship(
+        viewonly=True
+    )
 
     code = Column("code", String(length=255), nullable=True, unique=True)
     # tombo - registro patrimonial

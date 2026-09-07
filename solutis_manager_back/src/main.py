@@ -15,6 +15,7 @@ from loguru import logger
 from sqlalchemy import exc, text
 from sqlalchemy.orm import Session
 from src.asset.router import asset_router
+from src.asset_evaluation.router import asset_evaluation_router
 from src.auth.router import auth_router
 from src.auth.service import create_initial_data, create_permissions, create_super_user
 from src.backends import get_db_session
@@ -213,6 +214,7 @@ appAPI.include_router(log_router, prefix=BASE_API)
 appAPI.include_router(people_router, prefix=BASE_API)
 appAPI.include_router(datasync_router, prefix=BASE_API)
 appAPI.include_router(asset_router, prefix=BASE_API)
+appAPI.include_router(asset_evaluation_router, prefix=BASE_API)
 appAPI.include_router(maintenance_router, prefix=BASE_API)
 appAPI.include_router(verification_router, prefix=BASE_API)
 appAPI.include_router(document_router, prefix=BASE_API)

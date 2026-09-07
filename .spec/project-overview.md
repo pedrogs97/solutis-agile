@@ -8,11 +8,11 @@ O **Solutis Agile** é um ecossistema modularizado para gestão, automação de 
 ### ⚙️ `solutis_manager_back` (Backend Manager Core)
 Serviço base e coração da solução com toda a lógica de autenticação e autorização. Contém os seguintes módulos e responsabilidades:
 - **Autenticação e Autorização**: Gestão centralizada de permissões e controle de acesso.
-- **Módulos Core**: Comodato, Colaborador, Ativos, Relatórios (versão antiga/legada), Inventário, Documentos, Notas Fiscais, Manutenção e Melhoria, Termo de Empréstimo, Verificação de Ativo, Logs e Uso da Plataforma.
+- **Módulos Core**: Comodato, Colaborador, Ativos, Avaliação Técnica e Baixa Patrimonial (FO-PAT-02), Relatórios (versão antiga/legada), Inventário, Documentos, Notas Fiscais, Manutenção e Melhoria, Termo de Empréstimo, Verificação de Ativo, Logs e Uso da Plataforma.
 - **Integrações e Proxy**: Integração com Clicksign para assinatura digital de documentos e Auth Proxy atuando como gateway/proxy de autenticação para os demais microsserviços.
 
 ### 🛒 `solutis_procurement` (Procurement Service)
-- Módulo de fornecedores da aplicação, responsável pelo cadastro, qualificação e gerenciamento de fornecedores.
+- Módulo de compras e fornecedores da aplicação, responsável pelo cadastro, qualificação e gerenciamento de fornecedores, além do formulário de **Análise e Decisão de Compras (FO-AD-01)** com mapa comparativo de cotações, cálculo de CTA, aprovação formal, avaliação pós-compra e painel executivo.
 
 ### 📊 `solutis_report` (Report Service v2)
 - Versão 2 (v2) do serviço de relatórios da aplicação, responsável pela geração de relatórios de avaliação.

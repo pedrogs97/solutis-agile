@@ -59,4 +59,4 @@ graph TD
 2. **Solutis Flow Backend**: Microsserviço de governança operacional e gestão de demandas com arquitetura baseada em eventos (Dramatiq + Redis), SSE em tempo real, banco de dados isolado e referências a usuários via IDs inteiros indexados.
 3. **Sync Service**: Executa tarefas agendadas (APScheduler) para puxar dados do ERP TOTVS (SQL Server) e efetuar upsert no MySQL.
 4. **Report Service**: Consome o MySQL em modo somente leitura e gera relatórios em planilhas Excel (.xlsx).
-5. **Procurement**: Serviço de fornecedores baseado em Django com suporte ASGI e Pydantic.
+5. **Procurement**: Serviço de compras e fornecedores baseado em Django com suporte ASGI, NinjaAPI e Pydantic, gerenciando o ciclo de vida de fornecedores e o módulo de Análise e Decisão de Compras (FO-AD-01).

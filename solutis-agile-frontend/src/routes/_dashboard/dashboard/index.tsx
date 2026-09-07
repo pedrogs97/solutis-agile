@@ -55,6 +55,11 @@ function DashboardPage() {
           subject: 'asset',
         },
         {
+          label: 'Avaliações Técnicas (FO-PAT-02)',
+          href: '/asset-evaluations',
+          subject: 'asset',
+        },
+        {
           label: 'Inventário',
           href: '/inventory',
           subject: 'inventory',
@@ -68,6 +73,11 @@ function DashboardPage() {
       iconBgColor: '#ebfbee',
       subject: 'supplier',
       links: [
+        {
+          label: 'Análise e Decisão (FO-AD-01)',
+          href: '/purchase-processes',
+          subject: 'supplier',
+        },
         {
           label: 'Fornecedores',
           href: '/suppliers',

@@ -7,6 +7,7 @@ from src.api.v1.routers.approval import router as approval_router
 from src.api.v1.routers.attachments import router as attachments_router
 from src.api.v1.routers.domain import router as domain_router
 from src.api.v1.routers.evaluation import router as evaluation_router
+from src.api.v1.routers.purchase_process import router as purchase_process_router
 from src.api.v1.routers.responsibility_matrix import (
     router as responsibility_matrix_router,
 )
@@ -29,6 +30,7 @@ api_v1 = ProcurementNinjaAPI(
 )
 
 api_v1.add_router("", suppliers_router)
+api_v1.add_router("", purchase_process_router)
 api_v1.add_router("", attachments_router)
 api_v1.add_router("", responsibility_matrix_router)
 api_v1.add_router("/approval", approval_router)
