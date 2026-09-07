@@ -132,7 +132,7 @@ export function usePurchaseProcessList(initialFilters?: PurchaseProcessFilters) 
     link.href = url
     link.setAttribute(
       'download',
-      `FO-AD-01-processos-compras-${new Date().toISOString().slice(0, 10)}.csv`
+      `processos-compras-${new Date().toISOString().slice(0, 10)}.csv`
     )
     document.body.appendChild(link)
     link.click()

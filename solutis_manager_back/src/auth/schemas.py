@@ -103,6 +103,7 @@ class UserSerializerSchema(BaseSchema):
     department: str
     manager: str
     products: List[str] = Field(default_factory=lambda: ["agile", "flow"])
+    azure_oid: Optional[str] = Field(serialization_alias="azureOid", default=None)
 
 
 class UserListSerializerSchema(BaseSchema):
@@ -127,6 +128,7 @@ class UserListSerializerSchema(BaseSchema):
     department: str
     manager: str
     products: List[str] = Field(default_factory=lambda: ["agile", "flow"])
+    azure_oid: Optional[str] = Field(serialization_alias="azureOid", default=None)
 
 
 class NewGroupSchema(BaseSchema):
@@ -167,3 +169,18 @@ class NewPasswordSchema(BaseSchema):
     """New password schema"""
 
     user_id: int = Field(serialization_alias="userId")
+
+
+class AzureLoginUrlResponseSchema(BaseSchema):
+    """Azure login URL response schema"""
+
+    url: str
+    state: Optional[str] = None
+
+
+class AzureCallbackRequestSchema(BaseSchema):
+    """Azure callback request schema"""
+
+    code: str
+    redirect_uri: Optional[str] = Field(default=None, alias="redirectUri")
+    state: Optional[str] = None

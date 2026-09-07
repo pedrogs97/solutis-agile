@@ -7,7 +7,7 @@ import type {
   PurchaseProcessMetrics,
 } from '@/types/PurchaseProcess'
 
-const BASE_URL = '/purchase-processes'
+const BASE_URL = '/proxy/procurement/v1/purchase-processes'
 
 export interface PurchaseProcessFilters {
   search?: string

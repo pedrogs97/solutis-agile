@@ -1,17 +1,13 @@
 """Functional tests for Proxy API Gateway routing and authorization"""
 
-import re
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from fastapi import status
 from fastapi.responses import Response
 from src.auth.models import GroupModel, PermissionModel, UserModel
 from src.auth.service import UserSerivce
-from src.backends import get_db_session
 from src.config import BASE_API
 from src.proxy.router import authorize_proxy_access, match_route_rule
-from src.proxy.routes import PROXY_ROUTES
 from src.tests.base import TestBase
 
 
@@ -100,6 +96,24 @@ class TestProxyGateway(TestBase):
         rule = match_route_rule("flow", "v1/demands", "GET")
         assert rule["service_name"] == "flow"
 
+        # 5c. Matching purchase processes GET rules
+        rule = match_route_rule("procurement", "v1/purchase-processes/", "GET")
+        assert rule["service_name"] == "procurement"
+        assert rule["path_pattern"] == r"^/v1/purchase-processes.*$"
+
+        rule = match_route_rule("procurement", "v1/purchase-processes/metrics/", "GET")
+        assert rule["service_name"] == "procurement"
+        assert rule["path_pattern"] == r"^/v1/purchase-processes.*$"
+
+        # 5d. Matching purchase processes POST and PUT rules
+        rule = match_route_rule("procurement", "v1/purchase-processes/", "POST")
+        assert rule["service_name"] == "procurement"
+
+        rule = match_route_rule(
+            "procurement", "v1/purchase-processes/1/decision/", "POST"
+        )
+        assert rule["service_name"] == "procurement"
+
         # 6. Unmatched route raises HTTPException with 403 status
         with pytest.raises(Exception) as excinfo:
             match_route_rule("procurement", "v1/invalid-route", "GET")
@@ -157,12 +171,12 @@ class TestProxyGateway(TestBase):
         )
 
         # Create two users: one with supplier view permission, one with report permission
-        supplier_user = self.create_limited_user(
+        self.create_limited_user(
             db_session,
             "SupplierGroup",
             [{"module": "procurement", "model": "supplier", "action": "view"}],
         )
-        report_user = self.create_limited_user(
+        self.create_limited_user(
             db_session,
             "ReportGroup",
             [{"module": "report", "model": "report", "action": "view"}],

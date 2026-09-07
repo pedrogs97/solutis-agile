@@ -116,7 +116,7 @@ export function ProcessForm({ id }: ProcessFormProps) {
                 </Badge>
               </Group>
               <Text size="xs" c="dimmed">
-                Formulário FO-AD-01 — Análise e Decisão de Compras
+                Formulário de Análise e Decisão de Compras
               </Text>
             </div>
           </Group>

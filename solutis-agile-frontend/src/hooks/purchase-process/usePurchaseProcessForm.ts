@@ -170,7 +170,7 @@ export function usePurchaseProcessForm(id?: string) {
         notifications.show({
           color: 'green',
           title: 'Processo Criado',
-          message: 'O processo de compra FO-AD-01 foi criado com sucesso.',
+          message: 'O processo de compra foi criado com sucesso.',
         })
         navigate({ to: `/purchase-processes/${data.id}` as any })
       } else {

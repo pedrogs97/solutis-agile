@@ -100,8 +100,8 @@ def get_list_evaluations_route(
     size: int = Query(20, ge=1, le=100),
     status_filter: Optional[str] = Query(None, alias="status"),
     search: Optional[str] = Query(None),
-    date_start: Optional[datetime] = Query(None),
-    date_end: Optional[datetime] = Query(None),
+    date_start: Optional[str] = Query(None),
+    date_end: Optional[str] = Query(None),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
@@ -113,14 +113,31 @@ def get_list_evaluations_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
+
+    parsed_date_start = None
+    if date_start and date_start.strip():
+        try:
+            parsed_date_start = datetime.fromisoformat(date_start.strip())
+        except (ValueError, TypeError):
+            pass
+
+    parsed_date_end = None
+    if date_end and date_end.strip():
+        try:
+            parsed_date_end = datetime.fromisoformat(date_end.strip())
+        except (ValueError, TypeError):
+            pass
+
     results = evaluation_service.list_evaluations(
         db_session=db_session,
         page=page,
         size=size,
-        status_filter=status_filter,
-        search=search,
-        date_start=date_start,
-        date_end=date_end,
+        status_filter=status_filter
+        if status_filter and status_filter.strip()
+        else None,
+        search=search if search and search.strip() else None,
+        date_start=parsed_date_start,
+        date_end=parsed_date_end,
     )
     db_session.close()
     serialized_items = [item.model_dump(mode="json") for item in results["items"]]

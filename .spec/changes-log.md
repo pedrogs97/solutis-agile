@@ -1,5 +1,111 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-07] - Feature Flag para Autenticação SSO (Microsoft Entra ID) com Default False
+- **Descrição**: Configuração da integração de Single Sign-On (SSO) corporativo com Microsoft Entra ID (Azure AD) como uma Feature Flag desabilitada por padrão (`ENABLE_SSO=false` / `VITE_ENABLE_SSO=false`), mantendo em exibição padrão apenas o formulário de Login Unificado (usuário e senha com suporte a múltiplos produtos Agile e Flow).
+- **Arquivos afetados**:
+  - `solutis_manager_back/pyproject.toml`
+  - `solutis-agile-frontend/package.json`
+  - `solutis_manager_back/alembic/versions/2026-09-07_123000_add_user_azure_oid.py`
+  - `solutis_manager_back/src/config.py`
+  - `solutis_manager_back/src/auth/router.py`
+  - `solutis_manager_back/src/tests/test_azure_auth.py`
+  - `solutis-agile-frontend/src/constants/env.ts`
+  - `solutis-agile-frontend/src/routes/_auth/login/index.tsx`
+  - `solutis-agile-frontend/src/routes/auth/callback/azure.tsx`
+  - `.spec/project-overview.md`
+  - `.spec/architecture.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Backend (`solutis_manager_back`)**:
+    - Adicionada configuração `ENABLE_SSO = os.getenv("ENABLE_SSO", "false").lower() in ("true", "1", "t")`.
+    - Bloqueio dos endpoints `/auth/azure/url/` e `/auth/azure/callback/` com HTTP 403 Forbidden caso a feature flag esteja desabilitada.
+    - Suíte de testes `test_azure_auth.py` atualizada com cenários cobrindo o bloqueio por feature flag inativa e execução com patch de flag ativa.
+  - **Frontend (`solutis-agile-frontend`)**:
+    - Adicionada propriedade `enableSSO` em `ENVIRONMENT` (`src/constants/env.ts`), consumindo `VITE_ENABLE_SSO === 'true'`.
+    - Tela de login (`src/routes/_auth/login/index.tsx`) atualizada para renderizar o botão "Entrar com conta Microsoft" e o divisor apenas quando `ENVIRONMENT.enableSSO` for `true`. Com o valor padrão `false`, apenas o formulário de login unificado (usuário e senha) é exibido diretamente.
+    - Rota de callback (`src/routes/auth/callback/azure.tsx`) protegida para emitir notificação amigável e redirecionar para `/login` caso acessada com a flag desabilitada.
+
+## [2026-09-07] - Correção de Erro 500 no Módulo de Avaliações Técnicas de Patrimônio
+- **Descrição**: Correção de falhas de relacionamento ORM e tratamento de agregações nulas que causavam HTTP 500 ao acessar o submódulo de Avaliações Técnicas (`/asset-evaluations`).
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/alembic/versions/2026-09-05_200000_add_asset_evaluation_tables.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/src/asset_evaluation/router.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Relacionamento ORM e Foreign Keys**: Ajustado o relacionamento `AssetTechnicalEvaluationModel.asset` para `viewonly=True` alinhando com a definição unidirecional em `AssetModel.evaluations` e corrigida a tabela de referência de chave estrangeira de `evaluator_id` e `approver_id` de `users.id` para `user.id`.
+  - **Tratamento de Agregações Nulas (`get_metrics`)**: Protegida a extração de somatórios e médias agregadas (`func.sum` / `func.avg`) contra valores `None` retornados por bancos sem registros ou registros filtrados, evitando `TypeError: float() argument must be a string or a real number, not 'NoneType'`.
+  - **Validação Segura de Filtros de Data**: Rota `GET /api/v1/asset-evaluations/` ajustada para tratar parâmetros de consulta de data vazios sem gerar erros de serialização/validação.
+  - **Cobertura de Testes**: Adicionado teste unitário `test_get_metrics_empty_table` validando retorno íntegro do dashboard executivo com banco inicial/vazio.
+
+## [2026-09-07] - Remoção do Código FO-PAT-02 na UI do Frontend
+- **Descrição**: Remoção de todas as menções textuais ao código documental técnico "FO-PAT-02" na interface do `solutis-agile-frontend` (tela de login, dashboard principal, cabeçalhos de rotas de avaliação técnica, botões de ação, filtros de busca, painel executivo ESG e exportação de relatórios CSV), padronizando a nomenclatura para termos amigáveis como "Avaliações Técnicas", "Nova Avaliação Técnica" e "Avaliações Técnicas & Descarte".
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/routes/_auth/login/index.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/dashboard/index.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/asset-evaluations/index.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/asset-evaluations/$id.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/asset-evaluations/new/index.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/executive-dashboard.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationList.ts`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Nomenclatura Amigável**: Substituição do prefixo `FO-PAT-02` por títulos e textos descritivos claros na navegação, cards e formulários.
+  - **Exportação CSV**: Nome padrão do arquivo gerado atualizado para `avaliacoes-tecnicas-YYYY-MM-DD.csv`.
+
+## [2026-09-07] - Remoção do Código FO-AD-01, Correção de Rotas e Breadcrumbs de Compras
+- **Descrição**: Remoção de todas as menções textuais ao código documental "FO-AD-01" na interface do `solutis-agile-frontend`, correção do endpoint base da API no frontend (`/proxy/procurement/v1/purchase-processes`) para sanar o erro 404 nos endpoints de listagem e métricas do painel executivo, e ajuste no componente de histórico de navegação (`Breadcrumbs`) mapeando o segmento de rota `purchase-processes` para o módulo pai `"Compras"`.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/components/common/breadcrumbs.tsx`
+  - `solutis-agile-frontend/src/services/api/purchase-process.ts`
+  - `solutis-agile-frontend/src/routes/_auth/login/index.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/purchase-processes/index.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/dashboard/index.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/print-view.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-identification.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-decision-approval.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/process-form.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/executive-dashboard.tsx`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessForm.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessList.ts`
+  - `solutis_manager_back/src/tests/test_proxy_gateway.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Histórico de Navegação (Breadcrumbs)**: O segmento `purchase-processes` agora é mapeado para `"Compras"` (ex: `Painel / Compras` e `Painel / Compras / Novo`), refletindo o módulo correspondente em vez de exibir o nome cru da rota.
+  - **Remoção de FO-AD-01**: Títulos, rótulos, botões, modais e descrições ajustados para utilizar nomes amigáveis ("Análise e Decisão de Compras", "Compras & Cotações", "Novo Processo de Compras") sem o código técnico.
+  - **Correção de Rota Proxy (404)**: Ajustado `BASE_URL = '/proxy/procurement/v1/purchase-processes'` em `purchase-process.ts`, permitindo que o API Gateway intercepte e repasse com autorização e autenticação para o microsserviço `solutis_procurement`.
+
+## [2026-09-07] - Implementação de Single Sign-On (SSO) com Microsoft Entra ID (Azure AD)
+- **Descrição**: Implementação completa do fluxo de autenticação corporativa Single Sign-On (SSO) com Microsoft Entra ID (Azure AD) no backend `solutis_manager_back` e no frontend `solutis-agile-frontend`. Permite login direto com contas corporativas Microsoft 365, vinculação e auto-provisionamento com colaboradores cadastrados (`EmployeeModel`), geração de migration Alembic para a coluna `azure_oid`, suíte de testes unitários automatizados (TDD) e integração orgânica com a tela de login e seleção de produtos (Agile & Flow).
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/config.py`
+  - `solutis_manager_back/src/auth/models.py`
+  - `solutis_manager_back/src/auth/schemas.py`
+  - `solutis_manager_back/src/auth/azure_service.py`
+  - `solutis_manager_back/src/auth/router.py`
+  - `solutis_manager_back/alembic/versions/2026-09-07_123000_add_user_azure_oid.py`
+  - `solutis_manager_back/src/tests/test_azure_auth.py`
+  - `solutis-agile-frontend/src/constants/env.ts`
+  - `solutis-agile-frontend/src/routes/auth/callback/azure.tsx`
+  - `solutis-agile-frontend/src/routes/_auth/login/index.tsx`
+  - `.spec/project-overview.md`
+  - `.spec/architecture.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Backend (`solutis_manager_back`)**:
+    - Adicionada configuração de variáveis de ambiente para Azure (`AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_REDIRECT_URI`, `AZURE_AUTO_PROVISION`, `AZURE_DEFAULT_GROUP_NAME`).
+    - Adicionada coluna `azure_oid` única e indexada no modelo `UserModel` e nos serializers `UserSerializerSchema` e `UserListSerializerSchema`.
+    - Migration Alembic `c4d1e8a2f301` (`add_user_azure_oid.py`) criada para suporte a banco relacional.
+    - Implementado `AzureAuthService` com geração de URLs de autorização com CSRF state token, troca de código de autorização por tokens de acesso Microsoft via endpoint OAuth2 v2.0, recuperação de dados de perfil no Microsoft Graph (`/v1.0/me`) e resolução inteligente de usuários (busca por `azure_oid`, fallback para match de `email` com atualização de `azure_oid`, e auto-provisionamento automático associando o `EmployeeModel` e permissões padrão).
+    - Endpoints `/auth/azure/url/` (GET) e `/auth/azure/callback/` (POST) criados no `auth_router`.
+    - Suíte de testes unitários em `test_azure_auth.py` cobrindo cenários com mocks de API externa, credenciais ausentes, auto-provisionamento habilitado/desabilitado e matching de contas.
+  - **Frontend (`solutis-agile-frontend`)**:
+    - Constantes do Azure configuradas em `ENVIRONMENT` (`azureClientId`, `azureTenantId`, `azureRedirectUri`).
+    - Botão "Entrar com conta Microsoft" estilizado com identidade visual corporativa (logo de 4 cores da Microsoft) e divisor sutil na tela de login unificado.
+    - Nova rota de callback do TanStack Router `/auth/callback/azure` processando o código de autorização retornado pela Microsoft com loading screen visual rico, tratamento de erro seguro e direcionamento para a seleção de produtos ou dashboard.
+
 ## [2026-09-06] - Unificação do Login e Controle de Acesso a Produtos (Agile & Flow)
 - **Descrição**: Unificação da autenticação dos sistemas Solutis Agile e Solutis Flow em uma única tela de login compartilhada no `solutis-agile-frontend`. Adição do controle de permissão por produto (`products`) nos modelos e schemas do `solutis_manager_back`, migração de banco de dados via Alembic, fluxo inteligente pós-login com tela de seleção de produto e redirecionamento automático com SSO token handoff para o `solutis-flow`.
 - **Arquivos afetados**:

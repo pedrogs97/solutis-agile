@@ -39,7 +39,7 @@ export function TabIdentification({
         <div>
           <Title order={4}>1. Identificação da Contratação</Title>
           <Text size="sm" c="dimmed">
-            Dados cadastrais do processo de compra ou contratação de serviço (FO-AD-01).
+            Dados cadastrais do processo de compra ou contratação de serviço.
           </Text>
         </div>
 

@@ -18,10 +18,13 @@ const segmentToLabelMap: Record<string, string> = {
   terms: 'Termos',
   logs: 'Logs',
   procurement: 'Compras',
+  'purchase-processes': 'Compras',
+  'asset-evaluations': 'Avaliação Técnica',
   reports: 'Relatórios',
   users: 'Usuários',
   suppliers: 'Fornecedores',
   add: 'Adicionar',
+  new: 'Novo',
   edit: 'Editar',
   view: 'Visualizar',
 }

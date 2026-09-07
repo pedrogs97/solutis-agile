@@ -240,6 +240,20 @@ class TestAssetEvaluationModule(TestBase):
         assert metrics.total_estimated_economy >= 900.0
         db.close()
 
+    def test_get_metrics_empty_table(self, setup, create_initial_data):
+        """Valida que get_metrics lida perfeitamente com tabela vazia sem lançar exceções."""
+        service = AssetEvaluationService()
+        db = self.testing_session_local()
+        # Sem criar nenhuma avaliação, as agregações retornam None no SQL
+        metrics = service.get_metrics(db)
+        assert metrics.total_evaluations >= 0
+        assert metrics.total_reused_weight >= 0.0
+        assert metrics.total_discarded_weight >= 0.0
+        assert metrics.total_recycle_weight >= 0.0
+        assert metrics.average_reuse_percentage >= 0.0
+        assert metrics.total_estimated_economy >= 0.0
+        db.close()
+
     # -------------------------------------------------------------
     # Testes de Endpoints HTTP (Router Integration)
     # -------------------------------------------------------------

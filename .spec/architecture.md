@@ -23,9 +23,11 @@ graph TD
     FDB[(🛢️ Flow Database Isolado)]
     TOTVS[(🏢 ERP TOTVS SQL Server)]
     CS[📝 Clicksign API External]
+    AZ[☁️ Microsoft Entra ID / Graph]
 
     %% Connections
-    FE -->|HTTP Requests| MB
+    FE -->|HTTP Requests / SSO Callback| MB
+    FE -->|Login Redirect| AZ
     FL -->|API Gateway Auth Proxy| MB
     MB -->|Proxy /v1/flow| FB
     MB -->|Proxy /v1/procurement| PR
@@ -33,6 +35,7 @@ graph TD
 
     MB -->|Read/Write| DB
     MB -->|Sign Documents| CS
+    MB -->|Token Exchange & User Profile| AZ
 
     FB -->|Read/Write Isolado| FDB
     FB -->|Enqueue Domain Events| DQ
@@ -55,8 +58,9 @@ graph TD
 - **Solutis Flow Backend**: `http://localhost:8004` (Docs em `/api/v1/docs`)
 
 ## Fluxos de Dados e Integrações
-1. **Manager Backend (Core & Gateway)**: Gerencia CRUD de ativos e comodatos, centraliza a autenticação JWT/Token e atua como API Gateway/Auth Proxy roteando chamadas e injetando o contexto do usuário nos microsserviços downstream.
+1. **Manager Backend (Core & Gateway)**: Gerencia CRUD de ativos e comodatos, centraliza o login unificado com autenticação JWT/Token e suporte a Single Sign-On (SSO) corporativo com Microsoft Entra ID (Azure AD) sob Feature Flag (`ENABLE_SSO` / `VITE_ENABLE_SSO` com default `false`), atua como API Gateway/Auth Proxy roteando chamadas e injetando o contexto do usuário nos microsserviços downstream.
 2. **Solutis Flow Backend**: Microsserviço de governança operacional e gestão de demandas com arquitetura baseada em eventos (Dramatiq + Redis), SSE em tempo real, banco de dados isolado e referências a usuários via IDs inteiros indexados.
 3. **Sync Service**: Executa tarefas agendadas (APScheduler) para puxar dados do ERP TOTVS (SQL Server) e efetuar upsert no MySQL.
 4. **Report Service**: Consome o MySQL em modo somente leitura e gera relatórios em planilhas Excel (.xlsx).
 5. **Procurement**: Serviço de compras e fornecedores baseado em Django com suporte ASGI, NinjaAPI e Pydantic, gerenciando o ciclo de vida de fornecedores e o módulo de Análise e Decisão de Compras (FO-AD-01).
+

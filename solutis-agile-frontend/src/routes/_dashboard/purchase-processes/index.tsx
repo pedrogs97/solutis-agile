@@ -32,7 +32,7 @@ function PurchaseProcessesIndexPage() {
     <>
       <Breadcrumbs />
       <PageSectionHeader
-        title="Análise e Decisão de Compras (FO-AD-01)"
+        title="Análise e Decisão de Compras"
         actions={
           <Group>
             <Can I="add" a="supplier">
@@ -43,7 +43,7 @@ function PurchaseProcessesIndexPage() {
                 leftSection={<PlusSquare size={16} />}
                 onClick={() => navigate({ to: '/purchase-processes/new' as any })}
               >
-                Novo Processo FO-AD-01
+                Novo Processo de Compras
               </Button>
             </Can>
           </Group>

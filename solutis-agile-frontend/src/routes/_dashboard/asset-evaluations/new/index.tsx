@@ -19,7 +19,7 @@ function NewAssetEvaluationPage() {
     <>
       <Breadcrumbs />
       <PageSectionHeader
-        title="Novo Formulário FO-PAT-02"
+        title="Nova Avaliação Técnica"
       />
       <EvaluationForm />
     </>

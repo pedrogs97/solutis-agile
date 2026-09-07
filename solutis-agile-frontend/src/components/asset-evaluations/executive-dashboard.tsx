@@ -52,7 +52,7 @@ export function ExecutiveDashboard({
     {
       title: 'Ativos Avaliados',
       value: totalEvaluations.toString(),
-      description: 'Total de formulários FO-PAT-02 registrados',
+      description: 'Total de avaliações técnicas registradas',
       icon: Boxes,
       color: 'blue',
     },
@@ -237,7 +237,7 @@ export function ExecutiveDashboard({
                     Conformidade e Rastreabilidade
                   </Text>
                   <Text size="xs" c="dimmed">
-                    Processo 100% aderente ao formulário FO-PAT-02 com manifesto de resíduos (MTR) e laudo técnico.
+                    Processo 100% aderente ao fluxo de avaliação técnica com manifesto de resíduos (MTR) e laudo técnico.
                   </Text>
                 </div>
                 <Badge color="green" size="lg" leftSection={<CheckCircle2 size={16} />}>

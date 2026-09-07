@@ -94,6 +94,7 @@ class UserModel(Base):
     last_login_in = Column("last_login", DateTime, nullable=True)
     department = Column("department", String(length=255), nullable=False, default="")
     manager = Column("manager", String(length=255), nullable=False, default="")
+    azure_oid = Column("azure_oid", String(length=255), nullable=True, unique=True)
     products = Column(
         "products",
         String(length=255),

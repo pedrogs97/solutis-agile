@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Container,
+  Divider,
   Flex,
   Group,
   Paper,
@@ -21,7 +22,7 @@ import {
 import { showNotification } from '@mantine/notifications'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ArrowRight, Boxes, CheckCircle2, LogOut, Zap } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -30,7 +31,7 @@ import { ENVIRONMENT } from '@/constants/env'
 import { apiV1 } from '@/lib/axios'
 import { userAuthSchema } from '@/lib/validations/auth'
 import { signIn, signOut } from '@/store/persisted/useAuthStore'
-import { updateProfile } from '@/store/persisted/useProfileStore'
+import { getProfile, updateProfile } from '@/store/persisted/useProfileStore'
 
 export const Route = createFileRoute('/_auth/login/')({
   component: LoginPage,
@@ -51,12 +52,70 @@ interface AuthResponseData {
   products?: string[]
 }
 
+function MicrosoftLogo() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+      <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+      <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+      <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+    </svg>
+  )
+}
+
 function LoginPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isAzureLoading, setIsAzureLoading] = useState<boolean>(false)
   const [mode, setMode] = useState<'login' | 'select_product'>('login')
   const [authData, setAuthData] = useState<AuthResponseData | null>(null)
   const { colorScheme } = useMantineColorScheme()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const shouldSelectProduct = sessionStorage.getItem('sso_select_product')
+    if (shouldSelectProduct) {
+      sessionStorage.removeItem('sso_select_product')
+      const profile = getProfile()
+      if (profile) {
+        setAuthData(profile as unknown as AuthResponseData)
+        setMode('select_product')
+      }
+    }
+  }, [])
+
+  const handleMicrosoftLogin = async () => {
+    setIsAzureLoading(true)
+    try {
+      const redirectUri =
+        ENVIRONMENT.azureRedirectUri ||
+        `${window.location.origin}/auth/callback/azure`
+      const urlResponse = await fetch(
+        `${ENVIRONMENT.baseURL}${apiV1}/auth/azure/url/?redirectUri=${encodeURIComponent(redirectUri)}`,
+      )
+      if (!urlResponse.ok) {
+        const errData = await urlResponse.json().catch(() => null)
+        throw new Error(
+          errData?.detail ||
+            'Não foi possível obter a URL de autenticação corporativa da Microsoft.',
+        )
+      }
+      const data = await urlResponse.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (err: any) {
+      showNotification({
+        title: 'Erro no Login Microsoft',
+        message:
+          err?.message ||
+          'Não foi possível conectar ao serviço da Microsoft. Tente novamente mais tarde.',
+        color: 'red',
+        autoClose: 6000,
+        withCloseButton: true,
+      })
+      setIsAzureLoading(false)
+    }
+  }
 
   const form = useForm({
     resolver: zodResolver(userAuthSchema),
@@ -199,6 +258,41 @@ function LoginPage() {
             </Text>
           </Stack>
 
+          {ENVIRONMENT.enableSSO && (
+            <>
+              <Button
+                variant="default"
+                size="md"
+                fullWidth
+                onClick={handleMicrosoftLogin}
+                loading={isAzureLoading}
+                disabled={isLoading || isAzureLoading}
+                leftSection={<MicrosoftLogo />}
+                styles={{
+                  root: {
+                    borderWidth: '1px',
+                    fontWeight: 600,
+                    transition: 'all 0.2s ease',
+                  },
+                }}
+              >
+                Entrar com conta Microsoft
+              </Button>
+
+              <Divider
+                my="lg"
+                label="ou continue com usuário e senha"
+                labelPosition="center"
+                styles={{
+                  label: {
+                    fontSize: '0.75rem',
+                    color: 'var(--mantine-color-dimmed)',
+                  },
+                }}
+              />
+            </>
+          )}
+
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <TextInput
               id="username"
@@ -279,7 +373,7 @@ function LoginPage() {
                 <div>
                   <Text fw={700} size="lg">Solutis Agile</Text>
                   <Text size="xs" c="dimmed" mt={4}>
-                    Gestão patrimonial, ativos, comodatos, fornecedores e formulário de compras FO-AD-01.
+                    Gestão patrimonial, ativos, comodatos, fornecedores e análise de compras.
                   </Text>
                 </div>
 
@@ -290,11 +384,11 @@ function LoginPage() {
                   </Group>
                   <Group gap={6}>
                     <CheckCircle2 size={14} color="#4c6ef5" />
-                    <Text size="xs" c="dimmed">Compras & Cotações (FO-AD-01)</Text>
+                    <Text size="xs" c="dimmed">Compras & Cotações</Text>
                   </Group>
                   <Group gap={6}>
                     <CheckCircle2 size={14} color="#4c6ef5" />
-                    <Text size="xs" c="dimmed">Avaliação Técnica FO-PAT-02</Text>
+                    <Text size="xs" c="dimmed">Avaliação Técnica</Text>
                   </Group>
                 </Stack>
               </Stack>

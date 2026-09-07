@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.database import Base
 
@@ -125,12 +125,12 @@ class AssetTechnicalEvaluationModel(Base):
     technical_opinion: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     evaluator_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=True
+        Integer, ForeignKey("user.id"), nullable=True
     )
     evaluator_name: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)
 
     approver_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=True
+        Integer, ForeignKey("user.id"), nullable=True
     )
     approver_name: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)
     approval_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
@@ -146,7 +146,7 @@ class AssetTechnicalEvaluationModel(Base):
         server_onupdate=func.now(),
     )
 
-    asset = relationship("src.asset.models.AssetModel", back_populates="evaluations")
+    asset = relationship("src.asset.models.AssetModel", viewonly=True)
     components: Mapped[List[AssetEvaluationComponentModel]] = relationship(
         back_populates="evaluation", cascade="all, delete-orphan", lazy="selectin"
     )

@@ -230,7 +230,7 @@ export function ExecutiveDashboard() {
             />
           </Group>
           <Text size="xs" c="dimmed">
-            Visão consolidada FO-AD-01
+            Visão consolidada
           </Text>
         </Group>
       </Paper>

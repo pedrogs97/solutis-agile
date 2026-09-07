@@ -1,16 +1,19 @@
 """Auth router"""
 
-from typing import Annotated, Union
+from typing import Annotated, Optional, Union
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm as LoginSchema
 from fastapi_filter import FilterDepends
 from fastapi_pagination import Page
 from sqlalchemy.orm import Session
+from src.auth.azure_service import AzureAuthService
 from src.auth.filters import GroupFilter, PermissionFilter, UserFilter
 from src.auth.models import UserModel
 from src.auth.schemas import (
+    AzureCallbackRequestSchema,
+    AzureLoginUrlResponseSchema,
     GroupSerializerSchema,
     NewGroupSchema,
     NewPasswordSchema,
@@ -34,6 +37,7 @@ from src.backends import (
     token_exception,
 )
 from src.config import (
+    ENABLE_SSO,
     MAX_PAGINATION_NUMBER,
     NOT_ALLOWED,
     PAGE_NUMBER_DESCRIPTION,
@@ -48,6 +52,56 @@ user_service = UserSerivce()
 group_service = GroupService()
 
 permission_serivce = PermissionService()
+
+
+@auth_router.get("/azure/url/", response_model=AzureLoginUrlResponseSchema)
+def azure_login_url_route(
+    state: Optional[str] = Query(None, description="State token for CSRF protection"),
+    redirect_uri: Optional[str] = Query(
+        None, alias="redirectUri", description="Custom redirect URI"
+    ),
+):
+    """Returns Microsoft Entra ID (Azure AD) authorization URL."""
+    if not ENABLE_SSO:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Autenticação SSO desabilitada.",
+        )
+    url, state_token = AzureAuthService.get_authorization_url(
+        state=state, redirect_uri=redirect_uri
+    )
+    return {"url": url, "state": state_token}
+
+
+@auth_router.post("/azure/callback/")
+def azure_callback_route(
+    data: AzureCallbackRequestSchema,
+    db_session: Session = Depends(get_db_session),
+):
+    """
+    Receives authorization code from Microsoft, exchanges for tokens,
+    retrieves user profile, provisions/links user in DB, and returns Solutis Agile JWT session.
+    """
+    if not ENABLE_SSO:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Autenticação SSO desabilitada.",
+        )
+    token_data = AzureAuthService.exchange_code_for_token(
+        code=data.code, redirect_uri=data.redirect_uri
+    )
+    access_token = token_data.get("access_token")
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não foi possível obter o token de acesso da Microsoft.",
+        )
+
+    profile = AzureAuthService.get_user_profile(access_token)
+    user = AzureAuthService.authenticate_or_provision_user(profile, db_session)
+    session_token = get_user_token(user, db_session)
+    db_session.close()
+    return JSONResponse(content=session_token, status_code=status.HTTP_200_OK)
 
 
 @auth_router.post("/login/")

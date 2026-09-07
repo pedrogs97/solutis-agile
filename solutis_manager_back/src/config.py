@@ -195,3 +195,16 @@ DISABLE_CLICKSIGN = os.getenv("DISABLE_CLICKSIGN", "False").lower() in (
     "1",
     "t",
 )
+
+# Azure Entra ID (SSO) config
+ENABLE_SSO = os.getenv("ENABLE_SSO", "false").lower() in ("true", "1", "t")
+AZURE_CLIENT_ID = os.getenv("AZURE_CLIENT_ID", "")
+AZURE_CLIENT_SECRET = os.getenv("AZURE_CLIENT_SECRET", "")
+AZURE_TENANT_ID = os.getenv("AZURE_TENANT_ID", "")
+AZURE_REDIRECT_URI = os.getenv("AZURE_REDIRECT_URI", "")
+AZURE_AUTO_PROVISION = os.getenv("AZURE_AUTO_PROVISION", "true").lower() in (
+    "true",
+    "1",
+    "t",
+)
+AZURE_DEFAULT_GROUP_NAME = os.getenv("AZURE_DEFAULT_GROUP_NAME", "Colaborador")

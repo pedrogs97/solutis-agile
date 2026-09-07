@@ -196,7 +196,7 @@ export function TabDecisionApproval({
 
           {(d.minimoAtingido === 'nao' || isNotLowest) && (
             <Select
-              label="Motivo da Cotação Não Aplicável / Exceção (FO-AD-01)"
+              label="Motivo da Cotação Não Aplicável / Exceção"
               description="Selecione o enquadramento conforme a política de compras"
               placeholder="Selecione o motivo padrão"
               value={d.motivoKey || ''}

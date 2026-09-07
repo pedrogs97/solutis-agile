@@ -55,7 +55,7 @@ function DashboardPage() {
           subject: 'asset',
         },
         {
-          label: 'Avaliações Técnicas (FO-PAT-02)',
+          label: 'Avaliações Técnicas',
           href: '/asset-evaluations',
           subject: 'asset',
         },
@@ -74,7 +74,7 @@ function DashboardPage() {
       subject: 'supplier',
       links: [
         {
-          label: 'Análise e Decisão (FO-AD-01)',
+          label: 'Análise e Decisão de Compras',
           href: '/purchase-processes',
           subject: 'supplier',
         },

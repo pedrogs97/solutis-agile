@@ -47,7 +47,7 @@ export function PrintView({ process }: PrintViewProps) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #333', paddingBottom: '12px' }}>
             <div>
               <Title order={2}>FORMULÁRIO DE ANÁLISE E DECISÃO DE COMPRAS</Title>
-              <Text size="sm" c="dimmed">FO-AD-01 — Solutis Tecnologias</Text>
+              <Text size="sm" c="dimmed">Solutis Tecnologias</Text>
             </div>
             <div style={{ textAlign: 'right' }}>
               <Badge size="lg" variant="outline">Status: {apr.status}</Badge>

@@ -197,7 +197,7 @@ class AssetEvaluationService:
                     destination=str(getattr(c, "destination")),
                     observations=getattr(c, "observations"),
                 )
-                for c in evaluation.components
+                for c in (evaluation.components or [])
             ],
             "attachments": [
                 AttachmentOutSchema(
@@ -207,7 +207,7 @@ class AssetEvaluationService:
                     checklist_key=getattr(a, "checklist_key"),
                     created_at=getattr(a, "created_at"),
                 )
-                for a in evaluation.attachments
+                for a in (evaluation.attachments or [])
             ],
         }
         return AssetEvaluationOutSchema.model_validate(eval_dict)
@@ -457,21 +457,11 @@ class AssetEvaluationService:
         # Agregações de peso e economia
         sums = (
             db_session.query(
-                func.coalesce(
-                    func.sum(AssetTechnicalEvaluationModel.reused_weight), 0.0
-                ),
-                func.coalesce(
-                    func.sum(AssetTechnicalEvaluationModel.discarded_weight), 0.0
-                ),
-                func.coalesce(
-                    func.sum(AssetTechnicalEvaluationModel.recycle_weight), 0.0
-                ),
-                func.coalesce(
-                    func.sum(AssetTechnicalEvaluationModel.estimated_economy), 0.0
-                ),
-                func.coalesce(
-                    func.avg(AssetTechnicalEvaluationModel.reuse_percentage), 0.0
-                ),
+                func.sum(AssetTechnicalEvaluationModel.reused_weight),
+                func.sum(AssetTechnicalEvaluationModel.discarded_weight),
+                func.sum(AssetTechnicalEvaluationModel.recycle_weight),
+                func.sum(AssetTechnicalEvaluationModel.estimated_economy),
+                func.avg(AssetTechnicalEvaluationModel.reuse_percentage),
             )
             .filter(
                 AssetTechnicalEvaluationModel.status.in_(
@@ -481,11 +471,23 @@ class AssetEvaluationService:
             .first()
         )
 
-        reused_weight = float(sums[0]) if sums else 0.0
-        discarded_weight = float(sums[1]) if sums else 0.0
-        recycle_weight = float(sums[2]) if sums else 0.0
-        estimated_economy = float(sums[3]) if sums else 0.0
-        avg_reuse_pct = round(float(sums[4]) if sums else 0.0, 2)
+        reused_weight = (
+            float(sums[0]) if sums and len(sums) > 0 and sums[0] is not None else 0.0
+        )
+        discarded_weight = (
+            float(sums[1]) if sums and len(sums) > 1 and sums[1] is not None else 0.0
+        )
+        recycle_weight = (
+            float(sums[2]) if sums and len(sums) > 2 and sums[2] is not None else 0.0
+        )
+        estimated_economy = (
+            float(sums[3]) if sums and len(sums) > 3 and sums[3] is not None else 0.0
+        )
+        avg_reuse_pct = (
+            round(float(sums[4]), 2)
+            if sums and len(sums) > 4 and sums[4] is not None
+            else 0.0
+        )
 
         # Contagem por destino/status
         reused_assets = (

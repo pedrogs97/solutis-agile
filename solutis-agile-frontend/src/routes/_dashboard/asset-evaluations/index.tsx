@@ -85,7 +85,7 @@ function AssetEvaluationsPage() {
     <>
       <Breadcrumbs />
       <PageSectionHeader
-        title="Avaliações Técnicas & Descarte (FO-PAT-02)"
+        title="Avaliações Técnicas & Descarte"
         actions={
           <Group>
             <Button
@@ -105,7 +105,7 @@ function AssetEvaluationsPage() {
                 leftSection={<PlusSquare size={16} />}
                 onClick={() => navigate({ to: '/asset-evaluations/new' })}
               >
-                Nova Avaliação FO-PAT-02
+                Nova Avaliação Técnica
               </Button>
             </Can>
           </Group>
@@ -170,7 +170,7 @@ function AssetEvaluationsPage() {
               >
                 <TextInput
                   label="Buscar por Protocolo, Tombo ou Modelo"
-                  placeholder="Ex.: FO-PAT-02, 123456, Dell..."
+                  placeholder="Ex.: 123456, Dell..."
                   {...formFilter.register('search')}
                   miw={280}
                 />
