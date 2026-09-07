@@ -14,18 +14,15 @@ import {
   Text,
   ThemeIcon,
   Title,
-  Tooltip,
 } from '@mantine/core'
 import { Link } from '@tanstack/react-router'
 import {
   AlertCircle,
-  Calendar,
   CheckCircle2,
   Clock,
   DollarSign,
   FileSpreadsheet,
   TrendingUp,
-  Users,
 } from 'lucide-react'
 
 import { formatMoney } from '@/hooks/purchase-process/usePurchaseProcessCalculations'

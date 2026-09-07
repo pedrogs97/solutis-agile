@@ -11,7 +11,7 @@ import {
   Title,
 } from '@mantine/core'
 import { DollarSign, Sparkles } from 'lucide-react'
-import { UseFormReturn } from 'react-hook-form'
+import type { UseFormReturn } from 'react-hook-form'
 
 import { formatMoneyBRL } from '@/lib/utils'
 import type { AssetEvaluationFormValues } from '@/types/AssetEvaluation'

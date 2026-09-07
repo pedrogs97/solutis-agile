@@ -9,12 +9,11 @@ import {
   Progress,
   Stack,
   Text,
-  TextInput,
   ThemeIcon,
   Title,
 } from '@mantine/core'
 import { Leaf, Scale } from 'lucide-react'
-import { UseFormReturn } from 'react-hook-form'
+import type { UseFormReturn } from 'react-hook-form'
 
 import type { AssetEvaluationFormValues } from '@/types/AssetEvaluation'
 

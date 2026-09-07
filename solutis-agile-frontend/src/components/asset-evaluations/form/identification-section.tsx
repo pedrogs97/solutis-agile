@@ -12,7 +12,7 @@ import {
   Title,
 } from '@mantine/core'
 import { Info } from 'lucide-react'
-import { UseFormReturn } from 'react-hook-form'
+import type { UseFormReturn } from 'react-hook-form'
 
 import type { AssetEvaluationFormValues } from '@/types/AssetEvaluation'
 

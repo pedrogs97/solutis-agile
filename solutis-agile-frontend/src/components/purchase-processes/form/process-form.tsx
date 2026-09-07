@@ -20,8 +20,9 @@ import {
   Save,
 } from 'lucide-react'
 
+import { PrintView } from '@/components/purchase-processes/print-view'
 import { usePurchaseProcessForm } from '@/hooks/purchase-process/usePurchaseProcessForm'
-import { PrintView } from '../print-view'
+
 import { TabDecisionApproval } from './tab-decision-approval'
 import { TabIdentification } from './tab-identification'
 import { TabItemsDetail } from './tab-items-detail'

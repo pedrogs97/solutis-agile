@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+
+import type { PurchaseProcess } from '@/types/PurchaseProcess'
 import {
   calcAutoGrossValue,
   calcCTA,
@@ -12,7 +14,6 @@ import {
   getLowestCtaSupplier,
   maskCnpj,
 } from './usePurchaseProcessCalculations'
-import type { PurchaseProcess } from '@/types/PurchaseProcess'
 
 describe('usePurchaseProcessCalculations', () => {
   it('formats CNPJ and cleans digits correctly', () => {

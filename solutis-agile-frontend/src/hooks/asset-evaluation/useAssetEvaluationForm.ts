@@ -167,7 +167,9 @@ export function useAssetEvaluationForm({
           reset(draft)
           setDraftRestored(true)
         }
-      } catch (e) {}
+      } catch (error) {
+        console.warn('Draft load error:', error)
+      }
     }
   }, [existingEvaluation, isEdit, reset])
 
@@ -176,14 +178,18 @@ export function useAssetEvaluationForm({
     if (!isEdit) {
       try {
         localStorage.setItem(DRAFT_KEY, JSON.stringify(getValues()))
-      } catch (e) {}
+      } catch (error) {
+        console.warn('Draft save error:', error)
+      }
     }
   }, [isEdit, getValues])
 
   const discardDraft = () => {
     try {
       localStorage.removeItem(DRAFT_KEY)
-    } catch (e) {}
+    } catch (error) {
+      console.warn('Draft remove error:', error)
+    }
     reset(DEFAULT_FORM_VALUES)
     setDraftRestored(false)
     notifications.show({
@@ -198,7 +204,9 @@ export function useAssetEvaluationForm({
     onSuccess: async (created: AssetTechnicalEvaluation) => {
       try {
         localStorage.removeItem(DRAFT_KEY)
-      } catch (e) {}
+      } catch (error) {
+        console.warn('Draft clear error:', error)
+      }
 
       // Upload pending files if any
       if (pendingUploads.length > 0) {

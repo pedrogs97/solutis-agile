@@ -16,7 +16,7 @@ import {
   Title,
 } from '@mantine/core'
 import { modals } from '@mantine/modals'
-import { AlertCircle, AlertTriangle, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react'
 
 import {
   formatDateTime,

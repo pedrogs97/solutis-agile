@@ -15,7 +15,7 @@ import {
   Title,
 } from '@mantine/core'
 import { Cpu, Plus, Trash2 } from 'lucide-react'
-import { UseFormReturn } from 'react-hook-form'
+import type { UseFormReturn } from 'react-hook-form'
 
 import type {
   AssetCatalogComponent,
