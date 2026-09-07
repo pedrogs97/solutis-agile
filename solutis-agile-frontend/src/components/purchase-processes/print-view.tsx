@@ -2,7 +2,6 @@
 
 import {
   Badge,
-  Divider,
   Paper,
   Stack,
   Table,
@@ -19,7 +18,6 @@ import {
   usePurchaseProcessCalculations,
 } from '@/hooks/purchase-process/usePurchaseProcessCalculations'
 import type { PurchaseProcess } from '@/types/PurchaseProcess'
-import { CRITERIOS_AVALIACAO, NIVEIS_SATISFACAO } from '@/types/PurchaseProcess'
 
 interface PrintViewProps {
   process: PurchaseProcess

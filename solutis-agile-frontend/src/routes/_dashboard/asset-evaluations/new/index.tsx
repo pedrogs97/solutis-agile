@@ -20,7 +20,6 @@ function NewAssetEvaluationPage() {
       <Breadcrumbs />
       <PageSectionHeader
         title="Novo Formulário FO-PAT-02"
-        subtitle="Avaliação Técnica, Reaproveitamento, Descarte e Baixa Patrimonial"
       />
       <EvaluationForm />
     </>

@@ -22,7 +22,6 @@ function DetailAssetEvaluationPage() {
       <Breadcrumbs />
       <PageSectionHeader
         title="Detalhes da Avaliação Técnica (FO-PAT-02)"
-        subtitle="Visualização, edição e fluxo de aprovação e baixa"
       />
       <EvaluationForm evaluationId={id} />
     </>

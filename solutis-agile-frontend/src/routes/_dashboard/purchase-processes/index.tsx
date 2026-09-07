@@ -3,7 +3,6 @@
 import {
   Button,
   Group,
-  Stack,
   Tabs,
   Text,
 } from '@mantine/core'

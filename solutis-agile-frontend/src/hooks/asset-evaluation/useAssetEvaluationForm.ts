@@ -71,10 +71,10 @@ export function useAssetEvaluationForm({
   const [pendingUploads, setPendingUploads] = useState<{ file: File; checklistKey?: string }[]>([])
 
   // Load existing data if editing
-  const { data: existingEvaluation, isPending: isPendingFetch } = useQuery({
-    queryKey: ['fetchAssetEvaluation', evaluationId],
-    queryFn: fetchAssetEvaluation,
-    enabled: isEdit,
+  const { data: existingEvaluation, isPending: isPendingFetch } = useQuery<AssetTechnicalEvaluation | null>({
+    queryKey: ['fetchAssetEvaluation', evaluationId ? String(evaluationId) : ''],
+    queryFn: () => (evaluationId ? fetchAssetEvaluation({ queryKey: ['fetchAssetEvaluation', String(evaluationId)] } as any) : Promise.resolve(null)),
+    enabled: isEdit && !!evaluationId,
   })
 
   // Load shared catalog components
@@ -131,30 +131,31 @@ export function useAssetEvaluationForm({
   // Populate form with existing data when editing
   useEffect(() => {
     if (existingEvaluation) {
+      const evalData = existingEvaluation
       reset({
-        asset_id: existingEvaluation.asset_id,
-        patrimonio: existingEvaluation.patrimonio || '',
-        asset_type_name: existingEvaluation.asset_type_name || '',
-        brand_model: existingEvaluation.brand_model || '',
-        serial_number: existingEvaluation.serial_number || '',
-        cost_center: existingEvaluation.cost_center || '',
-        unity: existingEvaluation.unity || '',
-        status: existingEvaluation.status || 'Rascunho',
-        classification: existingEvaluation.classification || 'Bom',
-        feasibility: existingEvaluation.feasibility || 'Alta',
-        destination: existingEvaluation.destination || ['Reaproveitamento interno'],
-        gross_weight: existingEvaluation.gross_weight ?? 0,
-        reused_weight: existingEvaluation.reused_weight ?? 0,
-        discarded_weight: existingEvaluation.discarded_weight ?? 0,
-        recycle_weight: existingEvaluation.recycle_weight ?? 0,
-        reuse_percentage: existingEvaluation.reuse_percentage ?? 0,
-        acquisition_value: existingEvaluation.acquisition_value ?? 0,
-        net_book_value: existingEvaluation.net_book_value ?? 0,
-        estimated_economy: existingEvaluation.estimated_economy ?? 0,
-        justification: existingEvaluation.justification || '',
-        technical_opinion: existingEvaluation.technical_opinion || '',
-        components: existingEvaluation.components?.length
-          ? existingEvaluation.components
+        asset_id: evalData.asset_id,
+        patrimonio: evalData.patrimonio || '',
+        asset_type_name: evalData.asset_type_name || '',
+        brand_model: evalData.brand_model || '',
+        serial_number: evalData.serial_number || '',
+        cost_center: evalData.cost_center || '',
+        unity: evalData.unity || '',
+        status: evalData.status || 'Rascunho',
+        classification: evalData.classification || 'Bom',
+        feasibility: evalData.feasibility || 'Alta',
+        destination: evalData.destination || ['Reaproveitamento interno'],
+        gross_weight: evalData.gross_weight ?? 0,
+        reused_weight: evalData.reused_weight ?? 0,
+        discarded_weight: evalData.discarded_weight ?? 0,
+        recycle_weight: evalData.recycle_weight ?? 0,
+        reuse_percentage: evalData.reuse_percentage ?? 0,
+        acquisition_value: evalData.acquisition_value ?? 0,
+        net_book_value: evalData.net_book_value ?? 0,
+        estimated_economy: evalData.estimated_economy ?? 0,
+        justification: evalData.justification || '',
+        technical_opinion: evalData.technical_opinion || '',
+        components: evalData.components?.length
+          ? evalData.components
           : DEFAULT_FORM_VALUES.components,
       })
     } else if (!isEdit) {

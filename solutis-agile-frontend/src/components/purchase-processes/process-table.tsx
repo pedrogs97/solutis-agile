@@ -37,8 +37,6 @@ export function ProcessTable({ onToggleDashboard, showDashboard }: ProcessTableP
     setCategory,
     page,
     setPage,
-    pageSize,
-    setPageSize,
     listData,
     isPending,
     handleDelete,

@@ -1,5 +1,7 @@
 'use client'
 
+import React, { Fragment } from 'react'
+
 import {
   ActionIcon,
   Button,
@@ -84,10 +86,10 @@ export function TabItemsDetail({
                 <Table.Th></Table.Th>
                 <Table.Th></Table.Th>
                 {process.fornecedores.map((f) => (
-                  <Table.Fragment key={f.id}>
+                  <Fragment key={f.id}>
                     <Table.Th style={{ width: 95, fontSize: '11px', textAlign: 'right' }}>Unit. (R$)</Table.Th>
                     <Table.Th style={{ width: 95, fontSize: '11px', textAlign: 'right' }}>Total (R$)</Table.Th>
-                  </Table.Fragment>
+                  </Fragment>
                 ))}
                 <Table.Th></Table.Th>
               </Table.Tr>
@@ -130,7 +132,7 @@ export function TabItemsDetail({
                     const price = it.precos ? it.precos[f.id] : undefined
                     const itemTotal = calcItemTotal(it, f.id)
                     return (
-                      <Table.Fragment key={f.id}>
+                      <Fragment key={f.id}>
                         <Table.Td>
                           <NumberInput
                             size="xs"
@@ -147,7 +149,7 @@ export function TabItemsDetail({
                             {formatMoney(itemTotal)}
                           </Text>
                         </Table.Td>
-                      </Table.Fragment>
+                      </Fragment>
                     )
                   })}
 

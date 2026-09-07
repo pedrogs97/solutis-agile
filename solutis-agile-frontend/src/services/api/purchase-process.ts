@@ -1,4 +1,4 @@
-import { QueryFunctionContext } from '@tanstack/react-query'
+import type { QueryFunctionContext } from '@tanstack/react-query'
 
 import axios from '@/lib/axios'
 import type {
