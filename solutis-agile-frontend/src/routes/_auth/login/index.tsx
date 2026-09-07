@@ -441,7 +441,7 @@ function LoginPage() {
                   </Group>
                   <Group gap={6}>
                     <CheckCircle2 size={14} color="#7950f2" />
-                    <Text size="xs" c="dimmed">Eventos SSE & Notificações em Tempo Real</Text>
+                    <Text size="xs" c="dimmed">Acompanhamento em Tempo Real</Text>
                   </Group>
                   <Group gap={6}>
                     <CheckCircle2 size={14} color="#7950f2" />

@@ -1,5 +1,15 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-07] - Atualização de Texto do Card Solutis Flow na Tela de Login (v2.7.8)
+- **Descrição**: Substituição do texto "Eventos SSE & Notificações em Tempo Real" por "Acompanhamento em Tempo Real" no card do produto Solutis Flow na tela de login unificada.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/routes/_auth/login/index.tsx`
+  - `solutis-agile-frontend/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Incremento de Versão**: `solutis-agile-frontend` atualizado de `2.7.7` para `2.7.8`.
+  - **Ajuste de Copy (`login/index.tsx`)**: O segundo benefício/funcionalidade listado no card de seleção do Solutis Flow agora exibe "Acompanhamento em Tempo Real".
+
 ## [2026-09-07] - Harmonização de Componentes e Tema Escuro em Avaliações e Processos de Compra
 - **Descrição**: Correção da adaptação de tema escuro nos três componentes sinalizados: banner de Conformidade e Rastreabilidade e cards de pesagem ESG em Avaliações Técnicas, toolbar de filtros do Dashboard Executivo de Compras, e cabeçalho/barra de busca da tabela de Processos de Compra.
 - **Arquivos afetados**:
