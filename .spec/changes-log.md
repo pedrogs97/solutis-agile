@@ -1,5 +1,13 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-07] - Deploy Remoto em Produção (Host Solutis - 172.21.3.225)
+- **Descrição**: Execução com sucesso do deploy remoto automatizado para os microsserviços e frontends com novas alterações.
+- **Serviços Atualizados e Implantados**:
+  - `solutis-agile-frontend` (v2.7.6): Rebuild completo da imagem Docker de produção e recriação do container `solutis-agile-frontend-prod`.
+  - `solutis_manager_back` (v2.16.5): Rebuild da imagem Docker com `uv sync`, aplicação de migrations Alembic e recriação do container `solutis-manager-back-prod`.
+  - `solutis-procurement` (v2.18.3) e `solutis-report` (v1.3.2): Sem alterações pendentes de deploy (mantidos estáveis).
+- **Status da Execução**: Sucesso (Exit code 0). Todos os containers em execução saudável.
+
 ## [2026-09-07] - Feature Flag para Autenticação SSO (Microsoft Entra ID) com Default False
 - **Descrição**: Configuração da integração de Single Sign-On (SSO) corporativo com Microsoft Entra ID (Azure AD) como uma Feature Flag desabilitada por padrão (`ENABLE_SSO=false` / `VITE_ENABLE_SSO=false`), mantendo em exibição padrão apenas o formulário de Login Unificado (usuário e senha com suporte a múltiplos produtos Agile e Flow).
 - **Arquivos afetados**:
