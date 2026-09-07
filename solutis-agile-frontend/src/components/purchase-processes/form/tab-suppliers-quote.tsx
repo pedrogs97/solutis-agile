@@ -86,7 +86,7 @@ export function TabSuppliersQuote({
 
         <Table.ScrollContainer minWidth={650}>
           <Table withTableBorder withColumnBorders verticalSpacing="xs">
-            <Table.Thead bg="var(--mantine-color-gray-0)">
+            <Table.Thead bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))">
               <Table.Tr>
                 <Table.Th style={{ width: 230, minWidth: 200 }}>Critério / Campo</Table.Th>
                 {process.fornecedores.map((f, idx) => {
@@ -171,7 +171,7 @@ export function TabSuppliersQuote({
                         size="xs"
                         readOnly
                         value={formatMoney(grossMap[f.id] ?? 0)}
-                        styles={{ input: { fontWeight: 600, background: 'var(--mantine-color-gray-1)' } }}
+                        styles={{ input: { fontWeight: 600, background: 'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6))' } }}
                       />
                     ) : (
                       <NumberInput
@@ -257,7 +257,7 @@ export function TabSuppliersQuote({
               </Table.Tr>
 
               {/* CUSTO TOTAL DA AQUISIÇÃO (CTA) */}
-              <Table.Tr style={{ background: 'var(--mantine-color-gray-1)' }}>
+              <Table.Tr style={{ background: 'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6))' }}>
                 <Table.Td fw={700} c="blue">
                   CUSTO TOTAL DE AQUISIÇÃO (CTA)
                 </Table.Td>
@@ -270,12 +270,16 @@ export function TabSuppliersQuote({
                         radius="sm"
                         withBorder
                         style={{
-                          background: isWinner ? '#ebfbee' : '#fff',
-                          borderColor: isWinner ? '#40c057' : 'var(--mantine-color-gray-3)',
+                          background: isWinner
+                            ? 'light-dark(#ebfbee, rgba(47, 158, 68, 0.2))'
+                            : 'light-dark(#fff, var(--mantine-color-dark-6))',
+                          borderColor: isWinner
+                            ? '#40c057'
+                            : 'light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))',
                           textAlign: 'center',
                         }}
                       >
-                        <Text size="sm" fw={800} c={isWinner ? 'green' : 'dark'}>
+                        <Text size="sm" fw={800} c={isWinner ? 'green' : undefined}>
                           {formatMoney(ctaMap[f.id] ?? 0)}
                         </Text>
                       </Paper>

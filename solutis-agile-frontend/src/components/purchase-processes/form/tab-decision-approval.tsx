@@ -112,7 +112,7 @@ export function TabDecisionApproval({
         ) : (
           <Table.ScrollContainer minWidth={600}>
             <Table withTableBorder withColumnBorders verticalSpacing="sm">
-              <Table.Thead bg="var(--mantine-color-gray-0)">
+              <Table.Thead bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))">
                 <Table.Tr>
                   <Table.Th>Fornecedor</Table.Th>
                   <Table.Th>CNPJ</Table.Th>
@@ -125,7 +125,7 @@ export function TabDecisionApproval({
                 {filledSuppliers.map((f) => {
                   const isWinner = lowest && lowest.id === f.id
                   return (
-                    <Table.Tr key={f.id} bg={isWinner ? '#f6fbf7' : undefined}>
+                    <Table.Tr key={f.id} bg={isWinner ? 'light-dark(#f6fbf7, rgba(47, 158, 68, 0.15))' : undefined}>
                       <Table.Td>
                         <Group gap={6}>
                           <Text size="sm" fw={600}>

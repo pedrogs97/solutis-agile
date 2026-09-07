@@ -5,6 +5,7 @@ from typing import Annotated, Optional, Union
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 from fastapi.responses import JSONResponse
+from loguru import logger
 from sqlalchemy.orm import Session
 from src.asset_evaluation.schemas import (
     AssetEvaluationApproveSchema,
@@ -36,12 +37,17 @@ def get_evaluation_metrics_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    metrics = evaluation_service.get_metrics(db_session)
-    db_session.close()
-    return JSONResponse(
-        content=metrics.model_dump(),
-        status_code=status.HTTP_200_OK,
-    )
+    try:
+        metrics = evaluation_service.get_metrics(db_session)
+        return JSONResponse(
+            content=metrics.model_dump(mode="json"),
+            status_code=status.HTTP_200_OK,
+        )
+    except Exception as exc:
+        logger.error(f"Erro ao obter métricas de avaliação técnica (FO-PAT-02): {exc}")
+        raise exc
+    finally:
+        db_session.close()
 
 
 @asset_evaluation_router.get("/components/catalog/")
@@ -128,21 +134,26 @@ def get_list_evaluations_route(
         except (ValueError, TypeError):
             pass
 
-    results = evaluation_service.list_evaluations(
-        db_session=db_session,
-        page=page,
-        size=size,
-        status_filter=status_filter
-        if status_filter and status_filter.strip()
-        else None,
-        search=search if search and search.strip() else None,
-        date_start=parsed_date_start,
-        date_end=parsed_date_end,
-    )
-    db_session.close()
-    serialized_items = [item.model_dump(mode="json") for item in results["items"]]
-    results["items"] = serialized_items
-    return JSONResponse(content=results, status_code=status.HTTP_200_OK)
+    try:
+        results = evaluation_service.list_evaluations(
+            db_session=db_session,
+            page=page,
+            size=size,
+            status_filter=status_filter
+            if status_filter and status_filter.strip()
+            else None,
+            search=search if search and search.strip() else None,
+            date_start=parsed_date_start,
+            date_end=parsed_date_end,
+        )
+        serialized_items = [item.model_dump(mode="json") for item in results["items"]]
+        results["items"] = serialized_items
+        return JSONResponse(content=results, status_code=status.HTTP_200_OK)
+    except Exception as exc:
+        logger.error(f"Erro ao listar avaliações técnicas (FO-PAT-02): {exc}")
+        raise exc
+    finally:
+        db_session.close()
 
 
 @asset_evaluation_router.post("/")

@@ -201,7 +201,7 @@ export function ExecutiveDashboard() {
   return (
     <Stack gap="md" mb="xl">
       {/* Filter Toolbar */}
-      <Paper p="sm" withBorder radius="md" bg="var(--mantine-color-gray-0)">
+      <Paper p="sm" withBorder radius="md">
         <Group justify="space-between" align="center">
           <Group gap="sm">
             <Select

@@ -12,6 +12,9 @@
         "lint": "npm run typecheck && eslint .",
         "lint:fix": "eslint . --fix",
         "format": "prettier . --write",
+        "test": "vitest run",
+        "test:run": "vitest run",
+        "test:watch": "vitest",
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
         "api:generate": "kubb generate"

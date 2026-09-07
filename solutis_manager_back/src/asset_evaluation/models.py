@@ -146,7 +146,7 @@ class AssetTechnicalEvaluationModel(Base):
         server_onupdate=func.now(),
     )
 
-    asset = relationship("src.asset.models.AssetModel", viewonly=True)
+    asset = relationship("AssetModel", viewonly=True)
     components: Mapped[List[AssetEvaluationComponentModel]] = relationship(
         back_populates="evaluation", cascade="all, delete-orphan", lazy="selectin"
     )

@@ -39,15 +39,19 @@ class TestAssetEvaluationModule(TestBase):
     def sample_asset(self, setup, create_initial_data):
         """Cria um ativo de teste no banco de dados."""
         db = self.testing_session_local()
-        asset_type = AssetTypeModel(code="NB01", name="NOTEBOOK", acronym="NB")
-        status_disp = AssetStatusModel(id=1, name="Disponível")
-        status_descarte = AssetStatusModel(
-            id=AssetStatusEnum.DESCARTE.value, name="Descarte"
+        asset_type = db.query(AssetTypeModel).filter_by(
+            code="NB01"
+        ).first() or db.merge(
+            AssetTypeModel(code="NB01", name="NOTEBOOK", acronym="NB")
         )
-
-        db.merge(asset_type)
-        db.merge(status_disp)
-        db.merge(status_descarte)
+        status_disp = db.query(AssetStatusModel).filter_by(id=1).first() or db.merge(
+            AssetStatusModel(id=1, name="Disponível")
+        )
+        status_descarte = db.query(AssetStatusModel).filter_by(
+            id=AssetStatusEnum.DESCARTE.value
+        ).first() or db.merge(
+            AssetStatusModel(id=AssetStatusEnum.DESCARTE.value, name="Descarte")
+        )
         db.commit()
 
         asset = AssetModel(

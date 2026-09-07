@@ -67,7 +67,7 @@ export function TabItemsDetail({
 
         <Table.ScrollContainer minWidth={750}>
           <Table withTableBorder withColumnBorders verticalSpacing="xs">
-            <Table.Thead bg="var(--mantine-color-gray-0)">
+            <Table.Thead bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))">
               <Table.Tr>
                 <Table.Th style={{ width: 45, textAlign: 'center' }}>#</Table.Th>
                 <Table.Th style={{ minWidth: 200 }}>Descrição / Especificação</Table.Th>
@@ -171,7 +171,7 @@ export function TabItemsDetail({
               ))}
             </Table.Tbody>
 
-            <Table.Tfoot bg="var(--mantine-color-gray-1)">
+            <Table.Tfoot bg="light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6))">
               <Table.Tr>
                 <Table.Td colSpan={4} fw={700} style={{ textAlign: 'right' }}>
                   Total dos Itens por Fornecedor (R$):

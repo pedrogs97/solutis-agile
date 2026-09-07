@@ -29,6 +29,7 @@
    - **Git Pull no Servidor**: O deploy remoto deve obrigatoriamente sincronizar o repositório remoto no host (`~/solutis-agile`) via `git checkout main && git pull origin main` antes de disparar o `./deploy.sh`.
    - **Solicitação Obrigatória de Senha**: NUNCA tente executar o deploy remoto sem antes solicitar de forma explícita a senha do servidor e `sudo` ao usuário no chat.
    - **Sigilo de Credenciais**: NUNCA exponha, versione ou repita a senha recebida nas respostas, logs ou resumos.
-   - **Diagnóstico de VPN**: Em caso de falha de conexão ou timeout com o host `Solutis`, oriente imediatamente o usuário a verificar se a VPN corporativa da Solutis está ativa e conectada.
 
-
+7. **Investigação de Logs e Diagnóstico de Erros (`log-investigator`)**:
+   - Sempre que precisar diagnosticar incidentes, erros 500, falhas de autenticação, exceptions, problemas em jobs assíncronos ou falhas de deploy nos microsserviços ou containers (localmente ou no servidor `Solutis`), você DEVE utilizar a skill e a tool `log-investigator` (`.agents/skills/log-investigator/scripts/extract_logs.py`).
+   - Utilize as opções de `--errors-only`, `--summary` e `--service <nome>` para obter diagnósticos rápidos e precisos com pilhas de traceback completas.

@@ -1,5 +1,65 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-07] - Diagnóstico e Correção de Erro 500 em Avaliações Técnicas (`asset-evaluations` e `metrics`)
+- **Descrição**: Investigação e resolução de erro 500 retornado pelas rotas `/api/v1/asset-evaluations/` e `/api/v1/asset-evaluations/metrics/` no backend `solutis_manager_back`.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/src/asset_evaluation/router.py`
+  - `solutis_manager_back/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Incremento de Versão**: `solutis_manager_back` atualizado de `1.26.7` para `1.26.8`.
+  - **Correção de Mapeamento SQLAlchemy (`models.py`)**: Ajustado o relacionamento `asset = relationship("src.asset.models.AssetModel", viewonly=True)` para `relationship("AssetModel", viewonly=True)` no modelo `AssetTechnicalEvaluationModel`, eliminando falha de resolução declarativa de mappers durante a inicialização do SQLAlchemy.
+  - **Resiliência e Logging Estruturado (`router.py`)**: Adicionados blocos `try/except/finally` nos endpoints `/` e `/metrics/` garantindo o fechamento imediato da sessão de banco (`db_session.close()`) e o registro estruturado de exceções via `logger.error` no Loguru.
+  - **Diagnóstico de Migrations Alembic**: Identificada a necessidade de aplicação da migration `2026-09-05_200000_add_asset_evaluation_tables.py` (`uv run alembic upgrade head`) no banco de dados ativo caso as tabelas (`asset_technical_evaluation`, `asset_catalog_component`, etc.) ainda não estejam criadas.
+
+- **Descrição**: Criação de uma skill dedicada (`log-investigator`) com tool executável (`extract_logs.py`) para extração, filtragem, agrupamento e diagnóstico analítico de erros a partir das pastas de logs locais de cada microsserviço e dos containers Docker (localmente ou remotamente via SSH no servidor de produção `Solutis` - `172.21.3.225`).
+- **Arquivos afetados**:
+  - `.agents/skills/log-investigator/SKILL.md`
+  - `.agents/skills/log-investigator/scripts/extract_logs.py`
+  - `.agents/skills/log-investigator/scripts/__init__.py`
+  - `.agents/skills/log-investigator/tests/test_extract_logs.py`
+  - `.agents/skills/log-investigator/tests/__init__.py`
+  - `.agents/AGENTS.md`
+  - `.spec/project-overview.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Tool Executável (`extract_logs.py`)**:
+    - Suporte à extração das pastas de logs de todos os microsserviços (`solutis_manager_back`, `solutis_procurement`, `solutis_report`, `solutis-sync`, `solutis_flow_back`).
+    - Agrupamento inteligente de **Tracebacks multilinhas completos** de erros e exceções Python sem quebra da pilha.
+    - Extração de logs de containers Docker locais e remotos via `docker logs`.
+    - **Acesso Remoto Seguro**: Suporte a `--remote` conectando via SSH no servidor `Solutis`, com mascaramento rigoroso de senhas e diagnóstico amigável de conexão à VPN corporativa.
+    - **Diagnóstico e Resumo Analítico (`--summary` / `--errors-only`)**: Apresenta total de erros, alertas, distribuição por serviço e as exceções mais frequentes com contadores.
+    - Saída em modo texto formatado e JSON estruturado (`--json`).
+  - **Skill de Agente (`SKILL.md`)**:
+    - Guia prático com comandos consolidados para investigação rápida de erros, filtro por serviço, busca de palavras-chave e inspeção remota.
+  - **Regras do Workspace (`AGENTS.md`)**:
+    - Adicionada a diretriz 7 tornando padrão o uso da skill `log-investigator` para diagnóstico de incidentes e erros no ecossistema.
+  - **Suíte de Testes Automatizados (TDD)**:
+    - Testes unitários cobrindo parsing (Loguru, Uvicorn, ISO), agrupamento de tracebacks, filtros, diagnóstico analítico, mascaramento de senhas e mocks de SSH e Docker.
+
+## [2026-09-07] - Correção do Header e Cores da Tabela de Análise e Decisão de Compras no Tema Escuro
+- **Descrição**: Correção da cor de fundo do cabeçalho (`<Table.Thead>`) e paginação da tabela de processos de compra (`process-table.tsx`), assim como tabelas dos formulários do módulo de Análise e Decisão de Compras (`tab-decision-approval.tsx`, `tab-items-detail.tsx` e `tab-suppliers-quote.tsx`), substituindo valores estáticos em tons claros (`var(--mantine-color-gray-0)`) pela função de tema dinâmica `light-dark(...)` do Mantine.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/components/purchase-processes/process-table.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-decision-approval.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-items-detail.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-suppliers-quote.tsx`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Tabela de Processos de Compra (`process-table.tsx`)**: O cabeçalho da listagem principal agora adota `light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))`, eliminando a faixa branca no modo escuro e garantindo perfeita legibilidade dos títulos das colunas ("Data", "Objeto da Contratação", "Categoria", etc.). A barra de paginação inferior também foi ajustada para respeitar o tema com borda e fundo escuros harmoniosos.
+  - **Formulários e Tabelas de Cotação e Decisão**: Cabeçalhos e rodapés de tabelas de propostas, detalhamento de itens e matriz de decisão ajustados para respeitar a alternância claro/escuro com destaque visual para o menor custo/fornecedor recomendado sem quebrar o contraste em dark mode.
+
+## [2026-09-07] - Correção dos Fixtures de Testes de Avaliação Técnica e Scripts Vitest no Frontend
+- **Descrição**: Correção de colisão de integridade (`UNIQUE constraint failed: asset_status.id`) nos testes de avaliação técnica no backend SQLite em memória e adição dos scripts de execução do Vitest (`test`, `test:run`, `test:watch`) no frontend `solutis-agile-frontend`.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `solutis-agile-frontend/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Backend (`solutis_manager_back`)**: Fixture `sample_asset` ajustado para reutilizar entidades persistidas/gerenciadas da sessão SQLAlchemy (`AssetTypeModel` e `AssetStatusModel`) em vez de anexar instâncias desanexadas do `db.merge()`, prevenindo duplicações em `asset_status` nos testes unitários e de integração.
+  - **Frontend (`solutis-agile-frontend`)**: Adicionados `"test": "vitest run"`, `"test:run": "vitest run"` e `"test:watch": "vitest"` aos scripts do `package.json`, padronizando os comandos de teste da interface.
+
 ## [2026-09-07] - Deploy Remoto em Produção (Host Solutis - 172.21.3.225)
 - **Descrição**: Execução com sucesso do deploy remoto automatizado para os microsserviços e frontends com novas alterações.
 - **Serviços Atualizados e Implantados**:

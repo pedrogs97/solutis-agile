@@ -148,7 +148,7 @@ export function ProcessTable({ onToggleDashboard, showDashboard }: ProcessTableP
       <Paper withBorder radius="md" p={0} style={{ overflow: 'hidden' }}>
         <Table.ScrollContainer minWidth={850}>
           <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
-            <Table.Thead bg="var(--mantine-color-gray-0)">
+            <Table.Thead bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))">
               <Table.Tr>
                 <Table.Th style={{ width: 110 }}>Data</Table.Th>
                 <Table.Th>Objeto da Contratação</Table.Th>
@@ -252,7 +252,14 @@ export function ProcessTable({ onToggleDashboard, showDashboard }: ProcessTableP
         </Table.ScrollContainer>
 
         {listData && listData.totalPages > 1 && (
-          <Group justify="space-between" p="sm" bg="var(--mantine-color-gray-0)">
+          <Group
+            justify="space-between"
+            p="sm"
+            bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))"
+            style={{
+              borderTop: '1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4))',
+            }}
+          >
             <Text size="xs" c="dimmed">
               Exibindo {listData.items.length} de {listData.count} processo(s)
             </Text>
