@@ -1,5 +1,16 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-07] - Remoção do Termo 'Unificado' e Desativação Temporária do Acesso ao Solutis Flow (v2.7.9)
+- **Descrição**: Ajuste visual do título da tela de login para apenas "Login" (removendo "Unificado") e desativação temporária do botão e card de acesso ao Solutis Flow / TaskView na seleção de produtos com indicador "Em breve".
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/routes/_auth/login/index.tsx`
+  - `solutis-agile-frontend/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Incremento de Versão**: `solutis-agile-frontend` atualizado de `2.7.8` para `2.7.9`.
+  - **Título da Tela de Login (`login/index.tsx`)**: O título do formulário foi simplificado de `Login Unificado` para `Login`.
+  - **Botão e Card Solutis Flow / TaskView (`login/index.tsx`)**: O botão de ação foi desabilitado (`disabled`), o clique no card foi desativado (`cursor: not-allowed`, opacidade 70%) e foi adicionado o badge `Em breve` indicando a indisponibilidade temporária.
+
 ## [2026-09-07] - Atualização de Texto do Card Solutis Flow na Tela de Login (v2.7.8)
 - **Descrição**: Substituição do texto "Eventos SSE & Notificações em Tempo Real" por "Acompanhamento em Tempo Real" no card do produto Solutis Flow na tela de login unificada.
 - **Arquivos afetados**:

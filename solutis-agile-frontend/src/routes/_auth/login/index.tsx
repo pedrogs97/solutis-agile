@@ -251,7 +251,7 @@ function LoginPage() {
         >
           <Stack gap="xs" mb="md" align="center">
             <Title order={3} fw={800} ta="center">
-              Login Unificado
+              Login
             </Title>
             <Text c="dimmed" size="xs" ta="center">
               Acesse o ecossistema integrado Solutis com suas credenciais corporativas
@@ -414,17 +414,19 @@ function LoginPage() {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 transition: 'all 0.2s ease',
-                cursor: 'pointer',
+                cursor: 'not-allowed',
+                opacity: 0.7,
               }}
-              className="hover:shadow-lg hover:border-violet-400"
-              onClick={() => authData && redirectToFlow(authData)}
             >
               <Stack gap="md">
                 <Group justify="space-between">
                   <ThemeIcon size={48} radius="md" color="violet" variant="light">
                     <Zap size={28} />
                   </ThemeIcon>
-                  <Badge color="violet" variant="outline">Flow Real-time</Badge>
+                  <Group gap={6}>
+                    <Badge color="violet" variant="outline">Flow Real-time</Badge>
+                    <Badge color="gray" variant="light">Em breve</Badge>
+                  </Group>
                 </Group>
 
                 <div>
@@ -455,7 +457,7 @@ function LoginPage() {
                 fullWidth
                 mt="xl"
                 rightSection={<ArrowRight size={16} />}
-                onClick={() => authData && redirectToFlow(authData)}
+                disabled
               >
                 Acessar Solutis Flow
               </Button>
