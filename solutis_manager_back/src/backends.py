@@ -151,6 +151,12 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         db_session.add(token_db)
         db_session.commit()
 
+        user_products = (
+            user.products_list
+            if hasattr(user, "products_list") and user.products_list
+            else ["agile", "flow"]
+        )
+
         return {
             "id": user.id,
             "group": user.group.name,
@@ -161,7 +167,14 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
             "token_type": "Bearer",
             "expires_in": access_expire_timestamp,
             "permissions": permissions,
+            "products": user_products,
         }
+
+    user_products = (
+        user.products_list
+        if hasattr(user, "products_list") and user.products_list
+        else ["agile", "flow"]
+    )
 
     return {
         "id": user.id,
@@ -173,6 +186,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         "token_type": "Bearer",
         "expires_in": old_token.expires_in.timestamp(),
         "permissions": permissions,
+        "products": user_products,
     }
 
 

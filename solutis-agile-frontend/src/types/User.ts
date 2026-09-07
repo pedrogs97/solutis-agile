@@ -22,4 +22,5 @@ export interface User {
   isActive: boolean
 
   lastLoginIn?: Date | null
+  products?: string[]
 }

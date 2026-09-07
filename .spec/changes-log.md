@@ -1,5 +1,39 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-06] - Unificação do Login e Controle de Acesso a Produtos (Agile & Flow)
+- **Descrição**: Unificação da autenticação dos sistemas Solutis Agile e Solutis Flow em uma única tela de login compartilhada no `solutis-agile-frontend`. Adição do controle de permissão por produto (`products`) nos modelos e schemas do `solutis_manager_back`, migração de banco de dados via Alembic, fluxo inteligente pós-login com tela de seleção de produto e redirecionamento automático com SSO token handoff para o `solutis-flow`.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/auth/models.py`
+  - `solutis_manager_back/src/auth/schemas.py`
+  - `solutis_manager_back/src/backends.py`
+  - `solutis_manager_back/src/auth/service.py`
+  - `solutis_manager_back/alembic/versions/2026-09-06_234000_add_user_products.py`
+  - `solutis_manager_back/src/tests/test_auth.py`
+  - `solutis-agile-frontend/src/constants/env.ts`
+  - `solutis-agile-frontend/src/types/User.ts`
+  - `solutis-agile-frontend/src/store/persisted/useProfileStore.ts`
+  - `solutis-agile-frontend/src/routes/_auth/login/index.tsx`
+  - `solutis-flow/src/hooks/useAuth.ts`
+  - `solutis-flow/src/services/api.ts`
+  - `solutis-flow/src/components/Login.tsx`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Backend (`solutis_manager_back`)**:
+    - Adicionada coluna `products` (padrão `"agile,flow"`) e propriedade `products_list` no modelo `UserModel` com fallback automático para ambos os produtos caso o campo esteja nulo ou vazio.
+    - Atualizados schemas `UserSerializerSchema`, `UserListSerializerSchema`, `NewUserSchema` e `UserUpdateSchema` para aceitar e expor a lista de produtos autorizados (`["agile", "flow"]`).
+    - Atualizado `get_user_token` para incluir `products` no payload retornado no login e no refresh token.
+    - Criada migration Alembic `b7d2e9f1a043` (`add_user_products`) executando `UPDATE user SET products = 'agile,flow' WHERE products IS NULL OR products = ''` para garantir que todos os usuários já existentes na base recebam ambos os produtos.
+    - Atualizada a suíte de testes de autenticação em `test_auth.py` com teste dedicado (`test_existing_user_null_or_empty_products_defaults_to_both_products`).
+  - **Frontend Principal (`solutis-agile-frontend`)**:
+    - Tela de login unificada com visual premium: se o usuário possui acesso a ambos os produtos (`agile` e `flow`), exibe uma tela de seleção interativa com cards visuais ricos para Solutis Agile e Solutis Flow.
+    - Se o usuário possui apenas um produto, redireciona diretamente sem intervenção.
+    - Se o usuário não possui acesso a nenhum produto, exibe notificação amigável impedindo o acesso.
+    - Repasse de sessão SSO seguro via parâmetros de URL codificados para o frontend do Flow.
+  - **Frontend Flow (`solutis-flow`)**:
+    - Receptor de SSO no hook `useAuth` processando `token` e `user` dos parâmetros de busca da URL com limpeza de URL via `window.history.replaceState`.
+    - Consumo automático do `flowta_token` no cabeçalho `Authorization: Bearer <token>` nas requisições ao API Gateway.
+    - Botão de redirecionamento para o Login Unificado na tela local de login e retorno ao login unificado no logout.
+
 ## [2026-09-06] - Atualização de Versões dos Serviços e Preparação para Deploy Remoto (FO-AD-01)
 - **Descrição**: Incremento semântico das versões dos microsserviços e frontend afetados pela implementação do módulo FO-AD-01 (`solutis_procurement`, `solutis-agile-frontend` e `solutis_manager_back`), e preparação do fluxo de deploy remoto no host Solutis.
 - **Arquivos afetados**:

@@ -10,6 +10,7 @@ interface Profile {
   token_type: string
   expires_in: number
   permissions: string[]
+  products?: string[]
 }
 
 interface ProfileState {

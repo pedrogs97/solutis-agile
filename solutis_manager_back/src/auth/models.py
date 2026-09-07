@@ -94,6 +94,13 @@ class UserModel(Base):
     last_login_in = Column("last_login", DateTime, nullable=True)
     department = Column("department", String(length=255), nullable=False, default="")
     manager = Column("manager", String(length=255), nullable=False, default="")
+    products = Column(
+        "products",
+        String(length=255),
+        nullable=False,
+        default="agile,flow",
+        server_default="agile,flow",
+    )
     created_at = Column(
         "created_at", DateTime, nullable=False, server_default=func.now()
     )
@@ -104,6 +111,13 @@ class UserModel(Base):
         server_default=func.now(),
         server_onupdate=func.now(),
     )
+
+    @property
+    def products_list(self) -> List[str]:
+        if not self.products:
+            return ["agile", "flow"]
+        prods = [p.strip().lower() for p in self.products.split(",") if p.strip()]
+        return prods if prods else ["agile", "flow"]
 
     def __str__(self) -> str:
         return f"{self.email} - {self.group}"

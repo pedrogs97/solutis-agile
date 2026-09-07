@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 import jwt
 import pytest
+from src.auth.models import UserModel
 from src.config import ALGORITHM, BASE_API, PASSWORD_SUPER_USER, SECRET_KEY
 from src.tests.base import TestBase
 
@@ -37,6 +38,7 @@ class TestAuthModule(TestBase):
             "token_type",
             "expires_in",
             "permissions",
+            "products",
         ]
         response = self.client.post(
             f"{BASE_API}/auth/login/",
@@ -47,6 +49,7 @@ class TestAuthModule(TestBase):
         assert data["email"] == "admin@email.com"
         assert len(data.keys()) == len(expected_keys)
         assert all(a == b for a, b in zip(data.keys(), expected_keys))
+        assert data["products"] == ["agile", "flow"]
         user_id = data["id"]
         token = data["access_token"]
         token_type = data["token_type"]
@@ -60,6 +63,7 @@ class TestAuthModule(TestBase):
         assert response.status_code == 200
         data = response.json()
         assert data["id"] == user_id
+        assert data["products"] == ["agile", "flow"]
 
     def test_auth_login_invalid(self, setup):
         """Test login invalid case"""
@@ -81,6 +85,7 @@ class TestAuthModule(TestBase):
             "token_type",
             "expires_in",
             "permissions",
+            "products",
         ]
         authenticated_data = authenticated
         token = authenticated_data["access_token"]
@@ -94,6 +99,7 @@ class TestAuthModule(TestBase):
         data = response.json()
         assert len(data.keys()) == len(expected_keys)
         assert all(a == b for a, b in zip(data.keys(), expected_keys))
+        assert data["products"] == ["agile", "flow"]
         assert data["id"] == authenticated_data["id"]
 
     def test_auth_refresh_invalid(self, authenticated):
@@ -389,18 +395,35 @@ class TestAuthModule(TestBase):
         assert isinstance(data["items"], list)
         assert all(a == b for a, b in zip(data.keys(), expected_keys))
 
-    def test_auth_upadate_groups_success(self, authenticated):
-        """Test upadate groups API success case"""
-        # authenticated_data = authenticated
-        # token = authenticated_data["access_token"]
-        # token_type = authenticated_data["token_type"]
-        # response = self.client.get(l
-        #     f"{BASE_API}/auth/groups/",
-        #     headers={"Authorization": f"{token_type} {token}"},
-        # )
+    def test_existing_user_null_or_empty_products_defaults_to_both_products(
+        self, setup, create_initial_data
+    ):
+        """Test that existing users without products explicitly set default to ['agile', 'flow']"""
+        db_session = self.testing_session_local()
+        user = (
+            db_session.query(UserModel)
+            .filter(UserModel.username == "agile_admin")
+            .first()
+        )
+        user.products = None
+        db_session.commit()
 
-        # assert response.status_code == 200
-        # data = response.json()
-        # assert len(data.keys()) == len(expected_keys)
-        # assert isinstance(data["items"], list)
-        # assert all(a == b for a, b in zip(data.keys(), expected_keys))
+        # Test login returns both products
+        response = self.client.post(
+            f"{BASE_API}/auth/login/",
+            data={"username": "agile_admin", "password": PASSWORD_SUPER_USER},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["products"] == ["agile", "flow"]
+
+        # Test user detail API returns both products
+        token = data["access_token"]
+        token_type = data["token_type"]
+        user_response = self.client.get(
+            f"{BASE_API}/auth/users/{user.id}/",
+            headers={"Authorization": f"{token_type} {token}"},
+        )
+        assert user_response.status_code == 200
+        user_data = user_response.json()
+        assert user_data["products"] == ["agile", "flow"]

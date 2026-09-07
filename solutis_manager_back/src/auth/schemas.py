@@ -70,6 +70,7 @@ class UserUpdateSchema(BaseSchema):
     is_active: Optional[bool] = Field(alias="isActive", default=None)
     department: Optional[str] = None
     manager: Optional[str] = None
+    products: Optional[List[str]] = Field(default=None)
 
 
 class UserChangePasswordSchema(BaseSchema):
@@ -101,6 +102,7 @@ class UserSerializerSchema(BaseSchema):
     employee_id: Optional[int] = Field(serialization_alias="employeeId", default=None)
     department: str
     manager: str
+    products: List[str] = Field(default_factory=lambda: ["agile", "flow"])
 
 
 class UserListSerializerSchema(BaseSchema):
@@ -124,6 +126,7 @@ class UserListSerializerSchema(BaseSchema):
     employee_id: Optional[int] = Field(serialization_alias="employeeId", default=None)
     department: str
     manager: str
+    products: List[str] = Field(default_factory=lambda: ["agile", "flow"])
 
 
 class NewGroupSchema(BaseSchema):
@@ -148,6 +151,7 @@ class NewUserSchema(BaseSchema):
     employee_id: int = Field(alias="employeeId", serialization_alias="employee_id")
     department: str
     manager: str
+    products: Optional[List[str]] = Field(default=None)
 
 
 class TokenSchema(BaseSchema):

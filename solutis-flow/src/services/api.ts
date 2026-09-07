@@ -6,8 +6,9 @@ function getAuthHeaders(token?: string): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  const effectiveToken = token || (typeof window !== 'undefined' ? localStorage.getItem('flowta_token') : null);
+  if (effectiveToken) {
+    headers['Authorization'] = `Bearer ${effectiveToken}`;
   }
   return headers;
 }

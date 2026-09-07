@@ -186,6 +186,11 @@ class UserSerivce:
             "password": self.get_password_hash(password),
         }
 
+        if new_user.products is not None:
+            user_dict["products"] = ",".join(new_user.products)
+        else:
+            user_dict["products"] = "agile,flow"
+
         user_dict["group_id"] = group.id
         user_dict["employee_id"] = employee.id
 
@@ -312,6 +317,9 @@ class UserSerivce:
             user.employee.taxpayer_identification if user.employee else ""
         )
         employee_id = user.employee.id if user.employee else None
+        products_list = (
+            user.products_list if hasattr(user, "products_list") else ["agile", "flow"]
+        )
         if is_list:
             return UserListSerializerSchema(
                 id=user.id,
@@ -331,6 +339,7 @@ class UserSerivce:
                 employee_id=employee_id,
                 department=user.department,
                 manager=user.manager,
+                products=products_list,
             )
         return UserSerializerSchema(
             id=user.id,
@@ -349,6 +358,7 @@ class UserSerivce:
             employee_id=employee_id,
             department=user.department,
             manager=user.manager,
+            products=products_list,
         )
 
     def update_user(
@@ -452,6 +462,12 @@ class UserSerivce:
             if data.manager is not None and user.manager != data.manager:
                 is_updated = True
                 user.manager = data.manager
+
+            if data.products is not None:
+                new_products_str = ",".join(data.products)
+                if user.products != new_products_str:
+                    is_updated = True
+                    user.products = new_products_str
 
             if len(errors) > 0:
                 raise HTTPException(

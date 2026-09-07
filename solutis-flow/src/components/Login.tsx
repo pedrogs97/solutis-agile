@@ -129,6 +129,24 @@ export const Login: React.FC<LoginProps> = ({ users, onLoginSuccess }) => {
             <p className="text-xs text-slate-500 mt-2">Acesse o sistema integrador com o seu perfil corporativo de governança.</p>
           </div>
 
+          <button
+            type="button"
+            onClick={() => {
+              const agileUrl = (import.meta as any).env?.VITE_AGILE_APP_URL || 'http://localhost:3000/login';
+              window.location.href = agileUrl;
+            }}
+            className="w-full text-xs font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 tracking-wider bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200 shadow-sm border border-slate-700 cursor-pointer"
+          >
+            <Shield className="w-4 h-4 text-indigo-400" />
+            Entrar pelo Login Unificado Solutis
+          </button>
+
+          <div className="relative flex py-1 items-center">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink mx-3 text-[10px] uppercase font-bold text-slate-400">ou acesso local sandbox</span>
+            <div className="flex-grow border-t border-slate-200"></div>
+          </div>
+
           {/* Notifications Messages */}
           {error && (
             <motion.div 
