@@ -184,53 +184,78 @@ export function ExecutiveDashboard({
             </Group>
 
             <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md" mt="md">
-              <Paper p="md" radius="md" withBorder bg="var(--mantine-color-teal-0)">
+              <Paper
+                p="md"
+                radius="md"
+                withBorder
+                bg="light-dark(var(--mantine-color-teal-0), rgba(18, 184, 134, 0.12))"
+                style={{ borderColor: 'light-dark(var(--mantine-color-teal-2), rgba(18, 184, 134, 0.3))' }}
+              >
                 <Group justify="space-between">
-                  <Text size="xs" fw={700} c="teal.9">
+                  <Text size="xs" fw={700} c="light-dark(var(--mantine-color-teal-9), var(--mantine-color-teal-2))">
                     Reaproveitado
                   </Text>
                   <ArrowUpRight size={18} color="var(--mantine-color-teal-6)" />
                 </Group>
-                <Title order={3} fw={800} c="teal.8" mt="xs">
+                <Title order={3} fw={800} c="light-dark(var(--mantine-color-teal-8), var(--mantine-color-teal-3))" mt="xs">
                   {totalReusedWeight.toFixed(1)} kg
                 </Title>
-                <Text size="xs" c="teal.7" mt={2}>
+                <Text size="xs" c="light-dark(var(--mantine-color-teal-7), var(--mantine-color-teal-4))" mt={2}>
                   Peças para estoque e reuso interno
                 </Text>
               </Paper>
 
-              <Paper p="md" radius="md" withBorder bg="var(--mantine-color-blue-0)">
+              <Paper
+                p="md"
+                radius="md"
+                withBorder
+                bg="light-dark(var(--mantine-color-blue-0), rgba(34, 139, 230, 0.12))"
+                style={{ borderColor: 'light-dark(var(--mantine-color-blue-2), rgba(34, 139, 230, 0.3))' }}
+              >
                 <Group justify="space-between">
-                  <Text size="xs" fw={700} c="blue.9">
+                  <Text size="xs" fw={700} c="light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-2))">
                     Reciclagem
                   </Text>
                   <Recycle size={18} color="var(--mantine-color-blue-6)" />
                 </Group>
-                <Title order={3} fw={800} c="blue.8" mt="xs">
+                <Title order={3} fw={800} c="light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-3))" mt="xs">
                   {totalRecycleWeight.toFixed(1)} kg
                 </Title>
-                <Text size="xs" c="blue.7" mt={2}>
+                <Text size="xs" c="light-dark(var(--mantine-color-blue-7), var(--mantine-color-blue-4))" mt={2}>
                   Materiais enviados para logística reversa
                 </Text>
               </Paper>
 
-              <Paper p="md" radius="md" withBorder bg="var(--mantine-color-red-0)">
+              <Paper
+                p="md"
+                radius="md"
+                withBorder
+                bg="light-dark(var(--mantine-color-red-0), rgba(250, 82, 82, 0.12))"
+                style={{ borderColor: 'light-dark(var(--mantine-color-red-2), rgba(250, 82, 82, 0.3))' }}
+              >
                 <Group justify="space-between">
-                  <Text size="xs" fw={700} c="red.9">
+                  <Text size="xs" fw={700} c="light-dark(var(--mantine-color-red-9), var(--mantine-color-red-2))">
                     Descarte / Sucata
                   </Text>
                   <ArrowDownRight size={18} color="var(--mantine-color-red-6)" />
                 </Group>
-                <Title order={3} fw={800} c="red.8" mt="xs">
+                <Title order={3} fw={800} c="light-dark(var(--mantine-color-red-8), var(--mantine-color-red-3))" mt="xs">
                   {totalDiscardedWeight.toFixed(1)} kg
                 </Title>
-                <Text size="xs" c="red.7" mt={2}>
+                <Text size="xs" c="light-dark(var(--mantine-color-red-7), var(--mantine-color-red-4))" mt={2}>
                   Inservíveis com descarte certificado
                 </Text>
               </Paper>
             </SimpleGrid>
 
-            <Paper p="md" radius="md" withBorder mt="md" bg="var(--mantine-color-gray-0)">
+            <Paper
+              p="md"
+              radius="md"
+              withBorder
+              mt="md"
+              bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))"
+              style={{ borderColor: 'light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4))' }}
+            >
               <Group justify="space-between">
                 <div>
                   <Text size="sm" fw={700}>

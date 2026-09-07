@@ -201,7 +201,13 @@ export function ExecutiveDashboard() {
   return (
     <Stack gap="md" mb="xl">
       {/* Filter Toolbar */}
-      <Paper p="sm" withBorder radius="md">
+      <Paper
+        p="sm"
+        withBorder
+        radius="md"
+        bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))"
+        style={{ borderColor: 'light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4))' }}
+      >
         <Group justify="space-between" align="center">
           <Group gap="sm">
             <Select

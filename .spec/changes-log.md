@@ -1,5 +1,19 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-07] - Harmonização de Componentes e Tema Escuro em Avaliações e Processos de Compra
+- **Descrição**: Correção da adaptação de tema escuro nos três componentes sinalizados: banner de Conformidade e Rastreabilidade e cards de pesagem ESG em Avaliações Técnicas, toolbar de filtros do Dashboard Executivo de Compras, e cabeçalho/barra de busca da tabela de Processos de Compra.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/components/asset-evaluations/executive-dashboard.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/executive-dashboard.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/process-table.tsx`
+  - `solutis-agile-frontend/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Incremento de Versão**: `solutis-agile-frontend` atualizado de `2.7.6` para `2.7.7`.
+  - **Banner de Conformidade e Cards de Balanço ESG (`executive-dashboard.tsx`)**: Substituídos fundos estáticos claros (`var(--mantine-color-gray-0)`, `teal-0`, `blue-0`, `red-0`) por `light-dark(...)` com transparências e contrastes ajustados para o tema escuro (`var(--mantine-color-dark-6)` e bordas em `dark-4`).
+  - **Toolbar de Filtros do Dashboard de Compras (`executive-dashboard.tsx`)**: Adicionado fundo dinâmico `light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))` e bordas suaves no componente `<Paper>`, eliminando a barra branca no tema escuro.
+  - **Barra de Busca e Tabela de Processos de Compra (`process-table.tsx`)**: Aplicado `light-dark(...)` na barra de busca superior e garantida a estilização do cabeçalho da tabela `<Table.Thead>` compatível com dark mode para rebuild na versão 2.7.7.
+
 ## [2026-09-07] - Diagnóstico e Correção de Erro 500 em Avaliações Técnicas (`asset-evaluations` e `metrics`)
 - **Descrição**: Investigação e resolução de erro 500 retornado pelas rotas `/api/v1/asset-evaluations/` e `/api/v1/asset-evaluations/metrics/` no backend `solutis_manager_back`.
 - **Arquivos afetados**:
@@ -11,7 +25,7 @@
   - **Incremento de Versão**: `solutis_manager_back` atualizado de `1.26.7` para `1.26.8`.
   - **Correção de Mapeamento SQLAlchemy (`models.py`)**: Ajustado o relacionamento `asset = relationship("src.asset.models.AssetModel", viewonly=True)` para `relationship("AssetModel", viewonly=True)` no modelo `AssetTechnicalEvaluationModel`, eliminando falha de resolução declarativa de mappers durante a inicialização do SQLAlchemy.
   - **Resiliência e Logging Estruturado (`router.py`)**: Adicionados blocos `try/except/finally` nos endpoints `/` e `/metrics/` garantindo o fechamento imediato da sessão de banco (`db_session.close()`) e o registro estruturado de exceções via `logger.error` no Loguru.
-  - **Diagnóstico de Migrations Alembic**: Identificada a necessidade de aplicação da migration `2026-09-05_200000_add_asset_evaluation_tables.py` (`uv run alembic upgrade head`) no banco de dados ativo caso as tabelas (`asset_technical_evaluation`, `asset_catalog_component`, etc.) ainda não estejam criadas.
+  - **Aplicação e Normalização de Migration no Banco de Produção**: Executada a criação das tabelas e índices da migration `2026-09-05_200000_add_asset_evaluation_tables.py` (`a1e4c02f09b1`) no banco `db_adm` (`asset_technical_evaluation`, `asset_catalog_component`, `asset_evaluation_component` e `asset_evaluation_attachment`) e carga dos 17 componentes padrão do catálogo, restabelecendo o retorno 200 OK nos endpoints `/api/v1/asset-evaluations/` e `/metrics/`.
 
 - **Descrição**: Criação de uma skill dedicada (`log-investigator`) com tool executável (`extract_logs.py`) para extração, filtragem, agrupamento e diagnóstico analítico de erros a partir das pastas de logs locais de cada microsserviço e dos containers Docker (localmente ou remotamente via SSH no servidor de produção `Solutis` - `172.21.3.225`).
 - **Arquivos afetados**:
