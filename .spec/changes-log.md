@@ -1,5 +1,14 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-10] - Deploy Remoto em Produção (Host Solutis - 172.21.3.225)
+- **Descrição**: Execução com sucesso do deploy remoto automatizado para os microsserviços e frontends com novas alterações e correções.
+- **Serviços Atualizados e Implantados**:
+  - `solutis-agile-frontend` (v2.7.11): Rebuild completo da imagem de produção com Vite/Nginx e recriação do container `solutis-agile-frontend-prod`.
+  - `solutis_manager_back` (v1.26.10): Rebuild da imagem Docker com `uv sync`, correções de upload de documentos assinados e recriação do container `solutis-manager-back-prod`.
+  - `solutis-procurement` (v2.18.4): Rebuild da imagem Docker, estabilização dos modelos e testes, e recriação do container `solutis-procurement-prod`.
+  - `solutis-report` (v1.3.2): Sem alterações pendentes de deploy (mantido estável).
+- **Status da Execução**: Sucesso (Exit code 0). Todos os containers em execução saudável.
+
 ## [2026-09-10] - Correção do Upload de Comodatos e Distratos Assinados por Usuários Padrão (v1.26.10 / v2.7.11)
 - **Descrição**: Resolução do erro 403 Forbidden ("Apenas usuários do grupo MASTER podem alterar o documento...") ao enviar contratos de comodato e distratos assinados no Agile. A validação de grupo MASTER foi corrigida para exigir privilégios MASTER apenas quando o documento já foi assinado e concluído (`is_already_signed = bool(signed_date is not None ...)`), permitindo que qualquer usuário com permissão de adicionar/editar documentos no módulo de comodato envie o arquivo assinado para comodatos e distratos em estado pendente. A ordem de execução também foi corrigida para validar permissões antes de persistência no banco e de gravação de arquivos em disco.
 - **Arquivos afetados**:
