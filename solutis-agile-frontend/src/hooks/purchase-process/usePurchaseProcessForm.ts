@@ -12,6 +12,7 @@ import {
   fetchPurchaseProcess,
   updatePurchaseProcess,
 } from '@/services/api/purchase-process'
+import { getProfile } from '@/store/persisted/useProfileStore'
 import type {
   PurchaseItem,
   PurchaseProcess,
@@ -25,6 +26,18 @@ export function uid(prefix: string): string {
     Math.random().toString(36).slice(2, 10) +
     Date.now().toString(36).slice(-4)
   )
+}
+
+export function cleanPurchaseProcessPayload(process: PurchaseProcess) {
+  return {
+    schemaVersion: process.schemaVersion || 1,
+    identificacao: process.identificacao,
+    fornecedores: process.fornecedores,
+    itens: process.itens,
+    decisao: process.decisao,
+    aprovacao: process.aprovacao,
+    avaliacao: process.avaliacao,
+  }
 }
 
 export function createNewSupplier(id?: string): PurchaseSupplier {
@@ -49,6 +62,7 @@ export function createNewSupplier(id?: string): PurchaseSupplier {
 export function createNewProcess(): PurchaseProcess {
   const f1 = uid('f')
   const f2 = uid('f')
+  const currentUser = getProfile()?.full_name || ''
   return {
     id: '',
     schemaVersion: 1,
@@ -63,7 +77,7 @@ export function createNewProcess(): PurchaseProcess {
       tipoContratacao: 'Compra nova',
       risco: 'Baixo',
       solicitante: '',
-      compradorResponsavel: '',
+      compradorResponsavel: currentUser,
     },
     fornecedores: [createNewSupplier(f1), createNewSupplier(f2)],
     itens: [
@@ -125,13 +139,15 @@ export function usePurchaseProcessForm(id?: string) {
 
   const {
     data: fetchedData,
-    isPending: isLoadingProcess,
+    isLoading,
     error,
   } = useQuery({
     queryKey: ['fetchPurchaseProcess', id],
     queryFn: fetchPurchaseProcess,
     enabled: isEditing,
   })
+
+  const isLoadingProcess = isEditing && isLoading
 
   useEffect(() => {
     if (fetchedData) {
@@ -156,10 +172,11 @@ export function usePurchaseProcessForm(id?: string) {
 
   const saveMutation = useMutation({
     mutationFn: async (payload: Partial<PurchaseProcess>) => {
+      const cleaned = cleanPurchaseProcessPayload(payload as PurchaseProcess)
       if (isEditing && id) {
-        return updatePurchaseProcess(id, payload)
+        return updatePurchaseProcess(id, cleaned)
       } else {
-        return createPurchaseProcess(payload)
+        return createPurchaseProcess(cleaned)
       }
     },
     onSuccess: (data) => {
@@ -170,14 +187,14 @@ export function usePurchaseProcessForm(id?: string) {
         notifications.show({
           color: 'green',
           title: 'Processo Criado',
-          message: 'O processo de compra foi criado com sucesso.',
+          message: 'O processo de compra foi criado e salvo com sucesso.',
         })
         navigate({ to: `/purchase-processes/${data.id}` as any })
       } else {
         notifications.show({
           color: 'green',
           title: 'Alterações Salvas',
-          message: 'O processo foi salvo com sucesso.',
+          message: 'Todas as alterações foram salvas com sucesso.',
         })
       }
     },

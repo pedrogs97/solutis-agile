@@ -119,16 +119,36 @@ WSGI_APPLICATION = "config.wsgi.application"
 def get_default_db():
     is_testing = (
         "test" in sys.argv
-        or any("pytest" in arg for arg in sys.argv)
+        or any("test" in arg.lower() for arg in sys.argv)
+        or any("pytest" in arg.lower() for arg in sys.argv)
+        or any(mod.startswith("pytest") for mod in sys.modules)
         or "pytest" in sys.modules
         or "PYTEST_CURRENT_TEST" in os.environ
+        or "PYTEST_VERSION" in os.environ
+        or os.getenv("TESTING", "").lower() in ("true", "1", "yes")
+        or os.getenv("USE_SQLITE", "").lower() in ("true", "1", "yes")
     )
 
-    use_sqlite = os.getenv("USE_SQLITE", "true").lower() == "true" or is_testing
-    if use_sqlite:
+    if is_testing:
         return {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": ":memory:",
+            "TEST": {
+                "NAME": ":memory:",
+            },
+        }
+
+    use_sqlite = os.getenv("USE_SQLITE", "true").lower() == "true"
+    if use_sqlite:
+        sqlite_file = BASE_DIR / "db.sqlite3"
+        if sqlite_file.is_dir():
+            try:
+                sqlite_file.rmdir()
+            except OSError:
+                sqlite_file = BASE_DIR / "db_local.sqlite3"
+        return {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": sqlite_file,
         }
 
     return {
@@ -138,6 +158,9 @@ def get_default_db():
         "PASSWORD": os.getenv("MYSQL_PASSWORD", "procurement_pass"),
         "HOST": os.getenv("MYSQL_SERVER", "localhost"),
         "PORT": os.getenv("MYSQL_PORT", "3306"),
+        "OPTIONS": {
+            "connect_timeout": 3,
+        },
     }
 
 

@@ -270,3 +270,132 @@ class TestDocumentMasterPermissions(TestBase):
         assert exc_info.value.status_code == 403
         assert "Apenas usuários do grupo MASTER" in exc_info.value.detail
         db.close()
+
+    @pytest.mark.asyncio
+    async def test_regular_user_can_upload_signed_contract_when_pending(
+        self, setup_data
+    ):
+        db = self.testing_session_local()
+        service = DocumentService()
+        regular_user = db.query(UserModel).get(setup_data["regular_user_id"])
+
+        # Emulate newly created lending with initial minuta attached and pending status
+        lending = db.query(LendingModel).get(setup_data["lending_id"])
+        lending.signed_date = None
+        lending.status = (
+            db.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Arquivo pendente")
+            .first()
+        )
+        db.add(lending)
+        db.commit()
+
+        fake_file = UploadFile(
+            filename="contrato_assinado.pdf", file=BytesIO(b"%PDF-1.4 signed contract")
+        )
+
+        result = await service.upload_contract(
+            fake_file,
+            "Contrato de Comodato",
+            setup_data["lending_id"],
+            db,
+            regular_user,
+        )
+
+        assert result is not None
+        assert lending.signed_date is not None
+        assert lending.status.name == "Ativo"
+        assert lending.document.deleted is False
+
+        # Old minuta document must be soft-deleted
+        old_doc = db.query(DocumentModel).get(setup_data["contract_doc_id"])
+        assert old_doc.deleted is True
+        db.close()
+
+    @pytest.mark.asyncio
+    async def test_regular_user_can_upload_signed_revoke_when_pending(self, setup_data):
+        db = self.testing_session_local()
+        service = DocumentService()
+        regular_user = db.query(UserModel).get(setup_data["regular_user_id"])
+
+        # Emulate newly created distrato with initial minuta attached and pending status
+        lending = db.query(LendingModel).get(setup_data["lending_id"])
+        lending.revoke_signed_date = None
+        lending.status = (
+            db.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Arquivo de distrato pendente")
+            .first()
+        )
+        db.add(lending)
+        db.commit()
+
+        fake_file = UploadFile(
+            filename="distrato_assinado.pdf", file=BytesIO(b"%PDF-1.4 signed distrato")
+        )
+
+        result = await service.upload_revoke_contract(
+            fake_file,
+            "Distrato de Comodato",
+            setup_data["lending_id"],
+            db,
+            regular_user,
+        )
+
+        assert result is not None
+        assert lending.revoke_signed_date is not None
+        assert lending.status.name == "Distrato realizado"
+        assert lending.document_revoke.deleted is False
+        assert lending.asset.status_id == AssetStatusEnum.DISPONIVEL.value
+
+        # Old minuta document must be soft-deleted
+        old_doc = db.query(DocumentModel).get(setup_data["revoke_doc_id"])
+        assert old_doc.deleted is True
+        db.close()
+
+    @pytest.mark.asyncio
+    async def test_master_user_can_overwrite_contract_document(self, setup_data):
+        db = self.testing_session_local()
+        service = DocumentService()
+        master_user = db.query(UserModel).get(setup_data["master_user_id"])
+
+        fake_file = UploadFile(
+            filename="substituto_contrato.pdf",
+            file=BytesIO(b"%PDF-1.4 replacement contract"),
+        )
+
+        result = await service.upload_contract(
+            fake_file,
+            "Contrato de Comodato",
+            setup_data["lending_id"],
+            db,
+            master_user,
+        )
+
+        assert result is not None
+        lending = db.query(LendingModel).get(setup_data["lending_id"])
+        assert lending.document.deleted is False
+        db.close()
+
+    @pytest.mark.asyncio
+    async def test_master_user_can_overwrite_revoke_document(self, setup_data):
+        db = self.testing_session_local()
+        service = DocumentService()
+        master_user = db.query(UserModel).get(setup_data["master_user_id"])
+
+        fake_file = UploadFile(
+            filename="substituto_distrato.pdf",
+            file=BytesIO(b"%PDF-1.4 replacement distrato"),
+        )
+
+        result = await service.upload_revoke_contract(
+            fake_file,
+            "Distrato de Comodato",
+            setup_data["lending_id"],
+            db,
+            master_user,
+        )
+
+        assert result is not None
+        lending = db.query(LendingModel).get(setup_data["lending_id"])
+        assert lending.document_revoke.deleted is False
+        db.close()

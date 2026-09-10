@@ -15,6 +15,17 @@ export const handleFileUploadError = (err: any, fileType: string) => {
       color: 'orange',
       autoClose: 5000,
     })
+  } else if (err.response?.status === 403) {
+    const detail =
+      typeof err.response?.data?.detail === 'string'
+        ? err.response.data.detail
+        : `Você não possui permissão para enviar ou alterar este ${fileType}`
+    notifications.show({
+      title: 'Acesso negado',
+      message: detail,
+      color: 'red',
+      autoClose: 5000,
+    })
   } else {
     notifications.show({
       title: 'Erro',

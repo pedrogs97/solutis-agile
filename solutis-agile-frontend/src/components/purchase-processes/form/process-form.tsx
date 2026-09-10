@@ -1,9 +1,12 @@
 'use client'
 
 import {
+  Alert,
   Badge,
+  Box,
   Button,
   Group,
+  LoadingOverlay,
   Paper,
   Stack,
   Tabs,
@@ -12,6 +15,7 @@ import {
 } from '@mantine/core'
 import { Link } from '@tanstack/react-router'
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   CheckCircle,
@@ -40,6 +44,7 @@ export function ProcessForm({ id }: ProcessFormProps) {
     setActiveTab,
     isEditing,
     isLoadingProcess,
+    error,
     saveStatus,
     isSaving,
     isDeciding,
@@ -67,21 +72,29 @@ export function ProcessForm({ id }: ProcessFormProps) {
     window.print()
   }
 
-  if (isLoadingProcess) {
-    return (
-      <Paper p="xl" withBorder radius="md">
-        <Text c="dimmed">Carregando dados do processo de compra...</Text>
-      </Paper>
-    )
-  }
-
   const tabsOrder = ['ident', 'cotacao', 'itens', 'decisao', 'avaliacao']
   const currentIdx = tabsOrder.indexOf(activeTab)
   const prevTab = currentIdx > 0 ? tabsOrder[currentIdx - 1] : null
   const nextTab = currentIdx < tabsOrder.length - 1 ? tabsOrder[currentIdx + 1] : null
 
   return (
-    <Stack gap="lg" className="no-print-wrap">
+    <Box pos="relative" className="no-print-wrap">
+      <LoadingOverlay
+        visible={isLoadingProcess}
+        overlayProps={{ radius: 'md', blur: 2 }}
+        loaderProps={{ children: 'Carregando dados do processo de compras...' }}
+      />
+      <Stack gap="lg">
+        {error && isEditing && (
+          <Alert
+            icon={<AlertCircle size={16} />}
+            title="Atenção ao carregar processo"
+            color="red"
+            variant="light"
+          >
+            Não foi possível recuperar os dados remotos do processo. Verifique sua conexão com o servidor ou se o registro ainda existe.
+          </Alert>
+        )}
       {/* Top Header */}
       <Paper p="md" withBorder radius="md">
         <Group justify="space-between" align="center" wrap="wrap">
@@ -269,5 +282,6 @@ export function ProcessForm({ id }: ProcessFormProps) {
       {/* Hidden Print Document for native window.print */}
       <PrintView process={process} />
     </Stack>
+  </Box>
   )
 }

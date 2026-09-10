@@ -50,12 +50,9 @@ def basic_approval_flow(supplier, approval_step):
 
 
 @pytest.fixture(autouse=True)
-def setup_supplier_situation():
-    """Fixture para garantir que exista pelo menos uma situação de fornecedor."""
-    if (
-        not DomSupplierSituation.objects.exists()
-        and not DomPendencyType.objects.exists()
-    ):
+def setup_supplier_situation(db):
+    """Fixture para garantir que existam situações de fornecedor e tipos de pendência."""
+    if not DomPendencyType.objects.exists():
         baker.make(
             DomPendencyType,
             id=DomPendecyTypeEnum.PENDENCIA_CADASTRO.value,
@@ -76,6 +73,8 @@ def setup_supplier_situation():
             id=DomPendecyTypeEnum.PENDENCIA_AVALIACAO.value,
             name="PENDÊNCIA DE AVALIAÇÃO",
         )
+
+    if not DomSupplierSituation.objects.exists():
         baker.make(
             DomSupplierSituation,
             name="ATIVO",
@@ -203,7 +202,7 @@ def completed_approval_flow(supplier, approval_steps):
     # Criar aprovações para todos os passos
     for step in approval_steps:
         # Criar um aprovador específico para cada departamento
-        approver = baker.make(
+        baker.make(
             Approver,
             name=f"Aprovador {step.department}",
             email=f"aprovador.{step.department.lower()}@company.com",

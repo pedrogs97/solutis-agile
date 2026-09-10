@@ -1,5 +1,58 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-10] - Correção do Upload de Comodatos e Distratos Assinados por Usuários Padrão (v1.26.10 / v2.7.11)
+- **Descrição**: Resolução do erro 403 Forbidden ("Apenas usuários do grupo MASTER podem alterar o documento...") ao enviar contratos de comodato e distratos assinados no Agile. A validação de grupo MASTER foi corrigida para exigir privilégios MASTER apenas quando o documento já foi assinado e concluído (`is_already_signed = bool(signed_date is not None ...)`), permitindo que qualquer usuário com permissão de adicionar/editar documentos no módulo de comodato envie o arquivo assinado para comodatos e distratos em estado pendente. A ordem de execução também foi corrigida para validar permissões antes de persistência no banco e de gravação de arquivos em disco.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/document/service.py`
+  - `solutis_manager_back/src/document/router.py`
+  - `solutis_manager_back/src/tests/test_document_master_permissions.py`
+  - `solutis_manager_back/pyproject.toml`
+  - `solutis-agile-frontend/src/hooks/lending/useLendingDocuments.ts`
+  - `solutis-agile-frontend/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Backend (`solutis_manager_back`)**:
+    - Em `upload_contract`, `upload_contract_fix` e `upload_revoke_contract`, a checagem de privilégio MASTER agora avalia `is_already_signed` verificando se o comodato/distrato já possui `signed_date`/`revoke_signed_date` definido ou status "Ativo"/"Distrato realizado".
+    - Quando o comodato está em "Arquivo pendente" ou o distrato está em "Arquivo de distrato pendente" (com `signed_date` / `revoke_signed_date` nulos), o envio do documento assinado é permitido para qualquer usuário autenticado com permissão.
+    - A validação de permissão foi movida para o início de cada método antes de invocar `upload_file`, persistir instâncias órfãs de `DocumentModel` ou alterar o status do ativo para `DISPONIVEL`.
+    - Atualização dos decoradores `PermissionChecker` em `router.py` para `/contracts/upload/`, `/contracts/upload-fix/` e `/contracts/revoke/upload/` aceitando tanto a ação `add` quanto `edit` em `lending.document`.
+  - **Frontend (`solutis-agile-frontend`)**:
+    - Tratamento explícito para código de status HTTP 403 em `handleFileUploadError` (`useLendingDocuments.ts`), exibindo notificação com título "Acesso negado" e mensagem amigável sem expor exceções brutas.
+  - **Testes Automatizados (TDD)**:
+    - Adicionados testes unitários `test_regular_user_can_upload_signed_contract_when_pending`, `test_regular_user_can_upload_signed_revoke_when_pending`, `test_master_user_can_overwrite_contract_document` e `test_master_user_can_overwrite_revoke_document` em `test_document_master_permissions.py`.
+
+## [2026-09-10] - Correção do Carregamento Infinito, Registro de Rotas TanStack e Persistência Dinâmica do Formulário FO-AD-01 (v2.18.4)
+- **Descrição**: Solução completa para o problema de travamento e tela em branco/loading infinito ao acessar o Formulário de Análise e Decisão de Compras (`FO-AD-01`) no frontend (`solutis-agile-frontend`), registro das rotas faltantes no TanStack Router (`routeTree.gen.ts`), eliminação de bloqueios de renderização condicional e garantia da dinamização e persistência de todos os campos do formulário no banco de dados via endpoints proxy do `solutis_manager_back`.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/routeTree.gen.ts`
+  - `solutis-agile-frontend/src/routes/_dashboard/purchase-processes/$id.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/purchase-processes/new/index.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/process-form.tsx`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessForm.ts`
+  - `solutis_procurement/src/supplier/models/__init__.py`
+  - `solutis_procurement/conftest.py`
+  - `solutis_procurement/config/settings.py`
+  - `solutis_procurement/pytest.ini`
+  - `solutis_procurement/pyproject.toml`
+  - `solutis_procurement/src/supplier/tests/conftest.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Correção da Resolução de Rotas no TanStack Router (`routeTree.gen.ts`)**:
+    - As rotas `DashboardPurchaseProcessesIndexRoute`, `DashboardPurchaseProcessesNewIndexRoute`, `DashboardPurchaseProcessesIdRoute`, e as rotas correspondentes de `asset-evaluations` foram adicionadas a `FileRoutesByFullPath`, `FileRoutesByTo`, `FileRoutesById`, `FileRouteTypes` (`fullPaths`, `to`, `id`) e `FileRoutesByPath` dentro de `declare module '@tanstack/react-router'`.
+    - Isso eliminou a falha do TanStack Router em resolver as rotas filhas sob `/_dashboard`, que causava `<Outlet />` não renderizado ou travado em pending.
+  - **Resiliência no Roteamento de Criação (`routes/_dashboard/purchase-processes/$id.tsx`)**:
+    - Implementada checagem explícita para `id === 'new'`, repassando `undefined` ao `ProcessForm` para garantir que mesmo navegações sem trailing slash que coincidam com o wildcard `$id` inicializem imediatamente no modo de criação sem tentar buscar dados de ID inexistente.
+  - **Remoção do Bloqueio de Carregamento e Interface Fluida (`process-form.tsx`)**:
+    - Substituído o retorno estático antecipado `if (isLoadingProcess) return <Paper>...` por um `LoadingOverlay` do Mantine envolvendo o container relativo.
+    - O formulário agora é renderizado imediatamente em tela com sua estrutura completa (cabeçalho, 5 abas, botões de ação e rodapé), preenchendo os dados reativamente assim que carregados.
+    - Erros de carregamento na edição não ocultam mais o formulário, exibindo um `Alert` não bloqueante com ações de retorno.
+  - **Dinamização e Persistência Completa de Todos os Campos**:
+    - Todos os campos das 5 abas (Identificação, Cotação/Mapa Comparativo de Fornecedores, Detalhamento de Itens, Decisão & Aprovação Executiva, Avaliação Pós-Compra) estão conectados a métodos de atualização reativos no estado do hook `usePurchaseProcessForm`.
+    - Persistência garantida via proxy do `solutis_manager_back` (`/api/v1/proxy/procurement/v1/purchase-processes/` para `POST` e `PUT`, e `/decision/` para aprovações formais).
+  - **Otimização e Estabilização dos Testes Backend (`solutis_procurement`)**:
+    - Exportação integral dos modelos em `src/supplier/models/__init__.py`.
+    - Forçamento de `USE_SQLITE="true"` e `TESTING="true"` no `conftest.py` raiz e `config/settings.py` para evitar conexões externas ao MySQL Docker e garantir suíte de testes rápida e sem congelamento.
+
 ## [2026-09-09] - Dinamização e Persistência Completa do Fluxo de Aprovações (FO-PAT-02) (v2.7.10 / v1.26.9)
 - **Descrição**: Substituição do fluxo de aprovação estático na seção "8. Validação & Aprovação Formal" do formulário de Avaliação Técnica e Baixa Patrimonial (`FO-PAT-02`). Todos os campos e pareceres foram dinamizados e conectados ao ciclo de vida do formulário (`react-hook-form` via `<Controller>`), persistindo no banco de dados via endpoints do `solutis_manager_back` (`POST /`, `PATCH /{id}/` e `POST /{id}/approve/`). Foi criada nova migration Alembic adicionando `reviewer_name` para suportar o Gestor Patrimonial, correção de coerção e tipagem de datas nos componentes `DateInput` do frontend, cobertura completa de testes unitários/integração e deploy remoto realizado com sucesso no servidor Solutis (`172.21.3.225`).
 - **Arquivos afetados**:

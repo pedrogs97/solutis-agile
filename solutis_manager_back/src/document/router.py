@@ -92,7 +92,12 @@ async def post_import_contract(
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "document", "action": "edit"})
+        PermissionChecker(
+            [
+                {"module": "lending", "model": "document", "action": "add"},
+                {"module": "lending", "model": "document", "action": "edit"},
+            ]
+        )
     ),
 ):
     """Upload new contract"""
@@ -119,10 +124,15 @@ async def post_import_contract_fix(
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "document", "action": "edit"})
+        PermissionChecker(
+            [
+                {"module": "lending", "model": "document", "action": "add"},
+                {"module": "lending", "model": "document", "action": "edit"},
+            ]
+        )
     ),
 ):
-    """Upload new contract"""
+    """Upload new contract fix"""
     if not authenticated_user:
         db_session.close()
         return JSONResponse(
@@ -219,7 +229,12 @@ async def post_revoke_contract(
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "document", "action": "add"})
+        PermissionChecker(
+            [
+                {"module": "lending", "model": "document", "action": "add"},
+                {"module": "lending", "model": "document", "action": "edit"},
+            ]
+        )
     ),
 ):
     """Creates a new revoke contract"""

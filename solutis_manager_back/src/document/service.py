@@ -1600,6 +1600,25 @@ class DocumentService:
 
         lending = self.__get_lending_or_404(lendingId, db_session)
 
+        is_already_signed = bool(
+            (
+                lending.signed_date is not None
+                or (lending.status and lending.status.name == "Ativo")
+            )
+            and lending.document
+            and not lending.document.deleted
+        )
+        if is_already_signed:
+            is_master = (
+                authenticated_user.group
+                and authenticated_user.group.name.upper() == "MASTER"
+            )
+            if not is_master:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Apenas usuários do grupo MASTER podem alterar o documento de comodato.",
+                )
+
         code = lending.number
 
         if not code:
@@ -1626,17 +1645,6 @@ class DocumentService:
 
         db_session.add(new_doc)
         db_session.commit()
-
-        if lending.document and not lending.document.deleted:
-            is_master = (
-                authenticated_user.group
-                and authenticated_user.group.name.upper() == "MASTER"
-            )
-            if not is_master:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Apenas usuários do grupo MASTER podem alterar o documento de comodato.",
-                )
 
         if lending.document:
             old_doc = lending.document
@@ -1692,7 +1700,34 @@ class DocumentService:
 
         lending = self.__get_lending_or_404(lendingId, db_session)
 
+        is_already_signed = bool(
+            (
+                lending.signed_date is not None
+                or (lending.status and lending.status.name == "Ativo")
+            )
+            and lending.document
+            and not lending.document.deleted
+        )
+        if is_already_signed:
+            is_master = (
+                authenticated_user.group
+                and authenticated_user.group.name.upper() == "MASTER"
+            )
+            if not is_master:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Apenas usuários do grupo MASTER podem alterar o documento de comodato.",
+                )
+
         code = lending.number
+
+        if not code:
+            code = self.__generate_code(
+                db_session.query(DocumentModel)
+                .order_by(DocumentModel.id.desc())
+                .first(),
+                lending.asset,
+            )
 
         file_name = f"{code}.pdf"
 
@@ -1710,17 +1745,6 @@ class DocumentService:
 
         db_session.add(new_doc)
         db_session.commit()
-
-        if lending.document and not lending.document.deleted:
-            is_master = (
-                authenticated_user.group
-                and authenticated_user.group.name.upper() == "MASTER"
-            )
-            if not is_master:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Apenas usuários do grupo MASTER podem alterar o documento de comodato.",
-                )
 
         if lending.document:
             old_doc = lending.document
@@ -2043,7 +2067,33 @@ class DocumentService:
 
         lending = self.__get_lending_or_404(lendingId, db_session)
 
+        is_already_signed = bool(
+            (
+                lending.revoke_signed_date is not None
+                or (lending.status and lending.status.name == "Distrato realizado")
+            )
+            and lending.document_revoke
+            and not lending.document_revoke.deleted
+        )
+        if is_already_signed:
+            is_master = (
+                authenticated_user.group
+                and authenticated_user.group.name.upper() == "MASTER"
+            )
+            if not is_master:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Apenas usuários do grupo MASTER podem alterar o documento de distrato.",
+                )
+
         code = lending.number
+        if not code:
+            code = self.__generate_code(
+                db_session.query(DocumentModel)
+                .order_by(DocumentModel.id.desc())
+                .first(),
+                lending.asset,
+            )
 
         file_name = f"{code} - distrato.pdf"
 
@@ -2062,25 +2112,14 @@ class DocumentService:
         db_session.add(new_doc)
         db_session.commit()
 
-        AssetService().update_asset_status(
-            lending.asset,
-            db_session.query(AssetStatusModel).get(AssetStatusEnum.DISPONIVEL.value),
-            db_session,
-        )
-        db_session.add(lending)
-        db_session.commit()
-        db_session.flush()
-
-        if lending.document_revoke and not lending.document_revoke.deleted:
-            is_master = (
-                authenticated_user.group
-                and authenticated_user.group.name.upper() == "MASTER"
+        if lending.asset:
+            AssetService().update_asset_status(
+                lending.asset,
+                db_session.query(AssetStatusModel).get(
+                    AssetStatusEnum.DISPONIVEL.value
+                ),
+                db_session,
             )
-            if not is_master:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Apenas usuários do grupo MASTER podem alterar o documento de distrato.",
-                )
 
         if lending.document_revoke:
             old_doc = lending.document_revoke
@@ -2112,7 +2151,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("Upload Document renvoke. {}", str(new_doc))
+        logger.info("Upload Document revoke. {}", str(new_doc))
 
         return self.serialize_document(new_doc)
 

@@ -1,5 +1,94 @@
 """Models for supplier and procurement application."""
 
+from src.supplier.models.approval_workflow import ApprovalFlow, ApprovalStep, Approver
+from src.supplier.models.attachments import (
+    SupplierAttachment,
+    SupplierAttachmentHistory,
+)
+from src.supplier.models.domain import (
+    DomAttachmentType,
+    DomBusinessSector,
+    DomCategory,
+    DomClassification,
+    DomCompanySize,
+    DomCustomerType,
+    DomIcmsTaxpayer,
+    DomIncomeType,
+    DomIssRegime,
+    DomIssWithholding,
+    DomPayerType,
+    DomPaymentMethod,
+    DomPendencyType,
+    DomPixType,
+    DomPublicEntity,
+    DomRiskLevel,
+    DomSupplierSituation,
+    DomTaxationMethod,
+    DomTaxationRegime,
+    DomTaxpayerClassification,
+    DomTypeSupplier,
+    DomWithholdingTax,
+)
+from src.supplier.models.evaluation import (
+    CriterionScore,
+    EvaluationCriterion,
+    SupplierEvaluation,
+    SupplierEvaluationYearCycle,
+)
 from src.supplier.models.purchase_process import PurchaseProcess
+from src.supplier.models.responsibility_matrix import ResponsibilityMatrix
+from src.supplier.models.supplier import (
+    CompanyInformation,
+    Contract,
+    FiscalDetails,
+    OrganizationalDetails,
+    PaymentDetails,
+    Supplier,
+    SupplierSituation,
+)
+from src.supplier.models.totvs import SupplierTotvs, SupplierTypeTotvs
 
-__all__ = ["PurchaseProcess"]
+__all__ = [
+    "ApprovalFlow",
+    "ApprovalStep",
+    "Approver",
+    "CompanyInformation",
+    "Contract",
+    "CriterionScore",
+    "DomAttachmentType",
+    "DomBusinessSector",
+    "DomCategory",
+    "DomClassification",
+    "DomCompanySize",
+    "DomCustomerType",
+    "DomIcmsTaxpayer",
+    "DomIncomeType",
+    "DomIssRegime",
+    "DomIssWithholding",
+    "DomPayerType",
+    "DomPaymentMethod",
+    "DomPendencyType",
+    "DomPixType",
+    "DomPublicEntity",
+    "DomRiskLevel",
+    "DomSupplierSituation",
+    "DomTaxationMethod",
+    "DomTaxationRegime",
+    "DomTaxpayerClassification",
+    "DomTypeSupplier",
+    "DomWithholdingTax",
+    "EvaluationCriterion",
+    "FiscalDetails",
+    "OrganizationalDetails",
+    "PaymentDetails",
+    "PurchaseProcess",
+    "ResponsibilityMatrix",
+    "Supplier",
+    "SupplierAttachment",
+    "SupplierAttachmentHistory",
+    "SupplierEvaluation",
+    "SupplierEvaluationYearCycle",
+    "SupplierSituation",
+    "SupplierTotvs",
+    "SupplierTypeTotvs",
+]

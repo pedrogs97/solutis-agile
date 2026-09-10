@@ -17,7 +17,7 @@ function PurchaseProcessDetailPage() {
   return (
     <>
       <Breadcrumbs />
-      <ProcessForm id={id} />
+      <ProcessForm id={id === 'new' ? undefined : id} />
     </>
   )
 }

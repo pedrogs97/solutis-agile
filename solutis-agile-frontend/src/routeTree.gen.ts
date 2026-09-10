@@ -337,6 +337,12 @@ export interface FileRoutesByFullPath {
   '/terms/add': typeof DashboardTermsAddIndexRoute
   '/users/add': typeof DashboardUsersAddIndexRoute
   '/suppliers/edit/$id': typeof DashboardSuppliersEditIdIndexRoute
+  '/asset-evaluations': typeof DashboardAssetEvaluationsIndexRoute
+  '/asset-evaluations/new': typeof DashboardAssetEvaluationsNewIndexRoute
+  '/asset-evaluations/$id': typeof DashboardAssetEvaluationsIdRoute
+  '/purchase-processes': typeof DashboardPurchaseProcessesIndexRoute
+  '/purchase-processes/new': typeof DashboardPurchaseProcessesNewIndexRoute
+  '/purchase-processes/$id': typeof DashboardPurchaseProcessesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -373,6 +379,12 @@ export interface FileRoutesByTo {
   '/terms/add': typeof DashboardTermsAddIndexRoute
   '/users/add': typeof DashboardUsersAddIndexRoute
   '/suppliers/edit/$id': typeof DashboardSuppliersEditIdIndexRoute
+  '/asset-evaluations': typeof DashboardAssetEvaluationsIndexRoute
+  '/asset-evaluations/new': typeof DashboardAssetEvaluationsNewIndexRoute
+  '/asset-evaluations/$id': typeof DashboardAssetEvaluationsIdRoute
+  '/purchase-processes': typeof DashboardPurchaseProcessesIndexRoute
+  '/purchase-processes/new': typeof DashboardPurchaseProcessesNewIndexRoute
+  '/purchase-processes/$id': typeof DashboardPurchaseProcessesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -415,6 +427,12 @@ export interface FileRoutesById {
   '/_dashboard/terms/add/': typeof DashboardTermsAddIndexRoute
   '/_dashboard/users/add/': typeof DashboardUsersAddIndexRoute
   '/_dashboard/suppliers/edit/$id/': typeof DashboardSuppliersEditIdIndexRoute
+  '/_dashboard/asset-evaluations/': typeof DashboardAssetEvaluationsIndexRoute
+  '/_dashboard/asset-evaluations/new/': typeof DashboardAssetEvaluationsNewIndexRoute
+  '/_dashboard/asset-evaluations/$id': typeof DashboardAssetEvaluationsIdRoute
+  '/_dashboard/purchase-processes/': typeof DashboardPurchaseProcessesIndexRoute
+  '/_dashboard/purchase-processes/new/': typeof DashboardPurchaseProcessesNewIndexRoute
+  '/_dashboard/purchase-processes/$id': typeof DashboardPurchaseProcessesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -456,6 +474,12 @@ export interface FileRouteTypes {
     | '/terms/add'
     | '/users/add'
     | '/suppliers/edit/$id'
+    | '/asset-evaluations'
+    | '/asset-evaluations/new'
+    | '/asset-evaluations/$id'
+    | '/purchase-processes'
+    | '/purchase-processes/new'
+    | '/purchase-processes/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -492,6 +516,12 @@ export interface FileRouteTypes {
     | '/terms/add'
     | '/users/add'
     | '/suppliers/edit/$id'
+    | '/asset-evaluations'
+    | '/asset-evaluations/new'
+    | '/asset-evaluations/$id'
+    | '/purchase-processes'
+    | '/purchase-processes/new'
+    | '/purchase-processes/$id'
   id:
     | '__root__'
     | '/'
@@ -533,6 +563,12 @@ export interface FileRouteTypes {
     | '/_dashboard/terms/add/'
     | '/_dashboard/users/add/'
     | '/_dashboard/suppliers/edit/$id/'
+    | '/_dashboard/asset-evaluations/'
+    | '/_dashboard/asset-evaluations/new/'
+    | '/_dashboard/asset-evaluations/$id'
+    | '/_dashboard/purchase-processes/'
+    | '/_dashboard/purchase-processes/new/'
+    | '/_dashboard/purchase-processes/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -817,6 +853,48 @@ declare module '@tanstack/react-router' {
       path: '/suppliers/edit/$id'
       fullPath: '/suppliers/edit/$id'
       preLoaderRoute: typeof DashboardSuppliersEditIdIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/asset-evaluations/': {
+      id: '/_dashboard/asset-evaluations/'
+      path: '/asset-evaluations'
+      fullPath: '/asset-evaluations'
+      preLoaderRoute: typeof DashboardAssetEvaluationsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/asset-evaluations/new/': {
+      id: '/_dashboard/asset-evaluations/new/'
+      path: '/asset-evaluations/new'
+      fullPath: '/asset-evaluations/new'
+      preLoaderRoute: typeof DashboardAssetEvaluationsNewIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/asset-evaluations/$id': {
+      id: '/_dashboard/asset-evaluations/$id'
+      path: '/asset-evaluations/$id'
+      fullPath: '/asset-evaluations/$id'
+      preLoaderRoute: typeof DashboardAssetEvaluationsIdRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/purchase-processes/': {
+      id: '/_dashboard/purchase-processes/'
+      path: '/purchase-processes'
+      fullPath: '/purchase-processes'
+      preLoaderRoute: typeof DashboardPurchaseProcessesIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/purchase-processes/new/': {
+      id: '/_dashboard/purchase-processes/new/'
+      path: '/purchase-processes/new'
+      fullPath: '/purchase-processes/new'
+      preLoaderRoute: typeof DashboardPurchaseProcessesNewIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/purchase-processes/$id': {
+      id: '/_dashboard/purchase-processes/$id'
+      path: '/purchase-processes/$id'
+      fullPath: '/purchase-processes/$id'
+      preLoaderRoute: typeof DashboardPurchaseProcessesIdRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
   }

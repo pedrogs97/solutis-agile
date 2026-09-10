@@ -12,11 +12,14 @@ import {
   Stack,
   Table,
   Text,
+  TextInput,
   Textarea,
   Title,
 } from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react'
+
+import { getProfile } from '@/store/persisted/useProfileStore'
 
 import {
   formatDateTime,
@@ -62,7 +65,7 @@ export function TabDecisionApproval({
   const motivoInfo = MOTIVOS_COTACAO.find((m) => m.key === d.motivoKey)
 
   const openDecisionModal = (targetStatus: string, color: string) => {
-    let userName = apr.aprovadoPor || ''
+    let userName = apr.aprovadoPor || getProfile()?.full_name || ''
     let comment = apr.comentario || ''
 
     modals.openConfirmModal({
@@ -72,11 +75,19 @@ export function TabDecisionApproval({
           <Text size="sm">
             Confirme a alteração de status do processo para <strong>{targetStatus}</strong>.
           </Text>
+          <TextInput
+            label="Responsável pela Decisão"
+            placeholder="Nome do aprovador"
+            defaultValue={userName}
+            onChange={(e: any) => {
+              userName = e.currentTarget.value
+            }}
+          />
           <Textarea
             label="Comentário da Decisão (Opcional)"
             placeholder="Registre justificativas ou orientações adicionais..."
             defaultValue={comment}
-            onChange={(e) => {
+            onChange={(e: any) => {
               comment = e.currentTarget.value
             }}
           />
