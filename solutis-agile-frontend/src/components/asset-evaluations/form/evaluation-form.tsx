@@ -20,9 +20,12 @@ import {
 
 import { useAssetEvaluationForm } from '@/hooks/asset-evaluation/useAssetEvaluationForm'
 
+import { AboutSection } from './about-section'
 import { ApprovalsSection } from './approvals-section'
+import { AssetManagementSection } from './asset-management-section'
 import { ComplianceAttachmentsSection } from './compliance-attachments-section'
 import { ComponentsMatrixSection } from './components-matrix-section'
+import { DocumentControlSection } from './document-control-section'
 import { EsgWeightSection } from './esg-weight-section'
 import { FinancialSection } from './financial-section'
 import { IdentificationSection } from './identification-section'
@@ -102,6 +105,12 @@ export function EvaluationForm({
           destinations={watchedDestination}
         />
 
+        {/* Sobre este formulário */}
+        <AboutSection />
+
+        {/* Controle do documento */}
+        <DocumentControlSection form={form} readOnly={readOnly} />
+
         {/* 1. Identificação */}
         <IdentificationSection
           form={form}
@@ -144,8 +153,16 @@ export function EvaluationForm({
           readOnly={readOnly}
         />
 
-        {/* 7. Fluxo de Validação & Aprovação */}
+        {/* 7. Gestão Patrimonial */}
+        <AssetManagementSection
+          form={form}
+          existingEvaluation={existingEvaluation}
+          readOnly={readOnly}
+        />
+
+        {/* 8. Validação & Aprovação Formal */}
         <ApprovalsSection
+          form={form}
           existingEvaluation={existingEvaluation}
           onApprove={onApprove}
           isApproving={isApproving}

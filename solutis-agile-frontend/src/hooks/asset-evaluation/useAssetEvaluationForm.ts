@@ -24,13 +24,27 @@ import type {
 const DRAFT_KEY = 'solutis_fo_pat_02_draft_v1'
 
 const DEFAULT_FORM_VALUES: AssetEvaluationFormValues = {
+  document_start_date: null,
+  document_end_date: null,
+  document_classification: 'USO INTERNO',
+  elaborated_by_date: null,
+  reviewed_by_date: null,
+  approved_by_date: null,
   asset_id: null,
   patrimonio: '',
   asset_type_name: '',
   brand_model: '',
+  manufacturer: '',
+  model: '',
   serial_number: '',
   cost_center: '',
   unity: '',
+  current_location: '',
+  evaluation_date: new Date().toISOString(),
+  evaluator_name: '',
+  is_under_warranty: false,
+  warranty_expiry_date: null,
+  asset_description: '',
   status: 'Rascunho',
   classification: 'Bom',
   feasibility: 'Alta',
@@ -40,11 +54,26 @@ const DEFAULT_FORM_VALUES: AssetEvaluationFormValues = {
   discarded_weight: 0,
   recycle_weight: 0,
   reuse_percentage: 0,
+  destination_company: '',
+  destination_cnpj: '',
+  destination_certificate: '',
+  waste_manifest: '',
   acquisition_value: 0,
   net_book_value: 0,
+  usage_time: '',
+  expected_lifespan: '',
   estimated_economy: 0,
   justification: '',
   technical_opinion: '',
+  write_off_date: null,
+  write_off_reason: '',
+  reused_parts_location: '',
+  waste_final_destination: '',
+  write_off_notes: '',
+  reviewer_name: '',
+  approver_name: '',
+  approval_date: null,
+  approval_comments: '',
   components: [
     {
       name: 'Memória RAM',
@@ -133,27 +162,58 @@ export function useAssetEvaluationForm({
     if (existingEvaluation) {
       const evalData = existingEvaluation
       reset({
+        document_start_date: evalData.document_start_date || null,
+        document_end_date: evalData.document_end_date || null,
+        document_classification: evalData.document_classification || 'USO INTERNO',
+        elaborated_by_date: evalData.elaborated_by_date || null,
+        reviewed_by_date: evalData.reviewed_by_date || null,
+        approved_by_date: evalData.approved_by_date || null,
         asset_id: evalData.asset_id,
         patrimonio: evalData.patrimonio || '',
         asset_type_name: evalData.asset_type_name || '',
         brand_model: evalData.brand_model || '',
+        manufacturer: evalData.manufacturer || '',
+        model: evalData.model || '',
         serial_number: evalData.serial_number || '',
         cost_center: evalData.cost_center || '',
         unity: evalData.unity || '',
+        current_location: evalData.current_location || '',
+        evaluation_date: evalData.evaluation_date || null,
+        evaluator_name: evalData.evaluator_name || '',
+        is_under_warranty: Boolean(evalData.is_under_warranty),
+        warranty_expiry_date: evalData.warranty_expiry_date || null,
+        asset_description: evalData.asset_description || '',
         status: evalData.status || 'Rascunho',
         classification: evalData.classification || 'Bom',
         feasibility: evalData.feasibility || 'Alta',
-        destination: evalData.destination || ['Reaproveitamento interno'],
+        destination: evalData.destination?.length
+          ? evalData.destination
+          : ['Reaproveitamento interno'],
         gross_weight: evalData.gross_weight ?? 0,
         reused_weight: evalData.reused_weight ?? 0,
         discarded_weight: evalData.discarded_weight ?? 0,
         recycle_weight: evalData.recycle_weight ?? 0,
         reuse_percentage: evalData.reuse_percentage ?? 0,
+        destination_company: evalData.destination_company || '',
+        destination_cnpj: evalData.destination_cnpj || '',
+        destination_certificate: evalData.destination_certificate || '',
+        waste_manifest: evalData.waste_manifest || '',
         acquisition_value: evalData.acquisition_value ?? 0,
         net_book_value: evalData.net_book_value ?? 0,
+        usage_time: evalData.usage_time || '',
+        expected_lifespan: evalData.expected_lifespan || '',
         estimated_economy: evalData.estimated_economy ?? 0,
         justification: evalData.justification || '',
         technical_opinion: evalData.technical_opinion || '',
+        write_off_date: evalData.write_off_date || null,
+        write_off_reason: evalData.write_off_reason || '',
+        reused_parts_location: evalData.reused_parts_location || '',
+        waste_final_destination: evalData.waste_final_destination || '',
+        write_off_notes: evalData.write_off_notes || '',
+        reviewer_name: evalData.reviewer_name || '',
+        approver_name: evalData.approver_name || '',
+        approval_date: evalData.approval_date || null,
+        approval_comments: evalData.approval_comments || '',
         components: evalData.components?.length
           ? evalData.components
           : DEFAULT_FORM_VALUES.components,
@@ -295,6 +355,8 @@ export function useAssetEvaluationForm({
       }
     })
     values.new_components_for_catalog = newComponents
+
+
 
     if (isEdit) {
       updateMutation.mutate(values)

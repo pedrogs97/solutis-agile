@@ -1,5 +1,223 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-09] - Dinamização e Persistência Completa do Fluxo de Aprovações (FO-PAT-02) (v2.7.10 / v1.26.9)
+- **Descrição**: Substituição do fluxo de aprovação estático na seção "8. Validação & Aprovação Formal" do formulário de Avaliação Técnica e Baixa Patrimonial (`FO-PAT-02`). Todos os campos e pareceres foram dinamizados e conectados ao ciclo de vida do formulário (`react-hook-form` via `<Controller>`), persistindo no banco de dados via endpoints do `solutis_manager_back` (`POST /`, `PATCH /{id}/` e `POST /{id}/approve/`). Foi criada nova migration Alembic adicionando `reviewer_name` para suportar o Gestor Patrimonial, e adicionada cobertura completa de testes automatizados unitários/integração.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/package.json`
+  - `solutis_manager_back/pyproject.toml`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/approvals-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/evaluation-form.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/src/asset_evaluation/schemas.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/alembic/versions/2026-09-09_234500_add_reviewer_name_to_asset_evaluation.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Frontend Mantine UI & React Hook Form (`approvals-section.tsx`)**:
+    - Cabeçalho estruturado com badge numérico `8`, título `Validação & Aprovação Formal` e subtítulo `Pareceres e assinaturas dos responsáveis pelo processo de avaliação e baixa`.
+    - Três cards de assinatura interativos e dinâmicos:
+      - *Card 1 (Avaliador Técnico)*: Input `evaluator_name` e `evaluation_date` (`DateInput` com seletor de calendário e formato `DD/MM/YYYY`).
+      - *Card 2 (Gestão Patrimonial)*: Input `reviewer_name` e `reviewed_by_date` (`DateInput`).
+      - *Card 3 (Aprovação Final)*: Input `approver_name` e `approval_date` (`DateInput`).
+    - Parecer formal e status:
+      - `Select` reativo de status (`Rascunho`, `Pendente`, `Em Análise`, `Aprovado`, `Rejeitado`, `Baixado`).
+      - `Textarea` para `approval_comments` (Parecer / Justificativa da Aprovação ou Ressalvas).
+      - Modal de confirmação integrada com o botão `Efetivar Aprovação e Baixa Formal` acionando a mutação `approveMutation` (`POST /api/v1/asset-evaluations/{id}/approve/`).
+    - Totalmente conectado a `useAssetEvaluationForm` com persistência em draft no `localStorage`.
+  - **Backend (`solutis_manager_back`)**:
+    - Adicionada coluna `reviewer_name: Mapped[str | None]` em `AssetTechnicalEvaluationModel`.
+    - Migration Alembic `e9f0a1b2c304` (`2026-09-09_234500_add_reviewer_name_to_asset_evaluation.py`) revisando `d8e9f0a1b203`.
+    - Schemas Pydantic (`AssetEvaluationBaseSchema`, `AssetEvaluationUpdateSchema`, `AssetEvaluationOutSchema`) atualizados com `reviewer_name`, `approver_name`, `approval_date` e `approval_comments`, além de tratamento de data vazia em `coerce_empty_dates`.
+    - `service.py`: Persistência e sincronização de todos os dados de aprovação nas operações de criação, atualização e aprovação formal.
+  - **Cobertura de Testes Automatizados (TDD)**:
+    - Adicionado teste `test_approvals_section_persistence` no `test_asset_evaluation.py` cobrindo POST, GET e PATCH dos dados da seção 8, atingindo 100% de sucesso (17 testes passando).
+
+## [2026-09-09] - Alinhamento e Persistência Completa da Seção '7. Gestão patrimonial' (FO-PAT-02)
+- **Descrição**: Criação e adequação visual e funcional da seção "7. Gestão patrimonial" (Registro da baixa em sistema) do formulário de Avaliação Técnica e Baixa Patrimonial (`FO-PAT-02`), reproduzindo com fidelidade estrita a referência visual com badge numérico `7` em card Mantine UI. Todos os campos foram tornados dinâmicos e persistidos no banco de dados através dos endpoints do `solutis_manager_back`, integrados ao ciclo de vida do `react-hook-form` via `<Controller>` com suporte a draft em `localStorage` e nova migration Alembic.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/asset-management-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/evaluation-form.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/approvals-section.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/src/asset_evaluation/schemas.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/alembic/versions/2026-09-09_230000_add_asset_management_write_off_fields_to_asset_evaluation.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Frontend Mantine UI & React Hook Form (`asset-management-section.tsx`)**:
+    - Cabeçalho estruturado com badge numérico estilizado `7` (fundo suave azul com borda fina), título semântico `Gestão patrimonial` e subtítulo descritivo `Registro da baixa em sistema`, exibindo também o badge de aprovação formal quando o ativo já estiver aprovado/baixado.
+    - Grid responsivo de campos conforme a referência visual:
+      - *Linha 1*: `Data da baixa` (`DateInput` com seletor de calendário, formato `DD/MM/YYYY`, placeholder `dd/mm/aaaa`, ocupando 4 colunas) e `Motivo da baixa em sistema` (`TextInput` ocupando 8 colunas).
+      - *Linha 2*: `Local das peças reaproveitadas` (`TextInput` ocupando 4 colunas).
+      - *Linha 3*: `Destino final do resíduo` (`TextInput` ocupando 12 colunas / largura total).
+      - *Linha 4*: `Observações` (`Textarea` expansível ocupando a largura total).
+    - Conexão de todos os campos ao formulário via `<Controller>`, salvamento automático no rascunho de navegador (`localStorage`) e envio automático nas mutações de criação/edição.
+    - Ajuste no `evaluation-form.tsx` para renderizar a seção `AssetManagementSection` na posição 7 do formulário FO-PAT-02, mantendo a seção de assinaturas digitais (`ApprovalsSection`) na sequência.
+  - **Backend (`solutis_manager_back`)**:
+    - Modelo `AssetTechnicalEvaluationModel` expandido com as colunas: `write_off_date` (DateTime), `write_off_reason` (String 255), `reused_parts_location` (String 255), `waste_final_destination` (String 255) e `write_off_notes` (Text).
+    - Criada migration Alembic `d8e9f0a1b203` (`2026-09-09_230000_add_asset_management_write_off_fields_to_asset_evaluation.py`) revisando `c7d8e9f0a102`.
+    - Schemas Pydantic (`AssetEvaluationBaseSchema`, `AssetEvaluationUpdateSchema`, `AssetEvaluationOutSchema`) atualizados com os novos campos e conversão automática de strings vazias de datas.
+    - `service.py`: Mapeamento, persistência e serialização dos 5 novos campos em `create_evaluation`, `update_evaluation` e `_serialize_evaluation`.
+  - **Cobertura de Testes Automatizados (TDD)**:
+    - Adicionado teste `test_asset_management_section_persistence` cobrindo POST, GET e PATCH dos 5 novos campos da seção de gestão patrimonial com 100% de sucesso na suíte (`16 passed in 12.52s`).
+
+## [2026-09-09] - Alinhamento e Persistência Completa da Seção '5. Avaliação financeira' (FO-PAT-02)
+- **Descrição**: Adequação visual e funcional da seção "5. Avaliação financeira" do formulário de Avaliação Técnica e Baixa Patrimonial (`FO-PAT-02`), reproduzindo com fidelidade a referência visual em grid de 3 colunas com badge numérico `5`. Todos os campos foram tornados dinâmicos e persistidos no banco de dados através dos endpoints do `solutis_manager_back`, integrados ao ciclo de vida do `react-hook-form` via `<Controller>` com cálculo reativo da economia estimada pelo reaproveitamento e nova migration Alembic.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/financial-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/technical-evaluation-section.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/src/asset_evaluation/schemas.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/alembic/versions/2026-09-09_223000_add_financial_fields_to_asset_evaluation.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Frontend Mantine UI & React Hook Form (`financial-section.tsx`)**:
+    - Cabeçalho reestruturado com badge numérico estilizado `5` (fundo suave azul com borda fina), título semântico `Avaliação financeira` e subtítulo descritivo `Impacto contábil e econômico da decisão`.
+    - Grid responsivo contemplando todos os campos da referência:
+      - *Linha 1*: `Valor de aquisição` (`NumberInput` formatado em moeda BRL com prefixo `R$ `), `Valor contábil líquido` (`NumberInput` formatado em BRL com prefixo `R$ `) e `Tempo de utilização` (`TextInput` com placeholder `Ex.: 3 anos e 4 meses`).
+      - *Linha 2*: `Vida útil prevista` (`TextInput` com placeholder `Ex.: 5 anos`, ocupando 1 coluna) e `Economia estimada pelo reaproveitamento` (`TextInput` somente leitura ocupando 2 colunas com valor formatado `R$ 0,00` e helper text inferior `Calculado automaticamente: valor contábil líquido × % de reaproveitamento (item 4 — ESG & controle de peso).`).
+      - *Linha 3*: `Justificativa técnica da decisão` (`Textarea` ocupando a largura total).
+    - Todos os inputs conectados via `<Controller>` com suporte a draft em `localStorage` e submissão à API.
+    - Desvinculado o `setValue('justification')` no `technical-evaluation-section.tsx` garantindo independência entre o Parecer Técnico (Seção 2) e a Justificativa da Decisão (Seção 5).
+  - **Backend (`solutis_manager_back`)**:
+    - Modelo `AssetTechnicalEvaluationModel` expandido com as colunas: `usage_time` (String 100) e `expected_lifespan` (String 100).
+    - Criada migration Alembic `c7d8e9f0a102` (`2026-09-09_223000_add_financial_fields_to_asset_evaluation.py`) revisando `f9a2b3c4d506`.
+    - Schemas Pydantic (`AssetEvaluationBaseSchema`, `AssetEvaluationUpdateSchema`, `AssetEvaluationOutSchema`) atualizados com os novos campos e cálculo reativo de economia.
+    - `service.py`: Persistência e serialização dos novos campos e proteção contra sobreposição indevida entre `justification` e `technical_opinion`.
+  - **Cobertura de Testes Automatizados (TDD)**:
+    - Adicionado teste `test_financial_evaluation_section_persistence` cobrindo POST, GET e PATCH dos campos da seção com 100% de aprovação na suíte (`15 passed in 11.65s`).
+
+## [2026-09-09] - Alinhamento e Persistência Completa da Seção '4. ESG & controle de peso' (FO-PAT-02)
+- **Descrição**: Adequação visual e funcional da seção "4. ESG & controle de peso" do formulário de Avaliação Técnica e Baixa Patrimonial (`FO-PAT-02`), reproduzindo com fidelidade a referência visual em grid de 3 colunas e 3 linhas com badge numérico `4`. Todos os 9 campos foram tornados dinâmicos e persistidos no banco de dados através dos endpoints do `solutis_manager_back`, integrados ao ciclo de vida do `react-hook-form` via `<Controller>` com cálculo reativo do percentual de reaproveitamento e nova migration Alembic.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/esg-weight-section.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/src/asset_evaluation/schemas.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/alembic/versions/2026-09-09_220000_add_esg_destination_fields_to_asset_evaluation.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Frontend Mantine UI & React Hook Form (`esg-weight-section.tsx`)**:
+    - Cabeçalho reestruturado com badge numérico estilizado `4` (fundo suave azul com borda fina), título semântico `ESG & controle de peso` e subtítulo descritivo `Obrigatório — rastreabilidade ambiental da destinação`.
+    - Grid responsivo de 3 colunas por 3 linhas contemplando todos os 9 campos da referência:
+      - *Linha 1*: `Peso bruto do ativo (kg) *` (asterisco vermelho com validação positiva), `Peso total reaproveitado (kg)` e `Peso total descartado (kg)`.
+      - *Linha 2*: `Peso enviado para reciclagem (kg)`, `Percentual de reaproveitamento` (campo somente leitura em fonte mono/bold sincronizado reativamente com o cálculo de massa) e `Empresa responsável pela destinação`.
+      - *Linha 3*: `CNPJ` (com placeholder `00.000.000/0000-00` e tipografia mono), `Nº certificado de destinação final` e `Manifesto de transporte de resíduos`.
+    - Todos os inputs de digitação conectados ao formulário via `<Controller>`, garantindo detecção de alterações (`isDirty`), salvamento automático em rascunho de `localStorage` e submissão aos endpoints REST.
+  - **Backend (`solutis_manager_back`)**:
+    - Modelo `AssetTechnicalEvaluationModel` expandido com as colunas: `destination_company` (String 200), `destination_cnpj` (String 30), `destination_certificate` (String 100) e `waste_manifest` (String 100).
+    - Criada migration Alembic `f9a2b3c4d506` (`2026-09-09_220000_add_esg_destination_fields_to_asset_evaluation.py`) revisando `e8f3a1b9c205`.
+    - Schemas Pydantic (`AssetEvaluationBaseSchema`, `AssetEvaluationUpdateSchema`, `AssetEvaluationOutSchema`) atualizados para incluir os novos campos de destinação e conformidade.
+    - `service.py`: Mapeamento e persistência completa em `create_evaluation`, `update_evaluation` e serialização no `_serialize_evaluation`.
+  - **Cobertura de Testes Automatizados (TDD)**:
+    - Adicionado teste `test_esg_weight_section_persistence` cobrindo POST, GET e PATCH dos 9 campos com recálculo do percentual de reaproveitamento.
+    - 100% de sucesso na suíte pytest de avaliações técnicas (`14 passed in 11.10s`).
+
+## [2026-09-09] - Dinamismo e Persistência Completa da Seção '2. Avaliação Técnica & Diagnóstico' (FO-PAT-02)
+- **Descrição**: Refatoração da seção "2. Avaliação Técnica & Diagnóstico" do formulário de Avaliação Técnica de Ativos (`FO-PAT-02`) eliminando qualquer comportamento estático e integrando os campos diretamente ao ciclo de vida do `react-hook-form` via `<Controller>`. Adicionada persistência e sincronização de `classification`, `feasibility`, `destination` (múltiplas opções) e `technical_opinion`/`justification` no backend `solutis_manager_back` com suíte de testes unitários automatizados (TDD).
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/technical-evaluation-section.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Frontend Mantine UI & React Hook Form (`technical-evaluation-section.tsx`)**:
+    - Todos os 4 blocos da seção integrados com `<Controller>` do `react-hook-form`:
+      - *Classificação do Estado Geral \**: `Radio.Group` dinâmico com 5 opções semânticas (`Excelente`, `Bom`, `Regular`, `Ruim`, `Irrecuperável`).
+      - *Viabilidade de Recuperação \*: `Radio.Group` dinâmico com 4 opções (`Alta`, `Média`, `Baixa`, `Inviável`).
+      - *Destino Recomendado \*: Seleção múltipla com 8 opções em grid responsivo (`Reparo`, `Reutilização`, `Aproveitamento parcial`, `Reaproveitamento interno`, `Reciclagem`, `Descarte`, `Venda`, `Doação`) integrado como array via `field.onChange`.
+      - *Parecer Técnico / Diagnóstico de Ocorrência*: `Textarea` dinâmico com sincronização bidirecional entre `technical_opinion` e `justification`.
+  - **Hook do Formulário (`useAssetEvaluationForm.ts`)**:
+    - Fallback recíproco na recuperação de dados existentes para `technical_opinion` e `justification`.
+    - Garantia de repasse sincronizado de `technical_opinion` e `justification` no payload enviado aos endpoints de criação e edição.
+  - **Backend (`solutis_manager_back`)**:
+    - `service.py`: Tratamento transparente nos métodos `create_evaluation` e `update_evaluation` para sincronizar `technical_opinion` e `justification` sempre que um deles for fornecido, garantindo persistência sem perda de dados independentemente do consumidor.
+  - **Cobertura de Testes (TDD)**:
+    - Adicionado teste `test_technical_evaluation_section_persistence` cobrindo POST, GET e PATCH de classificação, viabilidade, destinos múltiplos e parecer técnico com 100% de sucesso na suíte pytest (13 testes aprovados).
+    - Código validado e formatado com `ruff`.
+
+## [2026-09-09] - Adaptação e Persistência Completa da Seção '1. Identificação do Ativo' (FO-PAT-02)
+- **Descrição**: Alinhamento do bloco de "1. Identificação do Ativo" do formulário de Avaliação Técnica de Ativos (`FO-PAT-02`) com o modelo original de referência (`handoff/frontend/index.html`), mantendo o design system moderno (Mantine UI 8) com suporte total a dark/light mode. Todos os campos foram tornados dinâmicos e persistidos no banco de dados através dos endpoints de `solutis_manager_back`.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/identification-section.tsx`
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/src/asset_evaluation/schemas.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/alembic/versions/2026-09-09_210000_add_identification_fields_to_asset_evaluation.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Identificação do Ativo no Frontend (`identification-section.tsx`)**:
+    - Reestruturação em grid responsivo de 3 colunas adotando componentes nativos Mantine (`TextInput`, `Select`, `DateInput`, `Radio.Group`, `Textarea`) estilizados com tema escuro/claro.
+    - Todos os 13 campos do modelo de referência integrados dinamicamente via `react-hook-form`:
+      - *Vincular a um Ativo Cadastrado (Opcional)*: `Select` com busca e preenchimento automático.
+      - *Tipo de Ativo \*: `Select` com 12 opções (Notebook, Desktop, Servidor, etc.).
+      - *Unidade / Filial*: `TextInput`.
+      - *Data da Avaliação \*: `DateInput` (DD/MM/YYYY) com ícone de calendário.
+      - *Nº Patrimônio (Tombo) \*: `TextInput`.
+      - *Número de Série*: `TextInput`.
+      - *Centro de Custo*: `TextInput`.
+      - *Fabricante*: `TextInput` (mantém sincronismo com `brand_model`).
+      - *Modelo*: `TextInput` (mantém sincronismo com `brand_model`).
+      - *Localização Atual do Ativo*: `TextInput`.
+      - *Responsável pela Avaliação Inicial*: `TextInput` (`evaluator_name`).
+      - *Em Garantia?*: `Radio.Group` (`Sim` / `Não`, persistido como booleano).
+      - *Validade da Garantia*: `DateInput` (DD/MM/YYYY).
+      - *Descrição Complementar do Ativo*: `Textarea` (`asset_description`).
+  - **Campos e Migração no Backend (`solutis_manager_back`)**:
+    - Modelo `AssetTechnicalEvaluationModel` expandido com colunas: `manufacturer` (String 150), `model` (String 150), `current_location` (String 150), `is_under_warranty` (Boolean), `warranty_expiry_date` (DateTime), `asset_description` (Text).
+    - Migration Alembic `e8f3a1b9c205` gerada com script seguro de upgrade e downgrade.
+    - Schemas Pydantic (`AssetEvaluationBaseSchema`, `AssetEvaluationUpdateSchema`, `AssetEvaluationOutSchema`) atualizados com todos os campos novos e validação/coerção de datas para aceitar strings vazias como `None`.
+    - `service.py`: Tratamento de sincronismo transparente entre `manufacturer`/`model` e a coluna histórica `brand_model` para retrocompatibilidade.
+  - **Qualidade e Cobertura TDD**:
+    - Adicionado teste `test_asset_identification_fields_persistence` cobrindo POST, GET, PATCH e coerção de datas.
+    - 100% de aprovação na suíte de testes (`12 passed in 10.20s`).
+    - Linter e formatador `ruff` executados sem pendências.
+
+## [2026-09-08] - Implementação dos Blocos 'Sobre este formulário' e 'Controle do documento' (FO-PAT-02)
+- **Descrição**: Implementação dos componentes de governança e controle documental do formulário de avaliação técnica de ativos (FO-PAT-02) no frontend Mantine e persistência dinâmica completa dos metadados de vigência e responsáveis no backend (`solutis_manager_back`), garantindo que nenhum campo seja estático.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/about-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/document-control-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/evaluation-form.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/src/asset_evaluation/schemas.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/alembic/versions/2026-09-08_233000_add_document_control_to_asset_evaluation.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Componente 'Sobre este formulário' (`about-section.tsx`)**: Card institucional contendo a descrição literal de Finalidade, Escopo e Critérios de decisão do FO-PAT-02.
+  - **Componente 'Controle do documento' (`document-control-section.tsx`)**: Grid responsivo com campos dinâmicos integrados ao `react-hook-form`:
+    - `Data início` e `Data final`: `DateInput` (Mantine Dates com formato DD/MM/YYYY e ícone de calendário).
+    - `Classificação`: `Select` com opções dinâmicas (`● USO INTERNO`, `● CONFIDENCIAL`, `● RESTRITO`, `● PÚBLICO`) com estilo de badge/pill.
+    - `Elaborado por` (Área de Patrimônio e TI), `Revisado por` (Gestão Patrimonial) e `Aprovado por` (Gestão da Área Administrativa) acompanhados de seus respectivos inputs de data `DateInput`.
+  - **Persistência Completa no Backend (`solutis_manager_back`)**:
+    - Modelo `AssetTechnicalEvaluationModel` atualizado com as colunas `document_start_date`, `document_end_date`, `document_classification`, `elaborated_by_date`, `reviewed_by_date` e `approved_by_date`.
+    - Migration Alembic `d5e2f9a1b044` gerada e validada.
+    - Schemas Pydantic (`AssetEvaluationBaseSchema`, `AssetEvaluationUpdateSchema`, `AssetEvaluationOutSchema`) atualizados com coercer para strings vazias em datas opcionais.
+    - `service.py` atualizado para persistir, serializar e atualizar todos os metadados via endpoints REST `/api/v1/asset-evaluations/`.
+  - **Cobertura de Testes (TDD)**: Teste `test_document_control_metadata_persistence` adicionado cobrindo POST, GET, PATCH e coerção de datas com 100% de sucesso na suíte pytest.
+
+
 ## [2026-09-07] - Remoção do Termo 'Unificado' e Desativação Temporária do Acesso ao Solutis Flow (v2.7.9)
 - **Descrição**: Ajuste visual do título da tela de login para apenas "Login" (removendo "Unificado") e desativação temporária do botão e card de acesso ao Solutis Flow / TaskView na seleção de produtos com indicador "Em breve".
 - **Arquivos afetados**:

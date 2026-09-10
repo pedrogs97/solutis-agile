@@ -1,19 +1,15 @@
 'use client'
 
 import {
-  Badge,
   Card,
   Grid,
   Group,
   NumberInput,
-  Progress,
-  Stack,
   Text,
-  ThemeIcon,
+  TextInput,
   Title,
 } from '@mantine/core'
-import { Leaf, Scale } from 'lucide-react'
-import type { UseFormReturn } from 'react-hook-form'
+import { Controller, type UseFormReturn } from 'react-hook-form'
 
 import type { AssetEvaluationFormValues } from '@/types/AssetEvaluation'
 
@@ -28,104 +24,204 @@ export function EsgWeightSection({
   reusePercentage,
   readOnly = false,
 }: Readonly<EsgWeightSectionProps>) {
-  const { setValue, watch } = form
-  const grossWeight = watch('gross_weight') ?? 0
-  const reusedWeight = watch('reused_weight') ?? 0
-  const discardedWeight = watch('discarded_weight') ?? 0
-  const recycleWeight = watch('recycle_weight') ?? 0
+  const { control } = form
 
   return (
     <Card shadow="xs" radius="md" p="lg" withBorder>
-      <Group justify="space-between" mb="md">
-        <Group>
-          <ThemeIcon size="lg" radius="md" color="teal" variant="light">
-            <Leaf size={20} />
-          </ThemeIcon>
-          <div>
-            <Title order={4}>4. ESG & Controle de Pesagem</Title>
-            <Text size="xs" c="dimmed">
-              Rastreabilidade ambiental e percentual de aproveitamento de massa (kg)
-            </Text>
-          </div>
-        </Group>
-
-        <Badge color="teal" size="lg" leftSection={<Scale size={16} />}>
-          Taxa ESG: {reusePercentage.toFixed(1)}%
-        </Badge>
+      {/* Cabeçalho alinhado com o modelo FO-PAT-02 */}
+      <Group mb="lg" gap="sm">
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            border: '1px solid light-dark(rgba(186, 230, 253, 0.9), rgba(56, 189, 248, 0.35))',
+            backgroundColor: 'light-dark(rgba(240, 249, 255, 0.9), rgba(12, 74, 110, 0.25))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 700,
+            fontSize: 14,
+            color: 'light-dark(var(--mantine-color-blue-7), var(--mantine-color-blue-3))',
+            flexShrink: 0,
+          }}
+        >
+          4
+        </div>
+        <div>
+          <Title order={4} fw={700} style={{ lineHeight: 1.2 }}>
+            ESG &amp; controle de peso
+          </Title>
+          <Text size="xs" c="dimmed" mt={2}>
+            Obrigatório — rastreabilidade ambiental da destinação
+          </Text>
+        </div>
       </Group>
 
+      {/* Grid de 3 Colunas x 3 Linhas com todos os campos dinâmicos e persistidos */}
       <Grid gutter="md">
-        <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-          <NumberInput
-            label="Peso Bruto do Ativo (kg) *"
-            description="Peso total antes da desmontagem"
-            min={0}
-            step={0.01}
-            decimalScale={2}
-            value={grossWeight}
-            onChange={(val) => setValue('gross_weight', Number(val) || 0)}
-            disabled={readOnly}
+        {/* Linha 1: Pesos Bruto, Reaproveitado e Descartado */}
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Controller
+            control={control}
+            name="gross_weight"
+            render={({ field }) => (
+              <NumberInput
+                label={
+                  <span>
+                    Peso bruto do ativo (kg) <Text component="span" c="red">*</Text>
+                  </span>
+                }
+                min={0}
+                step={0.01}
+                decimalScale={2}
+                allowNegative={false}
+                value={field.value ?? 0}
+                onChange={(val) => field.onChange(val === '' ? 0 : Number(val))}
+                disabled={readOnly}
+              />
+            )}
           />
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-          <NumberInput
-            label="Peso Reaproveitado (kg)"
-            description="Componentes reaproveitados"
-            min={0}
-            step={0.01}
-            decimalScale={2}
-            value={reusedWeight}
-            onChange={(val) => setValue('reused_weight', Number(val) || 0)}
-            disabled={readOnly}
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Controller
+            control={control}
+            name="reused_weight"
+            render={({ field }) => (
+              <NumberInput
+                label="Peso total reaproveitado (kg)"
+                min={0}
+                step={0.01}
+                decimalScale={2}
+                allowNegative={false}
+                value={field.value ?? 0}
+                onChange={(val) => field.onChange(val === '' ? 0 : Number(val))}
+                disabled={readOnly}
+              />
+            )}
           />
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-          <NumberInput
-            label="Peso Descartado (kg)"
-            description="Resíduos sem reuso"
-            min={0}
-            step={0.01}
-            decimalScale={2}
-            value={discardedWeight}
-            onChange={(val) => setValue('discarded_weight', Number(val) || 0)}
-            disabled={readOnly}
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Controller
+            control={control}
+            name="discarded_weight"
+            render={({ field }) => (
+              <NumberInput
+                label="Peso total descartado (kg)"
+                min={0}
+                step={0.01}
+                decimalScale={2}
+                allowNegative={false}
+                value={field.value ?? 0}
+                onChange={(val) => field.onChange(val === '' ? 0 : Number(val))}
+                disabled={readOnly}
+              />
+            )}
           />
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-          <NumberInput
-            label="Peso para Reciclagem (kg)"
-            description="Logística reversa / reciclagem"
-            min={0}
-            step={0.01}
-            decimalScale={2}
-            value={recycleWeight}
-            onChange={(val) => setValue('recycle_weight', Number(val) || 0)}
-            disabled={readOnly}
+        {/* Linha 2: Reciclagem, Percentual Reativo e Empresa */}
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Controller
+            control={control}
+            name="recycle_weight"
+            render={({ field }) => (
+              <NumberInput
+                label="Peso enviado para reciclagem (kg)"
+                min={0}
+                step={0.01}
+                decimalScale={2}
+                allowNegative={false}
+                value={field.value ?? 0}
+                onChange={(val) => field.onChange(val === '' ? 0 : Number(val))}
+                disabled={readOnly}
+              />
+            )}
           />
         </Grid.Col>
 
-        <Grid.Col span={12}>
-          <Stack gap={4}>
-            <Group justify="space-between">
-              <Text size="xs" fw={700} c="dimmed">
-                PROGRESSO DE REAPROVEITAMENTO ESG
-              </Text>
-              <Text size="xs" fw={700} c="teal">
-                {reusePercentage.toFixed(1)}% de massa reaproveitada
-              </Text>
-            </Group>
-            <Progress
-              value={reusePercentage}
-              color="teal"
-              size="lg"
-              radius="xl"
-              striped
-              animated={reusePercentage > 0}
-            />
-          </Stack>
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <TextInput
+            label="Percentual de reaproveitamento"
+            value={reusePercentage > 0 ? `${reusePercentage.toFixed(1)} %` : '0 %'}
+            readOnly
+            styles={{
+              input: {
+                fontFamily: 'monospace',
+                fontWeight: 700,
+                cursor: 'default',
+              },
+            }}
+          />
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Controller
+            control={control}
+            name="destination_company"
+            render={({ field }) => (
+              <TextInput
+                label="Empresa responsável pela destinação"
+                value={field.value || ''}
+                onChange={field.onChange}
+                disabled={readOnly}
+              />
+            )}
+          />
+        </Grid.Col>
+
+        {/* Linha 3: CNPJ, Certificado e Manifesto MTR */}
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Controller
+            control={control}
+            name="destination_cnpj"
+            render={({ field }) => (
+              <TextInput
+                label="CNPJ"
+                placeholder="00.000.000/0000-00"
+                value={field.value || ''}
+                onChange={field.onChange}
+                disabled={readOnly}
+                styles={{
+                  input: {
+                    fontFamily: 'monospace',
+                  },
+                }}
+              />
+            )}
+          />
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Controller
+            control={control}
+            name="destination_certificate"
+            render={({ field }) => (
+              <TextInput
+                label="Nº certificado de destinação final"
+                value={field.value || ''}
+                onChange={field.onChange}
+                disabled={readOnly}
+              />
+            )}
+          />
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Controller
+            control={control}
+            name="waste_manifest"
+            render={({ field }) => (
+              <TextInput
+                label="Manifesto de transporte de resíduos"
+                value={field.value || ''}
+                onChange={field.onChange}
+                disabled={readOnly}
+              />
+            )}
+          />
         </Grid.Col>
       </Grid>
     </Card>

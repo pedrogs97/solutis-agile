@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import {
   Card,
   Checkbox,
@@ -14,7 +15,7 @@ import {
   Title,
 } from '@mantine/core'
 import { Wrench } from 'lucide-react'
-import type { UseFormReturn } from 'react-hook-form'
+import { Controller, type ControllerRenderProps, type UseFormReturn } from 'react-hook-form'
 
 import type { AssetEvaluationFormValues } from '@/types/AssetEvaluation'
 
@@ -38,23 +39,7 @@ export function TechnicalEvaluationSection({
   form,
   readOnly = false,
 }: Readonly<TechnicalEvaluationSectionProps>) {
-  const { register, setValue, watch } = form
-  const currentDestinations = watch('destination') || []
-  const currentClassification = watch('classification')
-  const currentFeasibility = watch('feasibility')
-
-  const handleDestinationToggle = (dest: string) => {
-    if (readOnly) return
-    const exists = currentDestinations.includes(dest)
-    if (exists) {
-      setValue(
-        'destination',
-        currentDestinations.filter((d) => d !== dest)
-      )
-    } else {
-      setValue('destination', [...currentDestinations, dest])
-    }
-  }
+  const { control } = form
 
   return (
     <Card shadow="xs" radius="md" p="lg" withBorder>
@@ -71,44 +56,58 @@ export function TechnicalEvaluationSection({
       </Group>
 
       <Grid gutter="lg">
-        {/* Classificação */}
+        {/* Classificação do Estado Geral */}
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Stack gap="xs">
             <Text size="sm" fw={600}>
               Classificação do Estado Geral *
             </Text>
-            <Radio.Group
-              value={currentClassification || 'Bom'}
-              onChange={(val) => setValue('classification', val)}
-            >
-              <Group gap="sm" mt={4}>
-                <Radio value="Excelente" label="Excelente" disabled={readOnly} color="teal" />
-                <Radio value="Bom" label="Bom" disabled={readOnly} color="teal" />
-                <Radio value="Regular" label="Regular" disabled={readOnly} color="yellow" />
-                <Radio value="Ruim" label="Ruim" disabled={readOnly} color="red" />
-                <Radio value="Irrecuperável" label="Irrecuperável" disabled={readOnly} color="red" />
-              </Group>
-            </Radio.Group>
+            <Controller
+              control={control}
+              name="classification"
+              rules={{ required: true }}
+              render={({ field }: { field: ControllerRenderProps<AssetEvaluationFormValues, 'classification'> }) => (
+                <Radio.Group
+                  value={field.value || 'Bom'}
+                  onChange={(val: string) => field.onChange(val)}
+                >
+                  <Group gap="sm" mt={4}>
+                    <Radio value="Excelente" label="Excelente" disabled={readOnly} color="teal" />
+                    <Radio value="Bom" label="Bom" disabled={readOnly} color="teal" />
+                    <Radio value="Regular" label="Regular" disabled={readOnly} color="yellow" />
+                    <Radio value="Ruim" label="Ruim" disabled={readOnly} color="red" />
+                    <Radio value="Irrecuperável" label="Irrecuperável" disabled={readOnly} color="red" />
+                  </Group>
+                </Radio.Group>
+              )}
+            />
           </Stack>
         </Grid.Col>
 
-        {/* Viabilidade */}
+        {/* Viabilidade de Recuperação */}
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Stack gap="xs">
             <Text size="sm" fw={600}>
               Viabilidade de Recuperação *
             </Text>
-            <Radio.Group
-              value={currentFeasibility || 'Alta'}
-              onChange={(val) => setValue('feasibility', val)}
-            >
-              <Group gap="sm" mt={4}>
-                <Radio value="Alta" label="Alta" disabled={readOnly} color="teal" />
-                <Radio value="Média" label="Média" disabled={readOnly} color="yellow" />
-                <Radio value="Baixa" label="Baixa" disabled={readOnly} color="orange" />
-                <Radio value="Inviável" label="Inviável" disabled={readOnly} color="red" />
-              </Group>
-            </Radio.Group>
+            <Controller
+              control={control}
+              name="feasibility"
+              rules={{ required: true }}
+              render={({ field }: { field: ControllerRenderProps<AssetEvaluationFormValues, 'feasibility'> }) => (
+                <Radio.Group
+                  value={field.value || 'Alta'}
+                  onChange={(val: string) => field.onChange(val)}
+                >
+                  <Group gap="sm" mt={4}>
+                    <Radio value="Alta" label="Alta" disabled={readOnly} color="teal" />
+                    <Radio value="Média" label="Média" disabled={readOnly} color="yellow" />
+                    <Radio value="Baixa" label="Baixa" disabled={readOnly} color="orange" />
+                    <Radio value="Inviável" label="Inviável" disabled={readOnly} color="red" />
+                  </Group>
+                </Radio.Group>
+              )}
+            />
           </Stack>
         </Grid.Col>
 
@@ -118,28 +117,56 @@ export function TechnicalEvaluationSection({
             <Text size="sm" fw={600}>
               Destino Recomendado * (Selecione uma ou mais opções)
             </Text>
-            <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
-              {DESTINATION_OPTIONS.map((dest) => (
-                <Checkbox
-                  key={dest}
-                  label={dest}
-                  checked={currentDestinations.includes(dest)}
-                  onChange={() => handleDestinationToggle(dest)}
-                  disabled={readOnly}
-                  color="indigo"
-                />
-              ))}
-            </SimpleGrid>
+            <Controller
+              control={control}
+              name="destination"
+              render={({ field }: { field: ControllerRenderProps<AssetEvaluationFormValues, 'destination'> }) => {
+                const currentDestinations: string[] = Array.isArray(field.value) ? field.value : []
+                const handleToggle = (dest: string) => {
+                  if (readOnly) return
+                  const exists = currentDestinations.includes(dest)
+                  const updated = exists
+                    ? currentDestinations.filter((d: string) => d !== dest)
+                    : [...currentDestinations, dest]
+                  field.onChange(updated)
+                }
+
+                return (
+                  <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
+                    {DESTINATION_OPTIONS.map((dest) => (
+                      <Checkbox
+                        key={dest}
+                        label={dest}
+                        checked={currentDestinations.includes(dest)}
+                        onChange={() => handleToggle(dest)}
+                        disabled={readOnly}
+                        color="indigo"
+                      />
+                    ))}
+                  </SimpleGrid>
+                )
+              }}
+            />
           </Stack>
         </Grid.Col>
 
+        {/* Parecer Técnico / Diagnóstico de Ocorrência */}
         <Grid.Col span={12}>
-          <Textarea
-            label="Parecer Técnico / Diagnóstico de Ocorrência"
-            placeholder="Descreva detalhes de testes de hardware realizados, peças danificadas e parecer final..."
-            rows={3}
-            {...register('justification')}
-            disabled={readOnly}
+          <Controller
+            control={control}
+            name="technical_opinion"
+            render={({ field }: { field: ControllerRenderProps<AssetEvaluationFormValues, 'technical_opinion'> }) => (
+              <Textarea
+                label="Parecer Técnico / Diagnóstico de Ocorrência"
+                placeholder="Descreva detalhes de testes de hardware realizados, peças danificadas e parecer final..."
+                rows={3}
+                value={field.value || ''}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  field.onChange(e.currentTarget.value)
+                }}
+                disabled={readOnly}
+              />
+            )}
           />
         </Grid.Col>
       </Grid>

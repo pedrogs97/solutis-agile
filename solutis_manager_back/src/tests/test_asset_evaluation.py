@@ -1,15 +1,11 @@
 """Tests for Asset Technical Evaluation Module (FO-PAT-02)"""
 
 from datetime import datetime
-from io import BytesIO
 
 import pytest
 from src.asset.enums import AssetStatusEnum
 from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
-from src.asset_evaluation.models import (
-    AssetCatalogComponentModel,
-    AssetTechnicalEvaluationModel,
-)
+from src.asset_evaluation.models import AssetCatalogComponentModel
 from src.asset_evaluation.schemas import (
     AssetEvaluationApproveSchema,
     AssetEvaluationCreateSchema,
@@ -47,7 +43,7 @@ class TestAssetEvaluationModule(TestBase):
         status_disp = db.query(AssetStatusModel).filter_by(id=1).first() or db.merge(
             AssetStatusModel(id=1, name="Disponível")
         )
-        status_descarte = db.query(AssetStatusModel).filter_by(
+        _ = db.query(AssetStatusModel).filter_by(
             id=AssetStatusEnum.DESCARTE.value
         ).first() or db.merge(
             AssetStatusModel(id=AssetStatusEnum.DESCARTE.value, name="Descarte")
@@ -361,3 +357,578 @@ class TestAssetEvaluationModule(TestBase):
         )
         assert approve_resp.status_code == 200
         assert approve_resp.json()["status"] == "Baixado"
+
+    def test_document_control_metadata_persistence(
+        self, setup, create_initial_data, auth_headers
+    ):
+        """Valida que todos os campos de Controle do Documento são persistidos e atualizados via API."""
+        create_payload = {
+            "patrimonio": "PAT-DOC-01",
+            "asset_type_name": "Servidor",
+            "document_start_date": "2026-01-01T00:00:00",
+            "document_end_date": "2026-12-31T23:59:59",
+            "document_classification": "USO INTERNO",
+            "elaborated_by_date": "2026-01-05T10:00:00",
+            "reviewed_by_date": "2026-01-10T14:30:00",
+            "approved_by_date": "2026-01-15T16:00:00",
+        }
+
+        # 1. Criação via POST
+        post_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert post_resp.status_code == 201
+        created = post_resp.json()
+        eval_id = created["id"]
+        assert created["document_classification"] == "USO INTERNO"
+        assert "2026-01-01" in created["document_start_date"]
+        assert "2026-12-31" in created["document_end_date"]
+        assert "2026-01-05" in created["elaborated_by_date"]
+        assert "2026-01-10" in created["reviewed_by_date"]
+        assert "2026-01-15" in created["approved_by_date"]
+
+        # 2. Obtenção via GET
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 200
+        data = get_resp.json()
+        assert data["document_classification"] == "USO INTERNO"
+        assert "2026-01-01" in data["document_start_date"]
+
+        # 3. Atualização via PATCH (alterando classificação e datas)
+        patch_payload = {
+            "document_classification": "CONFIDENCIAL",
+            "document_end_date": "2027-06-30T00:00:00",
+            "approved_by_date": "2026-02-01T11:00:00",
+        }
+        patch_resp = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json=patch_payload,
+        )
+        assert patch_resp.status_code == 200
+        patched = patch_resp.json()
+        assert patched["document_classification"] == "CONFIDENCIAL"
+        assert "2027-06-30" in patched["document_end_date"]
+        assert "2026-02-01" in patched["approved_by_date"]
+
+        # 4. Envio de string vazia em datas opcionais (deve converter para None)
+        patch_empty_dates = {
+            "document_end_date": "",
+            "approved_by_date": None,
+        }
+        patch_resp2 = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json=patch_empty_dates,
+        )
+        assert patch_resp2.status_code == 200
+        patched2 = patch_resp2.json()
+        assert patched2["document_end_date"] is None
+        assert patched2["approved_by_date"] is None
+
+    def test_asset_identification_fields_persistence(self, auth_headers):
+        """Valida a persistência, recuperação e atualização de todos os campos de Identificação do Ativo."""
+        create_payload = {
+            "patrimonio": "PAT-IDE-1234",
+            "asset_type_name": "Notebook",
+            "manufacturer": "Dell",
+            "model": "Latitude 5420",
+            "serial_number": "SN987654321",
+            "cost_center": "TI - Infraestrutura",
+            "unity": "Matriz Salvador",
+            "current_location": "Depósito TI — Sala 3",
+            "evaluation_date": "2026-09-09T14:30:00",
+            "evaluator_name": "Carlos Engenheiro",
+            "is_under_warranty": True,
+            "warranty_expiry_date": "2027-12-31T00:00:00",
+            "asset_description": "Notebook com tela trincada, acompanha carregador original.",
+            "gross_weight": 2.5,
+            "net_book_value": 3500.0,
+        }
+
+        # 1. Criação via POST
+        post_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert post_resp.status_code == 201
+        created = post_resp.json()
+        eval_id = created["id"]
+
+        assert created["patrimonio"] == "PAT-IDE-1234"
+        assert created["asset_type_name"] == "Notebook"
+        assert created["manufacturer"] == "Dell"
+        assert created["model"] == "Latitude 5420"
+        assert created["brand_model"] == "Dell Latitude 5420"
+        assert created["serial_number"] == "SN987654321"
+        assert created["cost_center"] == "TI - Infraestrutura"
+        assert created["unity"] == "Matriz Salvador"
+        assert created["current_location"] == "Depósito TI — Sala 3"
+        assert "2026-09-09" in created["evaluation_date"]
+        assert created["evaluator_name"] == "Carlos Engenheiro"
+        assert created["is_under_warranty"] is True
+        assert "2027-12-31" in created["warranty_expiry_date"]
+        assert (
+            created["asset_description"]
+            == "Notebook com tela trincada, acompanha carregador original."
+        )
+
+        # 2. Obtenção via GET
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 200
+        fetched = get_resp.json()
+        assert fetched["manufacturer"] == "Dell"
+        assert fetched["model"] == "Latitude 5420"
+        assert fetched["current_location"] == "Depósito TI — Sala 3"
+        assert fetched["is_under_warranty"] is True
+
+        # 3. Atualização via PATCH
+        patch_payload = {
+            "model": "Latitude 5430",
+            "current_location": "Bancada Manutenção - Sala 5",
+            "is_under_warranty": False,
+            "warranty_expiry_date": None,
+        }
+        patch_resp = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json=patch_payload,
+        )
+        assert patch_resp.status_code == 200
+        patched = patch_resp.json()
+        assert patched["model"] == "Latitude 5430"
+        assert patched["brand_model"] == "Dell Latitude 5430"
+        assert patched["current_location"] == "Bancada Manutenção - Sala 5"
+        assert patched["is_under_warranty"] is False
+        assert patched["warranty_expiry_date"] is None
+
+        # 4. String vazia em warranty_expiry_date é convertida para None
+        patch_resp2 = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json={"warranty_expiry_date": ""},
+        )
+        assert patch_resp2.status_code == 200
+        assert patch_resp2.json()["warranty_expiry_date"] is None
+
+    def test_technical_evaluation_section_persistence(self, auth_headers):
+        """Valida a persistência, recuperação e atualização de todos os campos da Seção 2 (Avaliação Técnica & Diagnóstico)."""
+        create_payload = {
+            "patrimonio": "PAT-TEC-2026",
+            "asset_type_name": "Notebook",
+            "classification": "Bom",
+            "feasibility": "Alta",
+            "destination": ["Reaproveitamento interno", "Aproveitamento parcial"],
+            "technical_opinion": "Placa-mãe testada com sucesso. Memória RAM reaproveitável.",
+            "gross_weight": 2.0,
+            "net_book_value": 1200.0,
+        }
+
+        # 1. Criação via POST
+        post_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert post_resp.status_code == 201
+        created = post_resp.json()
+        eval_id = created["id"]
+
+        assert created["classification"] == "Bom"
+        assert created["feasibility"] == "Alta"
+        assert set(created["destination"]) == {
+            "Reaproveitamento interno",
+            "Aproveitamento parcial",
+        }
+        assert (
+            created["technical_opinion"]
+            == "Placa-mãe testada com sucesso. Memória RAM reaproveitável."
+        )
+        # Sincronização automática com justification
+        assert (
+            created["justification"]
+            == "Placa-mãe testada com sucesso. Memória RAM reaproveitável."
+        )
+
+        # 2. Obtenção via GET
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 200
+        fetched = get_resp.json()
+        assert fetched["classification"] == "Bom"
+        assert fetched["feasibility"] == "Alta"
+        assert set(fetched["destination"]) == {
+            "Reaproveitamento interno",
+            "Aproveitamento parcial",
+        }
+        assert (
+            fetched["technical_opinion"]
+            == "Placa-mãe testada com sucesso. Memória RAM reaproveitável."
+        )
+
+        # 3. Atualização via PATCH (alterando classificação, viabilidade, destinos e parecer)
+        patch_payload = {
+            "classification": "Irrecuperável",
+            "feasibility": "Inviável",
+            "destination": ["Descarte", "Reciclagem"],
+            "technical_opinion": "Curto circuito irreversível no circuito de alimentação e chipset danificado.",
+        }
+        patch_resp = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json=patch_payload,
+        )
+        assert patch_resp.status_code == 200
+        patched = patch_resp.json()
+        assert patched["classification"] == "Irrecuperável"
+        assert patched["feasibility"] == "Inviável"
+        assert set(patched["destination"]) == {"Descarte", "Reciclagem"}
+        assert (
+            patched["technical_opinion"]
+            == "Curto circuito irreversível no circuito de alimentação e chipset danificado."
+        )
+        assert (
+            patched["justification"]
+            == "Curto circuito irreversível no circuito de alimentação e chipset danificado."
+        )
+
+    def test_esg_weight_section_persistence(
+        self, setup, create_initial_data, auth_headers
+    ):
+        """Valida persistência e dinamismo completo da Seção 4 (ESG & controle de peso)."""
+        # 1. Criação via POST com os 9 campos da seção de ESG
+        create_payload = {
+            "patrimonio": "PAT-ESG-001",
+            "asset_type_name": "Notebook",
+            "gross_weight": 12.5,
+            "reused_weight": 7.5,
+            "discarded_weight": 3.0,
+            "recycle_weight": 2.0,
+            "destination_company": "ReciclaTI Soluções Ambientais Ltda",
+            "destination_cnpj": "12.345.678/0001-90",
+            "destination_certificate": "CERT-DEST-2026-0891",
+            "waste_manifest": "MTR-BA-2026-9923",
+        }
+
+        post_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert post_resp.status_code == 201
+        created = post_resp.json()
+        eval_id = created["id"]
+
+        assert created["gross_weight"] == 12.5
+        assert created["reused_weight"] == 7.5
+        assert created["discarded_weight"] == 3.0
+        assert created["recycle_weight"] == 2.0
+        assert created["reuse_percentage"] == 60.0
+        assert created["destination_company"] == "ReciclaTI Soluções Ambientais Ltda"
+        assert created["destination_cnpj"] == "12.345.678/0001-90"
+        assert created["destination_certificate"] == "CERT-DEST-2026-0891"
+        assert created["waste_manifest"] == "MTR-BA-2026-9923"
+
+        # 2. Leitura via GET
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 200
+        fetched = get_resp.json()
+        assert fetched["gross_weight"] == 12.5
+        assert fetched["reused_weight"] == 7.5
+        assert fetched["discarded_weight"] == 3.0
+        assert fetched["recycle_weight"] == 2.0
+        assert fetched["reuse_percentage"] == 60.0
+        assert fetched["destination_company"] == "ReciclaTI Soluções Ambientais Ltda"
+        assert fetched["destination_cnpj"] == "12.345.678/0001-90"
+        assert fetched["destination_certificate"] == "CERT-DEST-2026-0891"
+        assert fetched["waste_manifest"] == "MTR-BA-2026-9923"
+
+        # 3. Atualização via PATCH
+        patch_payload = {
+            "reused_weight": 10.0,
+            "discarded_weight": 1.5,
+            "recycle_weight": 1.0,
+            "destination_company": "EcoDescarte & Logística Reversa SA",
+            "destination_cnpj": "98.765.432/0001-11",
+            "destination_certificate": "CERT-DEST-2026-9999",
+            "waste_manifest": "MTR-SP-2026-1111",
+        }
+        patch_resp = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json=patch_payload,
+        )
+        assert patch_resp.status_code == 200
+        patched = patch_resp.json()
+        assert patched["gross_weight"] == 12.5
+        assert patched["reused_weight"] == 10.0
+        assert patched["discarded_weight"] == 1.5
+        assert patched["recycle_weight"] == 1.0
+        assert patched["reuse_percentage"] == 80.0
+        assert patched["destination_company"] == "EcoDescarte & Logística Reversa SA"
+        assert patched["destination_cnpj"] == "98.765.432/0001-11"
+        assert patched["destination_certificate"] == "CERT-DEST-2026-9999"
+        assert patched["waste_manifest"] == "MTR-SP-2026-1111"
+
+    def test_financial_evaluation_section_persistence(
+        self, setup, create_initial_data, auth_headers
+    ):
+        """Valida persistência e dinamismo completo da Seção 5 (Avaliação financeira)."""
+        # 1. Criação via POST com todos os campos da avaliação financeira
+        create_payload = {
+            "patrimonio": "PAT-FIN-001",
+            "asset_type_name": "Notebook",
+            "acquisition_value": 5000.0,
+            "net_book_value": 2000.0,
+            "usage_time": "3 anos e 4 meses",
+            "expected_lifespan": "5 anos",
+            "gross_weight": 10.0,
+            "reused_weight": 5.0,
+            "discarded_weight": 5.0,
+            "justification": "Substituição por obsolescência técnica. Custo de reparo excede valor residual.",
+            "technical_opinion": "Placa-mãe danificada e bateria inchada.",
+        }
+
+        post_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert post_resp.status_code == 201
+        created = post_resp.json()
+        eval_id = created["id"]
+
+        assert created["acquisition_value"] == 5000.0
+        assert created["net_book_value"] == 2000.0
+        assert created["usage_time"] == "3 anos e 4 meses"
+        assert created["expected_lifespan"] == "5 anos"
+        assert created["reuse_percentage"] == 50.0
+        assert created["estimated_economy"] == 1000.0  # 2000 * 50%
+        assert (
+            created["justification"]
+            == "Substituição por obsolescência técnica. Custo de reparo excede valor residual."
+        )
+        assert created["technical_opinion"] == "Placa-mãe danificada e bateria inchada."
+
+        # 2. Leitura via GET
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 200
+        fetched = get_resp.json()
+        assert fetched["acquisition_value"] == 5000.0
+        assert fetched["net_book_value"] == 2000.0
+        assert fetched["usage_time"] == "3 anos e 4 meses"
+        assert fetched["expected_lifespan"] == "5 anos"
+        assert fetched["reuse_percentage"] == 50.0
+        assert fetched["estimated_economy"] == 1000.0
+        assert (
+            fetched["justification"]
+            == "Substituição por obsolescência técnica. Custo de reparo excede valor residual."
+        )
+        assert fetched["technical_opinion"] == "Placa-mãe danificada e bateria inchada."
+
+        # 3. Atualização via PATCH
+        patch_payload = {
+            "acquisition_value": 6000.0,
+            "net_book_value": 3000.0,
+            "usage_time": "4 anos",
+            "expected_lifespan": "6 anos",
+            "reused_weight": 8.0,
+            "justification": "Decisão aprovada pelo comitê técnico.",
+        }
+        patch_resp = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json=patch_payload,
+        )
+        assert patch_resp.status_code == 200
+        patched = patch_resp.json()
+        assert patched["acquisition_value"] == 6000.0
+        assert patched["net_book_value"] == 3000.0
+        assert patched["usage_time"] == "4 anos"
+        assert patched["expected_lifespan"] == "6 anos"
+        assert patched["reuse_percentage"] == 80.0
+        assert patched["estimated_economy"] == 2400.0  # 3000 * 80%
+        assert patched["justification"] == "Decisão aprovada pelo comitê técnico."
+        assert patched["technical_opinion"] == "Placa-mãe danificada e bateria inchada."
+
+    def test_asset_management_section_persistence(
+        self, setup, create_initial_data, auth_headers
+    ):
+        """Valida persistência e dinamismo completo da Seção 7 (Gestão patrimonial - baixa em sistema)."""
+        # 1. Criação via POST com os campos da gestão patrimonial
+        create_payload = {
+            "patrimonio": "PAT-MGT-001",
+            "asset_type_name": "Desktop",
+            "write_off_date": "2026-09-10T14:30:00",
+            "write_off_reason": "Inviabilidade econômica de recuperação e obsolescência",
+            "reused_parts_location": "Laboratório de Manutenção - Armário 04 / Gaveta 2",
+            "waste_final_destination": "Descarte certificado via EcoRecicla",
+            "write_off_notes": "Baixa patrimonial aprovada pelo gestor da área administrativa.",
+        }
+
+        post_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert post_resp.status_code == 201
+        created = post_resp.json()
+        eval_id = created["id"]
+
+        assert created["write_off_date"] is not None
+        assert "2026-09-10" in created["write_off_date"]
+        assert (
+            created["write_off_reason"]
+            == "Inviabilidade econômica de recuperação e obsolescência"
+        )
+        assert (
+            created["reused_parts_location"]
+            == "Laboratório de Manutenção - Armário 04 / Gaveta 2"
+        )
+        assert (
+            created["waste_final_destination"] == "Descarte certificado via EcoRecicla"
+        )
+        assert (
+            created["write_off_notes"]
+            == "Baixa patrimonial aprovada pelo gestor da área administrativa."
+        )
+
+        # 2. Leitura via GET
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 200
+        fetched = get_resp.json()
+        assert "2026-09-10" in fetched["write_off_date"]
+        assert (
+            fetched["write_off_reason"]
+            == "Inviabilidade econômica de recuperação e obsolescência"
+        )
+        assert (
+            fetched["reused_parts_location"]
+            == "Laboratório de Manutenção - Armário 04 / Gaveta 2"
+        )
+        assert (
+            fetched["waste_final_destination"] == "Descarte certificado via EcoRecicla"
+        )
+        assert (
+            fetched["write_off_notes"]
+            == "Baixa patrimonial aprovada pelo gestor da área administrativa."
+        )
+
+        # 3. Atualização via PATCH
+        patch_payload = {
+            "write_off_reason": "Equipamento danificado irreparável pós-sinistro",
+            "reused_parts_location": "Bancada Central de TI - Estoque B",
+            "waste_final_destination": "Logística Reversa Fabricante",
+            "write_off_notes": "Atualização de destinação conforme laudo complementar.",
+        }
+        patch_resp = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json=patch_payload,
+        )
+        assert patch_resp.status_code == 200
+        patched = patch_resp.json()
+        assert (
+            patched["write_off_reason"]
+            == "Equipamento danificado irreparável pós-sinistro"
+        )
+        assert patched["reused_parts_location"] == "Bancada Central de TI - Estoque B"
+        assert patched["waste_final_destination"] == "Logística Reversa Fabricante"
+        assert (
+            patched["write_off_notes"]
+            == "Atualização de destinação conforme laudo complementar."
+        )
+
+    def test_approvals_section_persistence(
+        self, setup, create_initial_data, auth_headers
+    ):
+        """Valida persistência e dinamismo completo da Seção 8 (Validação & Aprovação Formal)."""
+        # 1. Criação via POST com todos os campos da seção de aprovação
+        create_payload = {
+            "patrimonio": "PAT-APPR-001",
+            "asset_type_name": "Notebook",
+            "evaluator_name": "Carlos Técnico",
+            "evaluation_date": "2026-09-09T14:30:00",
+            "reviewer_name": "Mariana Gestora Patrimonial",
+            "reviewed_by_date": "2026-09-09T15:00:00",
+            "approver_name": "Roberto Diretor",
+            "approval_date": "2026-09-09T16:00:00",
+            "status": "Em Análise",
+            "approval_comments": "Avaliação inicial aprovada para triagem patrimonial.",
+        }
+        create_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert create_resp.status_code == 201
+        created = create_resp.json()
+        eval_id = created["id"]
+        assert created["evaluator_name"] == "Carlos Técnico"
+        assert created["reviewer_name"] == "Mariana Gestora Patrimonial"
+        assert created["approver_name"] == "Roberto Diretor"
+        assert "2026-09-09" in created["approval_date"]
+        assert created["status"] == "Em Análise"
+        assert (
+            created["approval_comments"]
+            == "Avaliação inicial aprovada para triagem patrimonial."
+        )
+
+        # 2. Leitura via GET
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 200
+        fetched = get_resp.json()
+        assert fetched["evaluator_name"] == "Carlos Técnico"
+        assert fetched["reviewer_name"] == "Mariana Gestora Patrimonial"
+        assert fetched["approver_name"] == "Roberto Diretor"
+        assert "2026-09-09" in fetched["approval_date"]
+        assert fetched["status"] == "Em Análise"
+        assert (
+            fetched["approval_comments"]
+            == "Avaliação inicial aprovada para triagem patrimonial."
+        )
+
+        # 3. Atualização via PATCH
+        patch_payload = {
+            "reviewer_name": "Fernanda Revalidadora",
+            "approver_name": "Dr. Arnaldo Superintendente",
+            "status": "Aprovado",
+            "approval_comments": "Homologação definitiva após revisão de inventário.",
+        }
+        patch_resp = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json=patch_payload,
+        )
+        assert patch_resp.status_code == 200
+        patched = patch_resp.json()
+        assert patched["reviewer_name"] == "Fernanda Revalidadora"
+        assert patched["approver_name"] == "Dr. Arnaldo Superintendente"
+        assert patched["status"] == "Aprovado"
+        assert (
+            patched["approval_comments"]
+            == "Homologação definitiva após revisão de inventário."
+        )

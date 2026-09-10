@@ -28,13 +28,27 @@ export interface AssetTechnicalEvaluation {
   id: number
   protocol: string
   evaluation_date: string
+  // Document Control (FO-PAT-02)
+  document_start_date?: string | null
+  document_end_date?: string | null
+  document_classification?: string | null
+  elaborated_by_date?: string | null
+  reviewed_by_date?: string | null
+  approved_by_date?: string | null
+
   asset_id?: number | null
   patrimonio?: string | null
   asset_type_name?: string | null
   brand_model?: string | null
+  manufacturer?: string | null
+  model?: string | null
   serial_number?: string | null
   cost_center?: string | null
   unity?: string | null
+  current_location?: string | null
+  is_under_warranty?: boolean
+  warranty_expiry_date?: string | null
+  asset_description?: string | null
   status: string
   classification?: string | null
   feasibility?: string | null
@@ -44,13 +58,26 @@ export interface AssetTechnicalEvaluation {
   discarded_weight: number
   recycle_weight: number
   reuse_percentage: number
+  destination_company?: string | null
+  destination_cnpj?: string | null
+  destination_certificate?: string | null
+  waste_manifest?: string | null
   acquisition_value: number
   net_book_value: number
+  usage_time?: string | null
+  expected_lifespan?: string | null
   estimated_economy: number
   justification?: string | null
   technical_opinion?: string | null
+  // Gestão Patrimonial — Registro da Baixa em Sistema (FO-PAT-02)
+  write_off_date?: string | null
+  write_off_reason?: string | null
+  reused_parts_location?: string | null
+  waste_final_destination?: string | null
+  write_off_notes?: string | null
   evaluator_id?: number | null
   evaluator_name?: string | null
+  reviewer_name?: string | null
   approver_id?: number | null
   approver_name?: string | null
   approval_date?: string | null
@@ -81,13 +108,29 @@ export interface AssetEvaluationListResponse {
 }
 
 export interface AssetEvaluationFormValues {
+  // Document Control (FO-PAT-02)
+  document_start_date?: string | null
+  document_end_date?: string | null
+  document_classification?: string | null
+  elaborated_by_date?: string | null
+  reviewed_by_date?: string | null
+  approved_by_date?: string | null
+
   asset_id?: number | null
   patrimonio?: string | null
   asset_type_name?: string | null
   brand_model?: string | null
+  manufacturer?: string | null
+  model?: string | null
   serial_number?: string | null
   cost_center?: string | null
   unity?: string | null
+  current_location?: string | null
+  evaluation_date?: string | null
+  evaluator_name?: string | null
+  is_under_warranty?: boolean
+  warranty_expiry_date?: string | null
+  asset_description?: string | null
   status: string
   classification?: string | null
   feasibility?: string | null
@@ -97,11 +140,27 @@ export interface AssetEvaluationFormValues {
   discarded_weight: number
   recycle_weight: number
   reuse_percentage: number
+  destination_company?: string | null
+  destination_cnpj?: string | null
+  destination_certificate?: string | null
+  waste_manifest?: string | null
   acquisition_value: number
   net_book_value: number
+  usage_time?: string | null
+  expected_lifespan?: string | null
   estimated_economy: number
   justification?: string | null
   technical_opinion?: string | null
+  // Gestão Patrimonial — Registro da Baixa em Sistema (FO-PAT-02)
+  write_off_date?: string | null
+  write_off_reason?: string | null
+  reused_parts_location?: string | null
+  waste_final_destination?: string | null
+  write_off_notes?: string | null
+  reviewer_name?: string | null
+  approver_name?: string | null
+  approval_date?: string | null
+  approval_comments?: string | null
   components: AssetEvaluationComponent[]
   new_components_for_catalog?: string[]
 }

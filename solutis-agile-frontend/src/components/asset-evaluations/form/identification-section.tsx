@@ -4,6 +4,7 @@ import {
   Card,
   Grid,
   Group,
+  Radio,
   Select,
   Text,
   Textarea,
@@ -11,8 +12,9 @@ import {
   ThemeIcon,
   Title,
 } from '@mantine/core'
-import { Info } from 'lucide-react'
-import type { UseFormReturn } from 'react-hook-form'
+import { DateInput } from '@mantine/dates'
+import { Calendar, Info } from 'lucide-react'
+import { Controller, type UseFormReturn } from 'react-hook-form'
 
 import type { AssetEvaluationFormValues } from '@/types/AssetEvaluation'
 
@@ -22,12 +24,37 @@ interface IdentificationSectionProps {
   readOnly?: boolean
 }
 
+const ASSET_TYPE_OPTIONS = [
+  'Notebook',
+  'Desktop',
+  'Monitor',
+  'Smartphone',
+  'Tablet',
+  'Servidor',
+  'Equipamento de rede',
+  'Periférico',
+  'Móvel',
+  'Utensílio',
+  'Eletrodoméstico',
+  'Outro',
+]
+
+function parseDateValue(value: unknown): Date | null {
+  if (!value) return null
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
+  if (typeof value === 'string') {
+    const d = new Date(value)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+  return null
+}
+
 export function IdentificationSection({
   form,
   assetOptions = [],
   readOnly = false,
 }: Readonly<IdentificationSectionProps>) {
-  const { register, setValue, watch } = form
+  const { control, register, setValue, watch } = form
   const selectedAssetId = watch('asset_id')
 
   const handleAssetSelect = (val: string | null) => {
@@ -44,6 +71,19 @@ export function IdentificationSection({
       const parts = option.label.split(' - ')
       if (parts[0] && !watch('patrimonio')) {
         setValue('patrimonio', parts[0].trim())
+      }
+      if (parts[1]) {
+        const fullDesc = parts[1].trim()
+        if (!watch('brand_model')) {
+          setValue('brand_model', fullDesc)
+        }
+        const brandParts = fullDesc.split(' ')
+        if (brandParts.length > 0 && !watch('manufacturer')) {
+          setValue('manufacturer', brandParts[0])
+        }
+        if (brandParts.length > 1 && !watch('model')) {
+          setValue('model', brandParts.slice(1).join(' '))
+        }
       }
     }
   }
@@ -63,10 +103,11 @@ export function IdentificationSection({
       </Group>
 
       <Grid gutter="md">
-        <Grid.Col span={{ base: 12, md: 6 }}>
+        {/* Ativo Cadastrado (Autopreenchimento Opcional) */}
+        <Grid.Col span={12}>
           <Select
             label="Vincular a um Ativo Cadastrado (Opcional)"
-            placeholder="Selecione um ativo para preenchimento automático"
+            placeholder="Selecione um ativo para preenchimento automático de dados"
             data={assetOptions}
             searchable
             clearable
@@ -76,15 +117,66 @@ export function IdentificationSection({
           />
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 6 }}>
+        {/* Linha 1: Tipo, Unidade/Filial e Data da Avaliação */}
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Controller
+            control={control}
+            name="asset_type_name"
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Select
+                label="Tipo de Ativo *"
+                placeholder="Selecione o tipo de ativo"
+                data={Array.from(
+                  new Set([
+                    ...ASSET_TYPE_OPTIONS,
+                    ...(field.value ? [field.value] : []),
+                  ])
+                )}
+                searchable
+                clearable
+                disabled={readOnly}
+                value={field.value || null}
+                onChange={(val) => field.onChange(val || '')}
+              />
+            )}
+          />
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
           <TextInput
-            label="Tipo de Ativo *"
-            placeholder="Ex.: Notebook, Servidor, Cadeira, Monitor..."
-            {...register('asset_type_name', { required: true })}
+            label="Unidade / Filial"
+            placeholder="Ex.: Matriz Salvador, Filial SP..."
+            {...register('unity')}
             disabled={readOnly}
           />
         </Grid.Col>
 
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Controller
+            control={control}
+            name="evaluation_date"
+            rules={{ required: true }}
+            render={({ field }) => (
+              <DateInput
+                label="Data da Avaliação *"
+                placeholder="dd/mm/aaaa"
+                valueFormat="DD/MM/YYYY"
+                rightSection={
+                  <Calendar size={16} color="var(--mantine-color-gray-6)" />
+                }
+                clearable
+                disabled={readOnly}
+                value={parseDateValue(field.value)}
+                onChange={(val: Date | null) =>
+                  field.onChange(val ? val.toISOString() : null)
+                }
+              />
+            )}
+          />
+        </Grid.Col>
+
+        {/* Linha 2: Tombamento, Série e Centro de Custo */}
         <Grid.Col span={{ base: 12, md: 4 }}>
           <TextInput
             label="Nº Patrimônio (Tombo) *"
@@ -105,24 +197,6 @@ export function IdentificationSection({
 
         <Grid.Col span={{ base: 12, md: 4 }}>
           <TextInput
-            label="Marca e Modelo"
-            placeholder="Ex.: Dell Latitude 5420"
-            {...register('brand_model')}
-            disabled={readOnly}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, md: 6 }}>
-          <TextInput
-            label="Unidade / Filial"
-            placeholder="Ex.: Matriz Salvador, Filial SP..."
-            {...register('unity')}
-            disabled={readOnly}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, md: 6 }}>
-          <TextInput
             label="Centro de Custo"
             placeholder="Ex.: TI - Operações, ADM..."
             {...register('cost_center')}
@@ -130,12 +204,115 @@ export function IdentificationSection({
           />
         </Grid.Col>
 
+        {/* Linha 3: Fabricante, Modelo e Localização Atual */}
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <TextInput
+            label="Fabricante"
+            placeholder="Ex.: Dell, Lenovo, HP…"
+            {...register('manufacturer')}
+            onChange={(e) => {
+              register('manufacturer').onChange(e)
+              const mfg = e.currentTarget.value
+              const mdl = watch('model') || ''
+              setValue('brand_model', `${mfg} ${mdl}`.trim())
+            }}
+            disabled={readOnly}
+          />
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <TextInput
+            label="Modelo"
+            placeholder="Ex.: Latitude 5420"
+            {...register('model')}
+            onChange={(e) => {
+              register('model').onChange(e)
+              const mdl = e.currentTarget.value
+              const mfg = watch('manufacturer') || ''
+              setValue('brand_model', `${mfg} ${mdl}`.trim())
+            }}
+            disabled={readOnly}
+          />
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <TextInput
+            label="Localização Atual do Ativo"
+            placeholder="Ex.: Depósito TI — Sala 3"
+            {...register('current_location')}
+            disabled={readOnly}
+          />
+        </Grid.Col>
+
+        {/* Linha 4: Responsável Inicial, Garantia e Validade */}
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <TextInput
+            label="Responsável pela Avaliação Inicial"
+            placeholder="Nome do avaliador responsável"
+            {...register('evaluator_name')}
+            disabled={readOnly}
+          />
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Controller
+            control={control}
+            name="is_under_warranty"
+            render={({ field }) => (
+              <Radio.Group
+                label="Em garantia?"
+                value={field.value ? 'Sim' : 'Não'}
+                onChange={(val) => field.onChange(val === 'Sim')}
+              >
+                <Group gap="md" mt={6}>
+                  <Radio
+                    value="Sim"
+                    label="Sim"
+                    disabled={readOnly}
+                    color="blue"
+                  />
+                  <Radio
+                    value="Não"
+                    label="Não"
+                    disabled={readOnly}
+                    color="gray"
+                  />
+                </Group>
+              </Radio.Group>
+            )}
+          />
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Controller
+            control={control}
+            name="warranty_expiry_date"
+            render={({ field }) => (
+              <DateInput
+                label="Validade da Garantia"
+                placeholder="dd/mm/aaaa"
+                valueFormat="DD/MM/YYYY"
+                rightSection={
+                  <Calendar size={16} color="var(--mantine-color-gray-6)" />
+                }
+                clearable
+                disabled={readOnly}
+                value={parseDateValue(field.value)}
+                onChange={(val: Date | null) =>
+                  field.onChange(val ? val.toISOString() : null)
+                }
+              />
+            )}
+          />
+        </Grid.Col>
+
+        {/* Linha 5: Descrição Complementar */}
         <Grid.Col span={12}>
           <Textarea
             label="Descrição Complementar do Ativo"
-            placeholder="Configuração técnica, acessórios inclusos, estado físico visível..."
+            placeholder="Especificações relevantes, acessórios acompanhantes, estado físico visível..."
             rows={2}
-            {...register('technical_opinion')}
+            {...register('asset_description')}
             disabled={readOnly}
           />
         </Grid.Col>

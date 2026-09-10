@@ -4,7 +4,7 @@ import os
 import random
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import func
@@ -88,7 +88,7 @@ class AssetEvaluationService:
             db_session.add_all(to_add)
             db_session.commit()
 
-    def get_catalog_components(self, db_session: Session) -> List[Dict[str, Any]]:
+    def get_catalog_components(self, db_session: Session) -> list[dict[str, Any]]:
         """Lista todos os componentes do catálogo compartilhado."""
         self.ensure_base_components(db_session)
         items = (
@@ -101,7 +101,7 @@ class AssetEvaluationService:
             for item in items
         ]
 
-    def add_catalog_component(self, db_session: Session, name: str) -> Dict[str, Any]:
+    def add_catalog_component(self, db_session: Session, name: str) -> dict[str, Any]:
         """Adiciona um componente ao catálogo de autocompletar."""
         norm_name = name.strip()
         if not norm_name:
@@ -132,7 +132,7 @@ class AssetEvaluationService:
             "created_at": new_comp.created_at,
         }
 
-    def register_new_components(self, db_session: Session, names: List[str]) -> None:
+    def register_new_components(self, db_session: Session, names: list[str]) -> None:
         """Registra novos componentes no catálogo compartilhado durante o salvamento da matriz."""
         if not names:
             return
@@ -155,57 +155,88 @@ class AssetEvaluationService:
         destinations = [d.strip() for d in dest_raw.split("|") if d.strip()]
 
         eval_dict = {
-            "id": int(getattr(evaluation, "id")),
-            "protocol": str(getattr(evaluation, "protocol")),
-            "evaluation_date": getattr(evaluation, "evaluation_date"),
-            "asset_id": getattr(evaluation, "asset_id"),
-            "patrimonio": getattr(evaluation, "patrimonio"),
-            "asset_type_name": getattr(evaluation, "asset_type_name"),
-            "brand_model": getattr(evaluation, "brand_model"),
-            "serial_number": getattr(evaluation, "serial_number"),
-            "cost_center": getattr(evaluation, "cost_center"),
-            "unity": getattr(evaluation, "unity"),
-            "status": str(getattr(evaluation, "status")),
-            "classification": getattr(evaluation, "classification"),
-            "feasibility": getattr(evaluation, "feasibility"),
+            "id": int(evaluation.id),
+            "protocol": str(evaluation.protocol),
+            "evaluation_date": evaluation.evaluation_date,
+            "asset_id": evaluation.asset_id,
+            "patrimonio": evaluation.patrimonio,
+            "asset_type_name": evaluation.asset_type_name,
+            "brand_model": evaluation.brand_model,
+            "manufacturer": getattr(evaluation, "manufacturer", None),
+            "model": getattr(evaluation, "model", None),
+            "serial_number": evaluation.serial_number,
+            "cost_center": evaluation.cost_center,
+            "unity": evaluation.unity,
+            "current_location": getattr(evaluation, "current_location", None),
+            "is_under_warranty": bool(getattr(evaluation, "is_under_warranty", False)),
+            "warranty_expiry_date": getattr(evaluation, "warranty_expiry_date", None),
+            "asset_description": getattr(evaluation, "asset_description", None),
+            "status": str(evaluation.status),
+            "classification": evaluation.classification,
+            "feasibility": evaluation.feasibility,
             "destination": destinations,
-            "gross_weight": float(getattr(evaluation, "gross_weight") or 0.0),
-            "reused_weight": float(getattr(evaluation, "reused_weight") or 0.0),
-            "discarded_weight": float(getattr(evaluation, "discarded_weight") or 0.0),
-            "recycle_weight": float(getattr(evaluation, "recycle_weight") or 0.0),
-            "reuse_percentage": float(getattr(evaluation, "reuse_percentage") or 0.0),
-            "acquisition_value": float(getattr(evaluation, "acquisition_value") or 0.0),
-            "net_book_value": float(getattr(evaluation, "net_book_value") or 0.0),
-            "estimated_economy": float(getattr(evaluation, "estimated_economy") or 0.0),
-            "justification": getattr(evaluation, "justification"),
-            "technical_opinion": getattr(evaluation, "technical_opinion"),
-            "evaluator_id": getattr(evaluation, "evaluator_id"),
-            "evaluator_name": getattr(evaluation, "evaluator_name"),
-            "approver_id": getattr(evaluation, "approver_id"),
-            "approver_name": getattr(evaluation, "approver_name"),
-            "approval_date": getattr(evaluation, "approval_date"),
-            "approval_comments": getattr(evaluation, "approval_comments"),
-            "created_at": getattr(evaluation, "created_at"),
-            "updated_at": getattr(evaluation, "updated_at"),
+            "gross_weight": float(evaluation.gross_weight or 0.0),
+            "reused_weight": float(evaluation.reused_weight or 0.0),
+            "discarded_weight": float(evaluation.discarded_weight or 0.0),
+            "recycle_weight": float(evaluation.recycle_weight or 0.0),
+            "reuse_percentage": float(evaluation.reuse_percentage or 0.0),
+            "destination_company": getattr(evaluation, "destination_company", None),
+            "destination_cnpj": getattr(evaluation, "destination_cnpj", None),
+            "destination_certificate": getattr(
+                evaluation, "destination_certificate", None
+            ),
+            "waste_manifest": getattr(evaluation, "waste_manifest", None),
+            "acquisition_value": float(evaluation.acquisition_value or 0.0),
+            "net_book_value": float(evaluation.net_book_value or 0.0),
+            "usage_time": getattr(evaluation, "usage_time", None),
+            "expected_lifespan": getattr(evaluation, "expected_lifespan", None),
+            "estimated_economy": float(evaluation.estimated_economy or 0.0),
+            "justification": evaluation.justification,
+            "technical_opinion": evaluation.technical_opinion,
+            "write_off_date": getattr(evaluation, "write_off_date", None),
+            "write_off_reason": getattr(evaluation, "write_off_reason", None),
+            "reused_parts_location": getattr(evaluation, "reused_parts_location", None),
+            "waste_final_destination": getattr(
+                evaluation, "waste_final_destination", None
+            ),
+            "write_off_notes": getattr(evaluation, "write_off_notes", None),
+            "document_start_date": getattr(evaluation, "document_start_date", None),
+            "document_end_date": getattr(evaluation, "document_end_date", None),
+            "document_classification": getattr(
+                evaluation, "document_classification", "USO INTERNO"
+            )
+            or "USO INTERNO",
+            "elaborated_by_date": getattr(evaluation, "elaborated_by_date", None),
+            "reviewed_by_date": getattr(evaluation, "reviewed_by_date", None),
+            "approved_by_date": getattr(evaluation, "approved_by_date", None),
+            "evaluator_id": evaluation.evaluator_id,
+            "evaluator_name": evaluation.evaluator_name,
+            "reviewer_name": getattr(evaluation, "reviewer_name", None),
+            "approver_id": evaluation.approver_id,
+            "approver_name": evaluation.approver_name,
+            "approval_date": evaluation.approval_date,
+            "approval_comments": evaluation.approval_comments,
+            "created_at": evaluation.created_at,
+            "updated_at": evaluation.updated_at,
             "components": [
                 ComponentItemOutSchema(
-                    id=int(getattr(c, "id")),
-                    evaluation_id=int(getattr(c, "evaluation_id")),
-                    name=str(getattr(c, "name")),
-                    quantity=int(getattr(c, "quantity")),
-                    condition=str(getattr(c, "condition")),
-                    destination=str(getattr(c, "destination")),
-                    observations=getattr(c, "observations"),
+                    id=int(c.id),
+                    evaluation_id=int(c.evaluation_id),
+                    name=str(c.name),
+                    quantity=int(c.quantity),
+                    condition=str(c.condition),
+                    destination=str(c.destination),
+                    observations=c.observations,
                 )
                 for c in (evaluation.components or [])
             ],
             "attachments": [
                 AttachmentOutSchema(
-                    id=int(getattr(a, "id")),
-                    file_name=str(getattr(a, "file_name")),
-                    path=str(getattr(a, "path")),
-                    checklist_key=getattr(a, "checklist_key"),
-                    created_at=getattr(a, "created_at"),
+                    id=int(a.id),
+                    file_name=str(a.file_name),
+                    path=str(a.path),
+                    checklist_key=a.checklist_key,
+                    created_at=a.created_at,
                 )
                 for a in (evaluation.attachments or [])
             ],
@@ -216,7 +247,7 @@ class AssetEvaluationService:
         self,
         db_session: Session,
         data: AssetEvaluationCreateSchema,
-        authenticated_user: Optional[UserModel] = None,
+        authenticated_user: UserModel | None = None,
     ) -> AssetEvaluationOutSchema:
         """Cria uma nova avaliação técnica FO-PAT-02."""
         protocol = data.protocol or self.generate_protocol(db_session)
@@ -237,6 +268,10 @@ class AssetEvaluationService:
                 if not data.serial_number:
                     val = getattr(asset, "serial_number", None)
                     data.serial_number = str(val) if val else None
+                if not data.manufacturer and getattr(asset, "brand", None):
+                    data.manufacturer = str(asset.brand)
+                if not data.model and getattr(asset, "model", None):
+                    data.model = str(asset.model)
                 if not data.brand_model:
                     brand = str(getattr(asset, "brand", "") or "")
                     model = str(getattr(asset, "model", "") or "")
@@ -246,21 +281,44 @@ class AssetEvaluationService:
                     not data.acquisition_value
                     and getattr(asset, "value", None) is not None
                 ):
-                    data.acquisition_value = float(getattr(asset, "value") or 0.0)
+                    data.acquisition_value = float(asset.value or 0.0)
                 if not data.asset_type_name and getattr(asset, "type", None):
                     data.asset_type_name = str(asset.type.name)
 
+        if not data.brand_model and (data.manufacturer or data.model):
+            data.brand_model = (
+                f"{data.manufacturer or ''} {data.model or ''}".strip() or None
+            )
+
         destination_str = "|".join([d.strip() for d in data.destination if d.strip()])
+
+        evaluation_date = data.evaluation_date or datetime.now()
+        evaluator_name = data.evaluator_name or (
+            authenticated_user.username if authenticated_user else None
+        )
 
         evaluation = AssetTechnicalEvaluationModel(
             protocol=protocol,
+            evaluation_date=evaluation_date,
+            document_start_date=data.document_start_date,
+            document_end_date=data.document_end_date,
+            document_classification=data.document_classification or "USO INTERNO",
+            elaborated_by_date=data.elaborated_by_date,
+            reviewed_by_date=data.reviewed_by_date,
+            approved_by_date=data.approved_by_date,
             asset_id=data.asset_id,
             patrimonio=data.patrimonio,
             asset_type_name=data.asset_type_name,
             brand_model=data.brand_model,
+            manufacturer=data.manufacturer,
+            model=data.model,
             serial_number=data.serial_number,
             cost_center=data.cost_center,
             unity=data.unity,
+            current_location=data.current_location,
+            is_under_warranty=bool(data.is_under_warranty),
+            warranty_expiry_date=data.warranty_expiry_date,
+            asset_description=data.asset_description,
             status=data.status or "Rascunho",
             classification=data.classification,
             feasibility=data.feasibility,
@@ -270,13 +328,28 @@ class AssetEvaluationService:
             discarded_weight=data.discarded_weight,
             recycle_weight=data.recycle_weight,
             reuse_percentage=data.reuse_percentage,
+            destination_company=data.destination_company,
+            destination_cnpj=data.destination_cnpj,
+            destination_certificate=data.destination_certificate,
+            waste_manifest=data.waste_manifest,
             acquisition_value=data.acquisition_value,
             net_book_value=data.net_book_value,
+            usage_time=data.usage_time,
+            expected_lifespan=data.expected_lifespan,
             estimated_economy=data.estimated_economy,
-            justification=data.justification,
-            technical_opinion=data.technical_opinion,
+            justification=data.justification or data.technical_opinion,
+            technical_opinion=data.technical_opinion or data.justification,
+            write_off_date=data.write_off_date,
+            write_off_reason=data.write_off_reason,
+            reused_parts_location=data.reused_parts_location,
+            waste_final_destination=data.waste_final_destination,
+            write_off_notes=data.write_off_notes,
             evaluator_id=authenticated_user.id if authenticated_user else None,
-            evaluator_name=authenticated_user.username if authenticated_user else None,
+            evaluator_name=evaluator_name,
+            reviewer_name=data.reviewer_name,
+            approver_name=data.approver_name,
+            approval_date=data.approval_date,
+            approval_comments=data.approval_comments,
         )
 
         db_session.add(evaluation)
@@ -324,7 +397,7 @@ class AssetEvaluationService:
         db_session: Session,
         evaluation_id: int,
         data: AssetEvaluationUpdateSchema,
-        authenticated_user: Optional[UserModel] = None,
+        authenticated_user: UserModel | None = None,
     ) -> AssetEvaluationOutSchema:
         """Atualiza uma avaliação técnica existente."""
         evaluation = (
@@ -388,9 +461,27 @@ class AssetEvaluationService:
             if new_comps:
                 self.register_new_components(db_session, new_comps)
 
+        if "technical_opinion" in update_dict and "justification" not in update_dict:
+            if (
+                not evaluation.justification
+                or evaluation.justification == evaluation.technical_opinion
+            ):
+                update_dict["justification"] = update_dict["technical_opinion"]
+        elif "justification" in update_dict and "technical_opinion" not in update_dict:
+            if not evaluation.technical_opinion:
+                update_dict["technical_opinion"] = update_dict["justification"]
+
         for field, value in update_dict.items():
             if hasattr(evaluation, field):
                 setattr(evaluation, field, value)
+
+        if (
+            evaluation.manufacturer or evaluation.model
+        ) and "brand_model" not in update_dict:
+            evaluation.brand_model = (
+                f"{evaluation.manufacturer or ''} {evaluation.model or ''}".strip()
+                or None
+            )
 
         db_session.commit()
         db_session.refresh(evaluation)
@@ -401,11 +492,11 @@ class AssetEvaluationService:
         db_session: Session,
         page: int = 1,
         size: int = 20,
-        status_filter: Optional[str] = None,
-        search: Optional[str] = None,
-        date_start: Optional[datetime] = None,
-        date_end: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        status_filter: str | None = None,
+        search: str | None = None,
+        date_start: datetime | None = None,
+        date_end: datetime | None = None,
+    ) -> dict[str, Any]:
         """Lista avaliações técnicas com filtros e paginação."""
         query = db_session.query(AssetTechnicalEvaluationModel)
 
@@ -526,8 +617,8 @@ class AssetEvaluationService:
         db_session: Session,
         evaluation_id: int,
         file: UploadFile,
-        checklist_key: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        checklist_key: str | None = None,
+    ) -> dict[str, Any]:
         """Salva arquivo comprobatório assincronamente e vincula à avaliação."""
         evaluation = (
             db_session.query(AssetTechnicalEvaluationModel)
@@ -578,7 +669,7 @@ class AssetEvaluationService:
         db_session: Session,
         evaluation_id: int,
         data: AssetEvaluationApproveSchema,
-        authenticated_user: Optional[UserModel] = None,
+        authenticated_user: UserModel | None = None,
     ) -> AssetEvaluationOutSchema:
         """Aprova a avaliação técnica e opcionalmente efetiva a baixa do ativo."""
         evaluation = (
@@ -599,7 +690,14 @@ class AssetEvaluationService:
             authenticated_user.username if authenticated_user else "Sistema"
         )
         evaluation.approval_date = datetime.now()
+        if not evaluation.approved_by_date:
+            evaluation.approved_by_date = evaluation.approval_date
         evaluation.approval_comments = data.comments
+        if data.write_off_asset:
+            if not evaluation.write_off_date:
+                evaluation.write_off_date = evaluation.approval_date
+            if not evaluation.write_off_notes and data.comments:
+                evaluation.write_off_notes = data.comments
 
         # Efetivação da baixa real do ativo (se vinculado e solicitado)
         if data.write_off_asset and evaluation.asset_id:
@@ -609,7 +707,7 @@ class AssetEvaluationService:
                 .first()
             )
             if asset:
-                setattr(asset, "active", False)
+                asset.active = False
                 disposal_status = (
                     db_session.query(AssetStatusModel)
                     .filter(AssetStatusModel.id == AssetStatusEnum.DESCARTE.value)
@@ -617,7 +715,7 @@ class AssetEvaluationService:
                 )
                 if disposal_status:
                     asset.status = disposal_status
-                    setattr(asset, "status_id", disposal_status.id)
+                    asset.status_id = disposal_status.id
                 db_session.add(asset)
 
         db_session.commit()

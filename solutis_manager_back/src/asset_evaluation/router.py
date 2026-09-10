@@ -1,7 +1,7 @@
 """Asset Technical Evaluation Router (FO-PAT-02)"""
 
 from datetime import datetime
-from typing import Annotated, Optional, Union
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -27,7 +27,8 @@ evaluation_service = AssetEvaluationService()
 @asset_evaluation_router.get("/metrics/")
 def get_evaluation_metrics_route(
     db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
+    authenticated_user: UserModel
+    | None = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
     ),
 ):
@@ -53,7 +54,8 @@ def get_evaluation_metrics_route(
 @asset_evaluation_router.get("/components/catalog/")
 def get_components_catalog_route(
     db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
+    authenticated_user: UserModel
+    | None = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
     ),
 ):
@@ -81,7 +83,8 @@ def get_components_catalog_route(
 def post_create_catalog_component_route(
     data: CatalogComponentCreateSchema,
     db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
+    authenticated_user: UserModel
+    | None = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "add"})
     ),
 ):
@@ -104,12 +107,13 @@ def post_create_catalog_component_route(
 def get_list_evaluations_route(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
-    status_filter: Optional[str] = Query(None, alias="status"),
-    search: Optional[str] = Query(None),
-    date_start: Optional[str] = Query(None),
-    date_end: Optional[str] = Query(None),
+    status_filter: str | None = Query(None, alias="status"),
+    search: str | None = Query(None),
+    date_start: str | None = Query(None),
+    date_end: str | None = Query(None),
     db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
+    authenticated_user: UserModel
+    | None = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
     ),
 ):
@@ -160,7 +164,8 @@ def get_list_evaluations_route(
 def post_create_evaluation_route(
     data: AssetEvaluationCreateSchema,
     db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
+    authenticated_user: UserModel
+    | None = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "add"})
     ),
 ):
@@ -186,7 +191,8 @@ def post_create_evaluation_route(
 def get_evaluation_detail_route(
     evaluation_id: int,
     db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
+    authenticated_user: UserModel
+    | None = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
     ),
 ):
@@ -209,7 +215,8 @@ def patch_update_evaluation_route(
     evaluation_id: int,
     data: AssetEvaluationUpdateSchema,
     db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
+    authenticated_user: UserModel
+    | None = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "edit"})
     ),
 ):
@@ -236,9 +243,10 @@ def patch_update_evaluation_route(
 async def post_upload_attachment_route(
     evaluation_id: int,
     file: Annotated[UploadFile, File(description="Arquivo comprobatório/evidência")],
-    checklist_key: Annotated[Optional[str], Form()] = None,
+    checklist_key: Annotated[str | None, Form()] = None,
     db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
+    authenticated_user: UserModel
+    | None = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "edit"})
     ),
 ):
@@ -269,7 +277,8 @@ def post_approve_evaluation_route(
     evaluation_id: int,
     data: AssetEvaluationApproveSchema,
     db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
+    authenticated_user: UserModel
+    | None = Depends(
         PermissionChecker({"module": "asset", "model": "asset", "action": "edit"})
     ),
 ):
