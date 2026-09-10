@@ -1,11 +1,14 @@
 # Histórico de Alterações do Projeto
 
 ## [2026-09-09] - Dinamização e Persistência Completa do Fluxo de Aprovações (FO-PAT-02) (v2.7.10 / v1.26.9)
-- **Descrição**: Substituição do fluxo de aprovação estático na seção "8. Validação & Aprovação Formal" do formulário de Avaliação Técnica e Baixa Patrimonial (`FO-PAT-02`). Todos os campos e pareceres foram dinamizados e conectados ao ciclo de vida do formulário (`react-hook-form` via `<Controller>`), persistindo no banco de dados via endpoints do `solutis_manager_back` (`POST /`, `PATCH /{id}/` e `POST /{id}/approve/`). Foi criada nova migration Alembic adicionando `reviewer_name` para suportar o Gestor Patrimonial, e adicionada cobertura completa de testes automatizados unitários/integração.
+- **Descrição**: Substituição do fluxo de aprovação estático na seção "8. Validação & Aprovação Formal" do formulário de Avaliação Técnica e Baixa Patrimonial (`FO-PAT-02`). Todos os campos e pareceres foram dinamizados e conectados ao ciclo de vida do formulário (`react-hook-form` via `<Controller>`), persistindo no banco de dados via endpoints do `solutis_manager_back` (`POST /`, `PATCH /{id}/` e `POST /{id}/approve/`). Foi criada nova migration Alembic adicionando `reviewer_name` para suportar o Gestor Patrimonial, correção de coerção e tipagem de datas nos componentes `DateInput` do frontend, cobertura completa de testes unitários/integração e deploy remoto realizado com sucesso no servidor Solutis (`172.21.3.225`).
 - **Arquivos afetados**:
   - `solutis-agile-frontend/package.json`
   - `solutis_manager_back/pyproject.toml`
   - `solutis-agile-frontend/src/components/asset-evaluations/form/approvals-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/asset-management-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/document-control-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/identification-section.tsx`
   - `solutis-agile-frontend/src/components/asset-evaluations/form/evaluation-form.tsx`
   - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
   - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
