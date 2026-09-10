@@ -50,6 +50,16 @@ function parseDateValue(value: unknown): Date | null {
   return null
 }
 
+function formatDateToISO(val: any): string | null {
+  if (!val) return null
+  if (val instanceof Date) return Number.isNaN(val.getTime()) ? null : val.toISOString()
+  if (typeof val === 'string') {
+    const d = new Date(val)
+    return Number.isNaN(d.getTime()) ? val : d.toISOString()
+  }
+  return null
+}
+
 function formatDateDisplay(value: unknown): string {
   const d = parseDateValue(value)
   if (!d) return '-'
@@ -220,9 +230,7 @@ export function ApprovalsSection({
                     clearable
                     disabled={readOnly}
                     value={parseDateValue(field.value)}
-                    onChange={(val: Date | null) =>
-                      field.onChange(val ? val.toISOString() : null)
-                    }
+                    onChange={(val: any) => field.onChange(formatDateToISO(val))}
                   />
                 )}
               />
@@ -277,9 +285,7 @@ export function ApprovalsSection({
                     clearable
                     disabled={readOnly}
                     value={parseDateValue(field.value)}
-                    onChange={(val: Date | null) =>
-                      field.onChange(val ? val.toISOString() : null)
-                    }
+                    onChange={(val: any) => field.onChange(formatDateToISO(val))}
                   />
                 )}
               />
@@ -334,9 +340,7 @@ export function ApprovalsSection({
                     clearable
                     disabled={readOnly}
                     value={parseDateValue(field.value)}
-                    onChange={(val: Date | null) =>
-                      field.onChange(val ? val.toISOString() : null)
-                    }
+                    onChange={(val: any) => field.onChange(formatDateToISO(val))}
                   />
                 )}
               />
