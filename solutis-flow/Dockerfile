@@ -12,9 +12,8 @@ COPY tsconfig.json ./
 COPY vite.config.ts ./
 COPY index.html ./
 
-# Copy source code and assets
+# Copy source code
 COPY src/ ./src/
-COPY assets/ ./assets/
 
 # Build the application
 RUN npm run build

@@ -1,5 +1,17 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-11] - Correção do Dockerfile e Criação do .dockerignore no TaskView (v0.1.3)
+- **Descrição**: Remoção da instrução de cópia da pasta inexistente `assets/` no Dockerfile do `solutis-flow` (`taskview-front`), que ocasionava erro de checksum durante a compilação multi-stage no deploy remoto. Adicionado `.dockerignore` para otimização do contexto de build e incrementada a versão para `0.1.3`.
+- **Arquivos afetados**:
+  - `solutis-flow/Dockerfile`
+  - `solutis-flow/.dockerignore`
+  - `solutis-flow/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Docker Build do TaskView (`solutis-flow/Dockerfile`)**: Removida a linha `COPY assets/ ./assets/`, mantendo `COPY src/ ./src/` e assegurando build limpo e determinístico da imagem Docker.
+  - **Otimização de Contexto (`solutis-flow/.dockerignore`)**: Criado arquivo para ignorar `node_modules`, `dist`, `.git` e arquivos `.env*`.
+  - **Incremento de Versão**: `solutis-flow` atualizado de `0.1.2` para `0.1.3`.
+
 ## [2026-09-10] - Provisionamento Docker Compose Produção: TaskView, Flow Backend, PostgreSQL e Redis (v0.1.1 Flow Back)
 - **Descrição**: Configuração do `docker-compose.prod.yml` para orquestrar em produção os novos serviços do ecossistema: `taskview-front` (`solutis-flow` na porta 3001), `flow-db` (PostgreSQL 16), `flow-redis` (Redis 7), `solutis-flow-back` (FastAPI na porta 8004) e `solutis-flow-worker` (Dramatiq). Criação do `Dockerfile` e `nginx.conf` de produção para o `solutis-flow`, inclusão do driver `psycopg2-binary` no backend e atualização do pipeline de deploy automatizado (`deploy.sh`).
 - **Arquivos afetados**:
