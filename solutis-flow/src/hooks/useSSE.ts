@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
-const GATEWAY_SSE_URL = 'http://localhost:8080/proxy/flow/v1/events/stream';
+const GATEWAY_SSE_URL =
+  (import.meta as any).env?.VITE_FLOW_GATEWAY_SSE_URL || 'http://localhost:8080/proxy/flow/v1/events/stream';
 
 export interface SSEDomainEvent {
   event_type: string;

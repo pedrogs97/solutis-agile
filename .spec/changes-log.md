@@ -1,5 +1,19 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-10] - Parametrização de Variáveis de Ambiente do Gateway no TaskView (v0.1.2)
+- **Descrição**: Configuração dinâmica das URLs de comunicação com o backend e gateway SSE no TaskView (`solutis-flow`) através das variáveis de ambiente `VITE_FLOW_GATEWAY_URL` e `VITE_FLOW_GATEWAY_SSE_URL`.
+- **Arquivos afetados**:
+  - `solutis-flow/src/services/api.ts`
+  - `solutis-flow/src/hooks/useSSE.ts`
+  - `solutis-flow/.env.example`
+  - `solutis-flow/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Incremento de Versão**: `solutis-flow` atualizado para `0.1.2`.
+  - **Serviço de API (`api.ts`)**: `GATEWAY_BASE_URL` agora consome `(import.meta as any).env?.VITE_FLOW_GATEWAY_URL` mantendo fallback para `'http://localhost:8080/proxy/flow/v1'`.
+  - **Stream de Eventos em Tempo Real (`useSSE.ts`)**: `GATEWAY_SSE_URL` agora consome `(import.meta as any).env?.VITE_FLOW_GATEWAY_SSE_URL` mantendo fallback para `'http://localhost:8080/proxy/flow/v1/events/stream'`.
+  - **Exemplo de Ambiente (`.env.example`)**: Adicionadas `VITE_AGILE_APP_URL`, `VITE_FLOW_GATEWAY_URL` e `VITE_FLOW_GATEWAY_SSE_URL`.
+
 ## [2026-09-10] - Ajuste de Nomenclatura para Solutis TaskView (v2.7.13 / v0.1.1)
 - **Descrição**: Atualização da identidade visual e nomenclatura de "Solutis Flow" para "Solutis TaskView" na seleção de produtos do frontend Agile (`solutis-agile-frontend`), bem como no cabeçalho e título do frontend TaskView (`solutis-flow`).
 - **Arquivos afetados**:
