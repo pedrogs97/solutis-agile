@@ -404,7 +404,7 @@ function LoginPage() {
               </Button>
             </Card>
 
-            {/* Card Solutis Flow */}
+            {/* Card Solutis TaskView */}
             <Card
               withBorder
               padding="xl"
@@ -424,11 +424,11 @@ function LoginPage() {
                   <ThemeIcon size={48} radius="md" color="violet" variant="light">
                     <Zap size={28} />
                   </ThemeIcon>
-                  <Badge color="violet" variant="outline">Flow Real-time</Badge>
+                  <Badge color="violet" variant="outline">TaskView Real-time</Badge>
                 </Group>
 
                 <div>
-                  <Text fw={700} size="lg">Solutis Flow</Text>
+                  <Text fw={700} size="lg">Solutis TaskView</Text>
                   <Text size="xs" c="dimmed" mt={4}>
                     Governança operacional, Kanban em tempo real, acompanhamento de SLAs e gestão de demandas.
                   </Text>
@@ -457,7 +457,7 @@ function LoginPage() {
                 rightSection={<ArrowRight size={16} />}
                 onClick={() => authData && redirectToFlow(authData)}
               >
-                Acessar Solutis Flow
+                Acessar Solutis TaskView
               </Button>
             </Card>
           </SimpleGrid>

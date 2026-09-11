@@ -1,5 +1,23 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-10] - Ajuste de Nomenclatura para Solutis TaskView (v2.7.13 / v0.1.1)
+- **Descrição**: Atualização da identidade visual e nomenclatura de "Solutis Flow" para "Solutis TaskView" na seleção de produtos do frontend Agile (`solutis-agile-frontend`), bem como no cabeçalho e título do frontend TaskView (`solutis-flow`).
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/routes/_auth/login/index.tsx`
+  - `solutis-agile-frontend/package.json`
+  - `solutis-flow/src/App.tsx`
+  - `solutis-flow/index.html`
+  - `solutis-flow/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Incremento de Versão**: `solutis-agile-frontend` atualizado para `2.7.13` e `solutis-flow` para `0.1.1`.
+  - **Frontend Principal (`login/index.tsx`)**:
+    - Card de produto atualizado para exibir `Solutis TaskView` e badge `TaskView Real-time`.
+    - Botão de acesso atualizado para o texto `Acessar Solutis TaskView`.
+  - **Frontend TaskView (`solutis-flow`)**:
+    - Cabeçalho superior atualizado para `Solutis TaskView`.
+    - Tag `<title>` da página atualizada para `Solutis TaskView | Governança Operacional e Demanda em Tempo Real`.
+
 ## [2026-09-10] - Deploy Remoto em Produção (Host Solutis - 172.21.3.225)
 - **Descrição**: Execução com sucesso do deploy remoto automatizado para o frontend `solutis-agile-frontend` (v2.7.12) com a reativação do acesso ao Solutis Flow / TaskView.
 - **Serviços Atualizados e Implantados**:
