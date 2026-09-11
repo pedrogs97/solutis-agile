@@ -4,10 +4,12 @@ set -e
 # Configured services list: "directory_name|container_name|compose_service|version_file_type"
 SERVICES=(
   "solutis-agile-frontend|solutis-agile-frontend-prod|agile-front|json"
+  "solutis-flow|solutis-taskview-prod|taskview-front|json"
   "solutis-sync|solutis-sync-prod|solutis-sync|toml"
   "solutis_manager_back|solutis-manager-back-prod|agile-back|toml"
   "solutis_procurement|solutis-procurement-prod|solutis-procurement|toml"
   "solutis_report|solutis-report-prod|solutis-report|toml"
+  "solutis_flow_back|solutis-flow-back-prod|solutis-flow-back|toml"
 )
 
 get_local_version() {
@@ -32,19 +34,23 @@ get_running_tag() {
 
 # Fetch local versions and export them so docker compose substitution works
 FRONTEND_TAG=$(get_local_version "solutis-agile-frontend" "json")
+TASKVIEW_TAG=$(get_local_version "solutis-flow" "json")
 SYNC_TAG=$(get_local_version "solutis-sync" "toml")
 MANAGER_TAG=$(get_local_version "solutis_manager_back" "toml")
 PROCUREMENT_TAG=$(get_local_version "solutis_procurement" "toml")
 REPORT_TAG=$(get_local_version "solutis_report" "toml")
+FLOW_BACK_TAG=$(get_local_version "solutis_flow_back" "toml")
 
-export FRONTEND_TAG SYNC_TAG MANAGER_TAG PROCUREMENT_TAG REPORT_TAG
+export FRONTEND_TAG TASKVIEW_TAG SYNC_TAG MANAGER_TAG PROCUREMENT_TAG REPORT_TAG FLOW_BACK_TAG
 
 echo "🔍 Local Project Versions:"
-echo "  Frontend:    $FRONTEND_TAG"
-echo "  Sync:        $SYNC_TAG"
-echo "  Manager:     $MANAGER_TAG"
-echo "  Procurement: $PROCUREMENT_TAG"
-echo "  Report:      $REPORT_TAG"
+echo "  Frontend Agile: $FRONTEND_TAG"
+echo "  TaskView Front: $TASKVIEW_TAG"
+echo "  Sync:           $SYNC_TAG"
+echo "  Manager:        $MANAGER_TAG"
+echo "  Procurement:    $PROCUREMENT_TAG"
+echo "  Report:         $REPORT_TAG"
+echo "  Flow Backend:   $FLOW_BACK_TAG"
 echo ""
 
 # Iterate services and check for updates
@@ -71,8 +77,18 @@ for item in "${SERVICES[@]}"; do
         echo "🔄 Executing database migrations and starting container for $compose_service..."
       fi
 
+      if [ "$compose_service" = "solutis-flow-back" ]; then
+        echo "🔄 Ensuring flow-db and flow-redis are running..."
+        docker compose -f docker-compose.prod.yml up -d flow-db flow-redis
+      fi
+
       # Recreate container without touching others
       docker compose -f docker-compose.prod.yml up -d --no-deps "$compose_service"
+
+      if [ "$compose_service" = "solutis-flow-back" ]; then
+        echo "🔄 Restarting solutis-flow-worker..."
+        docker compose -f docker-compose.prod.yml up -d --no-deps solutis-flow-worker
+      fi
 
       echo "✅ Successfully deployed $compose_service!"
     fi

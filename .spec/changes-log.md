@@ -1,5 +1,29 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-10] - Provisionamento Docker Compose Produção: TaskView, Flow Backend, PostgreSQL e Redis (v0.1.1 Flow Back)
+- **Descrição**: Configuração do `docker-compose.prod.yml` para orquestrar em produção os novos serviços do ecossistema: `taskview-front` (`solutis-flow` na porta 3001), `flow-db` (PostgreSQL 16), `flow-redis` (Redis 7), `solutis-flow-back` (FastAPI na porta 8004) e `solutis-flow-worker` (Dramatiq). Criação do `Dockerfile` e `nginx.conf` de produção para o `solutis-flow`, inclusão do driver `psycopg2-binary` no backend e atualização do pipeline de deploy automatizado (`deploy.sh`).
+- **Arquivos afetados**:
+  - `docker-compose.prod.yml`
+  - `solutis-flow/Dockerfile`
+  - `solutis-flow/nginx.conf`
+  - `solutis_flow_back/pyproject.toml`
+  - `solutis_flow_back/uv.lock`
+  - `solutis_flow_back/src/config.py`
+  - `solutis_flow_back/.env.example`
+  - `deploy.sh`
+  - `.spec/architecture.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Docker Compose Produção (`docker-compose.prod.yml`)**:
+    - Adicionados os serviços: `taskview-front` (porta 3001:80), `flow-redis` (porta 6379:6379 com volume `flow-redis-data`), `flow-db` (PostgreSQL 16 com volume `flow-postgres-data`), `solutis-flow-back` (porta 8004:8004 conectado a Postgres e Redis) e `solutis-flow-worker` (Dramatiq worker).
+  - **Frontend TaskView (`solutis-flow`)**:
+    - Criados `Dockerfile` multi-stage (Node 20 Alpine + Nginx Alpine) e `nginx.conf` com compressão gzip, cache de assets com hash e fallback SPA `try_files $uri /index.html;`.
+  - **Backend Flow (`solutis_flow_back`)**:
+    - Adicionada dependência `psycopg2-binary` para conexão nativa de alta performance ao PostgreSQL 16.
+    - Atualizada versão para `0.1.1` e gerado `.env.example` com credenciais padrão.
+  - **Pipeline de Deploy (`deploy.sh`)**:
+    - Adicionados `solutis-flow` (`TASKVIEW_TAG`) e `solutis_flow_back` (`FLOW_BACK_TAG`) à lista de serviços monitorados, garantindo provisionamento automático de containers e banco nas atualizações de versão.
+
 ## [2026-09-10] - Parametrização de Variáveis de Ambiente do Gateway no TaskView (v0.1.2)
 - **Descrição**: Configuração dinâmica das URLs de comunicação com o backend e gateway SSE no TaskView (`solutis-flow`) através das variáveis de ambiente `VITE_FLOW_GATEWAY_URL` e `VITE_FLOW_GATEWAY_SSE_URL`.
 - **Arquivos afetados**:

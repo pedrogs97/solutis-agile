@@ -13,6 +13,20 @@ services:
     networks:
       - agile-network
 
+  taskview-front:
+    image: solutis-taskview:${TASKVIEW_TAG:-latest}
+    container_name: solutis-taskview-prod
+    build:
+      context: ./solutis-flow
+      dockerfile: Dockerfile
+    ports:
+      - "3001:80"
+    restart: always
+    env_file:
+      - ./solutis-flow/.env
+    networks:
+      - agile-network
+
   solutis-sync:
     image: solutis-sync:${SYNC_TAG:-latest}
     container_name: solutis-sync-prod
@@ -90,6 +104,73 @@ services:
       - ./solutis_report/.env
     networks:
       - agile-network
+
+  flow-redis:
+    image: redis:7-alpine
+    container_name: solutis-flow-redis-prod
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - flow-redis-data:/data
+    networks:
+      - agile-network
+
+  flow-db:
+    image: postgres:16-alpine
+    container_name: solutis-flow-db-prod
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${FLOW_DB_NAME:-flow_db}
+      POSTGRES_USER: ${FLOW_DB_USER:-flow_user}
+      POSTGRES_PASSWORD: ${FLOW_DB_PASSWORD:-flow_secret}
+    volumes:
+      - flow-postgres-data:/var/lib/postgresql/data
+    networks:
+      - agile-network
+
+  solutis-flow-back:
+    image: solutis-flow-back:${FLOW_BACK_TAG:-latest}
+    container_name: solutis-flow-back-prod
+    build:
+      context: ./solutis_flow_back
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./solutis_flow_back/logs:/solutis-flow-back/logs
+      - ./solutis_flow_back/.env:/solutis-flow-back/.env
+    depends_on:
+      - flow-db
+      - flow-redis
+    command: uv run uvicorn src.main:app --host 0.0.0.0 --port 8004 --workers 2
+    restart: always
+    env_file:
+      - ./solutis_flow_back/.env
+    networks:
+      - agile-network
+
+  solutis-flow-worker:
+    image: solutis-flow-back:${FLOW_BACK_TAG:-latest}
+    container_name: solutis-flow-worker-prod
+    depends_on:
+      - flow-db
+      - flow-redis
+    volumes:
+      - ./solutis_flow_back/logs:/solutis-flow-back/logs
+      - ./solutis_flow_back/.env:/solutis-flow-back/.env
+    command: uv run dramatiq src.worker
+    restart: always
+    env_file:
+      - ./solutis_flow_back/.env
+    networks:
+      - agile-network
+
+volumes:
+  flow-postgres-data:
+  flow-redis-data:
 
 networks:
   agile-network:

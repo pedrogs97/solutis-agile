@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings:
     PROJECT_NAME: str = "Solutis Flow Backend"
-    VERSION: str = "0.1.0"
+    VERSION: str = "0.1.1"
     API_V1_STR: str = "/api/v1"
 
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./flow.db")

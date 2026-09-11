@@ -20,7 +20,7 @@ graph TD
 
     %% Databases / External
     DB[(🛢️ MySQL 8.0 Database)]
-    FDB[(🛢️ Flow Database Isolado)]
+    FDB[(🛢️ Flow Database PostgreSQL 16)]
     TOTVS[(🏢 ERP TOTVS SQL Server)]
     CS[📝 Clicksign API External]
     AZ[☁️ Microsoft Entra ID / Graph]
@@ -47,15 +47,17 @@ graph TD
     PR -->|Local SQLite/MySQL| DB
 ```
 
-## Mapeamento de Portas e Serviços Locais
+## Mapeamento de Portas e Serviços Locais e Produção
 
-- **Frontend Principal (`solutis-agile-frontend`)**: `http://localhost:3000`
-- **Frontend Flow (`solutis-flow`)**: `http://localhost:3000` (ou porta dedicada)
+- **Frontend Principal (`solutis-agile-frontend`)**: `http://localhost:3000` (Porta 3000 no host / porta 80 interna no container)
+- **Frontend TaskView (`solutis-flow`)**: `http://localhost:3001` (Porta 3001 no host / porta 80 interna no container)
 - **Manager Backend (Core API & Auth Proxy Gateway)**: `http://localhost:8080` (Docs em `/docs`)
 - **Procurement**: `http://localhost:8001` (Admin Django em `/admin`)
 - **Report Service**: `http://localhost:8002` (Docs em `/docs`)
 - **Sync Service**: `http://localhost:8003` (Docs em `/docs`)
 - **Solutis Flow Backend**: `http://localhost:8004` (Docs em `/api/v1/docs`)
+- **Solutis Flow Database (PostgreSQL 16)**: `localhost:5432`
+- **Solutis Flow Redis (Redis 7)**: `localhost:6379`
 
 ## Fluxos de Dados e Integrações
 1. **Manager Backend (Core & Gateway)**: Gerencia CRUD de ativos e comodatos, centraliza o login unificado com autenticação JWT/Token e suporte a Single Sign-On (SSO) corporativo com Microsoft Entra ID (Azure AD) sob Feature Flag (`ENABLE_SSO` / `VITE_ENABLE_SSO` com default `false`), atua como API Gateway/Auth Proxy roteando chamadas e injetando o contexto do usuário nos microsserviços downstream.
