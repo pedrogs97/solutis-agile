@@ -1,5 +1,14 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-11] - Deploy Remoto em Produção: TaskView v0.1.3, Agile Frontend v2.7.13 e Flow Backend v0.1.1 (Host Solutis - 172.21.3.225)
+- **Descrição**: Execução com sucesso do deploy remoto automatizado no host de produção Solutis (`172.21.3.225`). Foram construídas as novas imagens Docker e provisionados os containers de frontend e da infraestrutura completa de backend de governança e eventos do TaskView/Flow.
+- **Serviços Atualizados e Implantados**:
+  - `solutis-agile-frontend` (v2.7.13): Imagem Docker compilada com Vite/Nginx contendo a nomenclatura atualizada para Solutis TaskView e container `solutis-agile-frontend-prod` em execução.
+  - `solutis-flow` / `taskview-front` (v0.1.3): Imagem Docker compilada com multi-stage build sem referências a assets inexistentes e container `solutis-taskview-prod` provisionado na porta 3001.
+  - `solutis_flow_back` (v0.1.1): Imagem Docker construída com Python 3.13 e `uv sync`, provisionamento automático dos containers de infraestrutura `flow-db` (PostgreSQL 16) e `flow-redis` (Redis 7), container de API `solutis-flow-back-prod` e worker assíncrono `solutis-flow-worker-prod`.
+  - `solutis-sync` (v0.1.4), `solutis_manager_back` (v1.26.10), `solutis-procurement` (v2.18.4) e `solutis-report` (v1.3.2): Sem alterações pendentes de deploy (mantidos estáveis).
+- **Status da Execução**: Sucesso (Exit code 0). Todos os containers do ecossistema em execução saudável.
+
 ## [2026-09-11] - Correção do Dockerfile e Criação do .dockerignore no TaskView (v0.1.3)
 - **Descrição**: Remoção da instrução de cópia da pasta inexistente `assets/` no Dockerfile do `solutis-flow` (`taskview-front`), que ocasionava erro de checksum durante a compilação multi-stage no deploy remoto. Adicionado `.dockerignore` para otimização do contexto de build e incrementada a versão para `0.1.3`.
 - **Arquivos afetados**:
