@@ -414,19 +414,17 @@ function LoginPage() {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 transition: 'all 0.2s ease',
-                cursor: 'not-allowed',
-                opacity: 0.7,
+                cursor: 'pointer',
               }}
+              className="hover:shadow-lg hover:border-violet-400"
+              onClick={() => authData && redirectToFlow(authData)}
             >
               <Stack gap="md">
                 <Group justify="space-between">
                   <ThemeIcon size={48} radius="md" color="violet" variant="light">
                     <Zap size={28} />
                   </ThemeIcon>
-                  <Group gap={6}>
-                    <Badge color="violet" variant="outline">Flow Real-time</Badge>
-                    <Badge color="gray" variant="light">Em breve</Badge>
-                  </Group>
+                  <Badge color="violet" variant="outline">Flow Real-time</Badge>
                 </Group>
 
                 <div>
@@ -457,7 +455,7 @@ function LoginPage() {
                 fullWidth
                 mt="xl"
                 rightSection={<ArrowRight size={16} />}
-                disabled
+                onClick={() => authData && redirectToFlow(authData)}
               >
                 Acessar Solutis Flow
               </Button>

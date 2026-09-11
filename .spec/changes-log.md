@@ -1,5 +1,18 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-10] - Reativação do Botão e Card de Acesso ao Solutis Flow / TaskView na Seleção de Produtos (v2.7.12)
+- **Descrição**: Reativação do card e botão de acesso ao produto Solutis Flow (TaskView / Governança Operacional) na tela de seleção de produto pós-login, restabelecendo a navegação e o redirecionamento com handoff de autenticação JWT/User context para o frontend do Solutis Flow (`ENVIRONMENT.flowAppURL`).
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/routes/_auth/login/index.tsx`
+  - `solutis-agile-frontend/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Incremento de Versão**: `solutis-agile-frontend` atualizado de `2.7.11` para `2.7.12`.
+  - **Reativação do Card e Botão Solutis Flow (`login/index.tsx`)**:
+    - Removido o badge `Em breve` e mantido o badge oficial `Flow Real-time`.
+    - Removidos os atributos `disabled` do botão e `cursor: not-allowed` com `opacity: 0.7` do card.
+    - Restaurados os manipuladores `onClick={() => authData && redirectToFlow(authData)}` no botão e no card, com estilos de hover `hover:shadow-lg hover:border-violet-400` e `cursor: pointer`.
+
 ## [2026-09-10] - Deploy Remoto em Produção (Host Solutis - 172.21.3.225)
 - **Descrição**: Execução com sucesso do deploy remoto automatizado para os microsserviços e frontends com novas alterações e correções.
 - **Serviços Atualizados e Implantados**:
