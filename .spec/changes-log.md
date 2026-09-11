@@ -1,5 +1,12 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-10] - Deploy Remoto em Produção (Host Solutis - 172.21.3.225)
+- **Descrição**: Execução com sucesso do deploy remoto automatizado para o frontend `solutis-agile-frontend` (v2.7.12) com a reativação do acesso ao Solutis Flow / TaskView.
+- **Serviços Atualizados e Implantados**:
+  - `solutis-agile-frontend` (v2.7.12): Rebuild completo da imagem Docker com Vite/Nginx e recriação do container `solutis-agile-frontend-prod`.
+  - `solutis-sync` (v0.1.4), `solutis_manager_back` (v1.26.10), `solutis-procurement` (v2.18.4) e `solutis-report` (v1.3.2): Sem alterações pendentes (mantidos estáveis).
+- **Status da Execução**: Sucesso (Exit code 0). Container `solutis-agile-frontend-prod` em execução saudável.
+
 ## [2026-09-10] - Reativação do Botão e Card de Acesso ao Solutis Flow / TaskView na Seleção de Produtos (v2.7.12)
 - **Descrição**: Reativação do card e botão de acesso ao produto Solutis Flow (TaskView / Governança Operacional) na tela de seleção de produto pós-login, restabelecendo a navegação e o redirecionamento com handoff de autenticação JWT/User context para o frontend do Solutis Flow (`ENVIRONMENT.flowAppURL`).
 - **Arquivos afetados**:
