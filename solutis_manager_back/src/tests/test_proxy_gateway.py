@@ -96,6 +96,9 @@ class TestProxyGateway(TestBase):
         rule = match_route_rule("flow", "v1/demands", "GET")
         assert rule["service_name"] == "flow"
 
+        rule_users = match_route_rule("flow", "v1/users", "GET")
+        assert rule_users["service_name"] == "flow"
+
         # 5c. Matching purchase processes GET rules
         rule = match_route_rule("procurement", "v1/purchase-processes/", "GET")
         assert rule["service_name"] == "procurement"

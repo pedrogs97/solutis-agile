@@ -1,5 +1,17 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-12] - Liberação da Rota Proxy de Usuários do TaskView (Manager Backend v1.26.13)
+- **Descrição**: Resolução do erro HTTP 403 Forbidden ("Acesso não configurado ou rota inválida para este microsserviço") ao consultar a rota `/api/v1/proxy/flow/v1/users`. Incluída a rota `users` no regex de rotas autorizadas para o microsserviço `flow` no Proxy Gateway do `solutis_manager_back`, permitindo o carregamento dinâmico dos colaboradores no frontend do TaskView.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/proxy/routes.py`
+  - `solutis_manager_back/src/tests/test_proxy_gateway.py`
+  - `solutis_manager_back/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - `routes.py`: Atualizado o `path_pattern` do microsserviço `flow` para `r"^/v1/(demands|events|areas|cost-centers|projects|dashboard|acl|users)(/.*)?$"`.
+  - `test_proxy_gateway.py`: Adicionada asserção de teste garantindo roteamento e correspondência para `v1/users`.
+  - Incremento de versão do `solutis_manager_back` para `1.26.13`.
+
 ## [2026-09-12] - Dashboard Dinâmico com Banco de Dados e Tema Escuro (TaskView v0.1.9 e Flow Back v0.1.2)
 - **Descrição**: Dinamização integral do Solutis TaskView (`solutis-flow`), garantindo que toda a aplicação consuma as informações de demandas, métricas, centros de custo, áreas, projetos e usuários diretamente dos serviços backend (`solutis_flow_back` / PostgreSQL `flow_db`), sem dados estáticos mockados. Adequação visual completa do Dashboard ao tema escuro oficial da aplicação (Dark Theme), com cards `bg-slate-900/80`, bordas `border-slate-800`, textos `text-slate-100`/`text-slate-400` e gráficos Recharts com grids, eixos e tooltips escuros.
 - **Arquivos afetados**:
