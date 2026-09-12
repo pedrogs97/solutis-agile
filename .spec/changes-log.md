@@ -1,5 +1,17 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-12] - Estabilização da Conexão SSE e Eliminação de Cancelamentos no TaskView (v0.1.7)
+- **Descrição**: Eliminação dos cancelamentos sucessivos de conexões Server-Sent Events (`(canceled)` no Network Tab do navegador) decorrentes de re-renders no frontend `solutis-flow`. Implementado padrão `useRef` para desacoplar a referência do listener `onEventReceived` do array de dependências do `useEffect`, garantindo uma conexão `EventSource` única, contínua e estável durante toda a sessão do usuário.
+- **Arquivos afetados**:
+  - `solutis-flow/src/hooks/useSSE.ts`
+  - `solutis-flow/src/context/FlowContext.tsx`
+  - `solutis-flow/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - `useSSE.ts`: Listener do evento SSE encapsulado em `handlerRef` (`useRef`), eliminando dependência de callbacks instáveis e mantendo a conexão persistente e ativa (`pending` no DevTools sem desconexões).
+  - `FlowContext.tsx`: Callback de notificação e refresh memorizado via `useCallback`.
+  - Incremento de versão do `solutis-flow` para `0.1.7`.
+
 ## [2026-09-12] - Correção dos Erros de Requisição do TaskView: Streaming SSE, Auth Query Param e Restauração do Flow Back (TaskView v0.1.6 e Manager Backend v1.26.12)
 - **Descrição**: Resolução dos erros HTTP 502 Bad Gateway e 401 Unauthorized nas requisições do TaskView (`/dashboard/metrics`, `/projects`, `/demands` e `/events/stream`). Identificada e sanada a falha de autenticação PostgreSQL do contêiner `solutis-flow-back-prod`, adicionado suporte a autenticação por query parameter `token` no gateway de proxy do `solutis_manager_back`, implementado streaming com `StreamingResponse` para conexões SSE e incluído fallback resiliente de token a partir do `auth-store` no frontend `solutis-flow`.
 - **Arquivos afetados**:

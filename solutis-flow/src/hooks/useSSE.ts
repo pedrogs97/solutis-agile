@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const GATEWAY_SSE_URL =
   (import.meta as any).env?.VITE_FLOW_GATEWAY_SSE_URL || '/api/v1/proxy/flow/v1/events/stream';
@@ -13,6 +13,9 @@ export interface SSEDomainEvent {
 }
 
 export function useSSE(onEventReceived: (event: SSEDomainEvent) => void, token?: string | null) {
+  const handlerRef = useRef(onEventReceived);
+  handlerRef.current = onEventReceived;
+
   useEffect(() => {
     const effectiveToken =
       token ||
@@ -41,7 +44,7 @@ export function useSSE(onEventReceived: (event: SSEDomainEvent) => void, token?:
       eventSource.addEventListener('domain_event', (e: MessageEvent) => {
         try {
           const parsed: SSEDomainEvent = JSON.parse(e.data);
-          onEventReceived(parsed);
+          handlerRef.current(parsed);
         } catch (err) {
           console.error('Erro ao processar evento SSE:', err);
         }
@@ -59,5 +62,5 @@ export function useSSE(onEventReceived: (event: SSEDomainEvent) => void, token?:
         eventSource.close();
       }
     };
-  }, [token, onEventReceived]);
+  }, [token]);
 }

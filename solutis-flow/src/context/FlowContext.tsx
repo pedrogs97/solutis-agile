@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useCallback } from 'react';
 import { User, Demand, Project, DashboardMetrics, DemandStatus } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useDemands } from '../hooks/useDemands';
@@ -42,15 +42,20 @@ export function FlowProvider({ children, onNotification }: { children: ReactNode
   const metricsHook = useDashboardMetrics();
 
   // Listen to SSE real-time events
-  useSSE((event: SSEDomainEvent) => {
-    if (event.message) {
-      if (onNotification) {
-        onNotification(`[Real-time Event] ${event.message}`);
+  const handleSSEEvent = useCallback(
+    (event: SSEDomainEvent) => {
+      if (event.message) {
+        if (onNotification) {
+          onNotification(`[Real-time Event] ${event.message}`);
+        }
+        demandsHook.refreshDemands();
+        metricsHook.refreshMetrics();
       }
-      demandsHook.refreshDemands();
-      metricsHook.refreshMetrics();
-    }
-  }, auth.token);
+    },
+    [onNotification, demandsHook.refreshDemands, metricsHook.refreshMetrics]
+  );
+
+  useSSE(handleSSEEvent, auth.token);
 
   const stateValue: FlowState = {
     currentUser: auth.currentUser,
