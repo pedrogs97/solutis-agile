@@ -1,7 +1,7 @@
 import { Demand, DemandStatus, Area, CostCenter, Project, DashboardMetrics } from '../types';
 
 export const GATEWAY_BASE_URL =
-  (import.meta as any).env?.VITE_FLOW_GATEWAY_URL || 'http://localhost:8080/proxy/flow/v1';
+  (import.meta as any).env?.VITE_FLOW_GATEWAY_URL || '/api/v1/proxy/flow/v1';
 
 function getAuthHeaders(token?: string): Record<string, string> {
   const headers: Record<string, string> = {
