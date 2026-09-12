@@ -6,12 +6,12 @@
 import { User, Area, CostCenter, Project, Demand, Automation, RecurringTask, SLAConfiguration, StandardProcedure } from './types';
 
 export const mockUsers: User[] = [
-  { id: 'usr-admin', name: 'Carlos Eduardo (Admin)', role: 'ADMIN', email: 'carlos@flowta.com.br', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80', areaId: 'area-ops' },
-  { id: 'usr-gestor', name: 'Beatriz Mello (Gestor)', role: 'GESTOR', email: 'beatriz.mello@flowta.com.br', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80', areaId: 'area-ops' },
-  { id: 'usr-analista', name: 'Rafael Santos (Analista)', role: 'ANALISTA', email: 'rafael.santos@flowta.com.br', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80', areaId: 'area-fin' },
-  { id: 'usr-solicitante', name: 'Ana Paula (Solicitante)', role: 'SOLICITANTE', email: 'ana.paula@flowta.com.br', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&auto=format&fit=crop&q=80', areaId: 'area-compras' },
-  { id: 'usr-aprovador', name: 'Pedro Gustavo (Diretoria)', role: 'APROVADOR', email: 'pedrogustavo@flowta.com.br', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80', areaId: 'area-dir' },
-  { id: 'usr-observador', name: 'Mariana Costa (Observador)', role: 'OBSERVADOR', email: 'mariana.costa@flowta.com.br', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80', areaId: 'area-ops' },
+  { id: 'usr-admin', name: 'Carlos Eduardo (Admin)', role: 'ADMIN', email: 'carlos@flowta.com.br', avatar: '', areaId: 'area-ops' },
+  { id: 'usr-gestor', name: 'Beatriz Mello (Gestor)', role: 'GESTOR', email: 'beatriz.mello@flowta.com.br', avatar: '', areaId: 'area-ops' },
+  { id: 'usr-analista', name: 'Rafael Santos (Analista)', role: 'ANALISTA', email: 'rafael.santos@flowta.com.br', avatar: '', areaId: 'area-fin' },
+  { id: 'usr-solicitante', name: 'Ana Paula (Solicitante)', role: 'SOLICITANTE', email: 'ana.paula@flowta.com.br', avatar: '', areaId: 'area-compras' },
+  { id: 'usr-aprovador', name: 'Pedro Gustavo (Diretoria)', role: 'APROVADOR', email: 'pedrogustavo@flowta.com.br', avatar: '', areaId: 'area-dir' },
+  { id: 'usr-observador', name: 'Mariana Costa (Observador)', role: 'OBSERVADOR', email: 'mariana.costa@flowta.com.br', avatar: '', areaId: 'area-ops' },
 ];
 
 export const mockAreas: Area[] = [

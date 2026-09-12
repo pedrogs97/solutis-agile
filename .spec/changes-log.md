@@ -1,5 +1,21 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-12] - Ícone Genérico de Usuário no Avatar do TaskView (v0.1.8)
+- **Descrição**: Substituição das fotos de avatar de terceiros (Unsplash) por um ícone genérico vetorial de usuário (`UserIcon` do `lucide-react`) em todo o frontend do Solutis TaskView (`solutis-flow`), abrangendo a barra de status do usuário no cabeçalho (`RoleSwitcher`), o rodapé da sidebar de navegação (`App.tsx`) e a higienização de avatares salvos no `localStorage` e dados simulados.
+- **Arquivos afetados**:
+  - `solutis-flow/src/components/RoleSwitcher.tsx`
+  - `solutis-flow/src/App.tsx`
+  - `solutis-flow/src/hooks/useAuth.ts`
+  - `solutis-flow/src/mockData.ts`
+  - `solutis-flow/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - `RoleSwitcher.tsx`: Substituída a tag `<img>` por um círculo estilizado contendo o `UserIcon` de avatar genérico.
+  - `App.tsx`: Atualizado o card inferior de perfil do usuário na sidebar com `UserIcon`.
+  - `useAuth.ts`: Removido o fallback para URL externa do Unsplash e adicionada higienização de `flowta_user` no `localStorage`.
+  - `mockData.ts`: Removidas URLs externas de avatares dos usuários padrão.
+  - Incremento de versão do `solutis-flow` para `0.1.8`.
+
 ## [2026-09-12] - Estabilização da Conexão SSE e Eliminação de Cancelamentos no TaskView (v0.1.7)
 - **Descrição**: Eliminação dos cancelamentos sucessivos de conexões Server-Sent Events (`(canceled)` no Network Tab do navegador) decorrentes de re-renders no frontend `solutis-flow`. Implementado padrão `useRef` para desacoplar a referência do listener `onEventReceived` do array de dependências do `useEffect`, garantindo uma conexão `EventSource` única, contínua e estável durante toda a sessão do usuário.
 - **Arquivos afetados**:

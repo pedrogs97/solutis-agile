@@ -30,7 +30,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { 
   Layers, BarChart3, Settings as SettingsIcon, Kanban, 
   Calendar, Clock, CheckCircle, Bell, Plus, ShieldCheck, Zap, FolderKanban, LogOut, FileText,
-  Lightbulb, ShieldAlert
+  Lightbulb, ShieldAlert, User as UserIcon
 } from 'lucide-react';
 
 function MainAppContent() {
@@ -448,11 +448,9 @@ function MainAppContent() {
 
           <div className="mt-auto pt-4 border-t border-slate-800/80">
             <div className="bg-slate-900/90 rounded-xl p-3 border border-slate-800 flex items-center space-x-3">
-              <img 
-                src={currentUser.avatar} 
-                alt={currentUser.name} 
-                className="w-9 h-9 rounded-full object-cover border border-indigo-500/30"
-              />
+              <div className="w-9 h-9 rounded-full bg-slate-800 border border-indigo-500/30 flex items-center justify-center text-indigo-300 shrink-0 shadow-inner">
+                <UserIcon className="w-5 h-5 text-indigo-300" />
+              </div>
               <div className="overflow-hidden">
                 <div className="text-xs font-semibold text-slate-200 truncate">{currentUser.name}</div>
                 <div className="text-[10px] text-slate-400 flex items-center space-x-1">

@@ -85,7 +85,9 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentUser, onUserC
         <div className="flex flex-wrap items-center gap-4">
           {/* Current loggined user info */}
           <div className="flex items-center gap-2.5 bg-slate-950/60 p-1.5 pl-2.5 pr-4 rounded-xl border border-slate-800">
-            <img src={currentUser.avatar} alt={currentUser.name} className="w-6.5 h-6.5 rounded-full border border-slate-805 object-cover shrink-0" />
+            <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shrink-0 shadow-inner">
+              <UserIcon className="w-4 h-4 text-slate-300" />
+            </div>
             <div className="text-left shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-200 leading-none">{currentUser.name.split(' ')[0]}</span>

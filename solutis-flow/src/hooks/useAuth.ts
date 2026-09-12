@@ -27,7 +27,12 @@ function getInitialUser(): User {
     const saved = localStorage.getItem('flowta_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed?.avatar && parsed.avatar.includes('images.unsplash.com')) {
+          parsed.avatar = '';
+          localStorage.setItem('flowta_user', JSON.stringify(parsed));
+        }
+        return parsed;
       } catch (e) {}
     }
 
@@ -42,14 +47,14 @@ function getInitialUser(): User {
             name: profile.full_name || profile.name || 'Usuário Solutis',
             email: profile.email || 'usuario@solutis.com.br',
             role: (profile.group === 'admin' || profile.group === 'MASTER') ? 'ADMIN' : 'GESTOR',
-            avatar: profile.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
+            avatar: profile.avatar || '',
             areaId: 'area-compras',
           };
         }
       } catch (e) {}
     }
   }
-  return mockUsers[1]; // Default to Gestor
+  return { ...mockUsers[1], avatar: '' }; // Default to Gestor without unsplash avatar
 }
 
 export function useAuth() {
@@ -84,7 +89,7 @@ export function useAuth() {
             name: parsedUser.name || parsedUser.full_name || 'Usuário Solutis',
             email: parsedUser.email || 'usuario@solutis.com.br',
             role: parsedUser.role || 'GESTOR',
-            avatar: parsedUser.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
+            avatar: (parsedUser.avatar && !parsedUser.avatar.includes('images.unsplash.com')) ? parsedUser.avatar : '',
             areaId: parsedUser.areaId || 'area-compras',
           };
           setCurrentUser(userObj);
