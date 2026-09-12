@@ -12,23 +12,25 @@ import {
   HelpCircle, FileText, Tag, ChevronRight, Check, Sparkles, Building, Briefcase, CheckSquare
 } from 'lucide-react';
 import { useToast } from './Toast';
-import { mockUsers } from '../mockData';
+import { mockUsers, mockAreas } from '../mockData';
 
 interface ProjectsViewProps {
-  projects: Project[];
-  demands: Demand[];
-  areas: Area[];
+  projects?: Project[];
+  demands?: Demand[];
+  areas?: Area[];
   currentUser: User;
   onAddProject: (project: Omit<Project, 'id'>) => void;
-  onUpdateProject: (project: Project) => void;
-  onDeleteProject: (projectId: string) => void;
-  onLinkDemand: (demandId: string, projectId: string | null) => void;
+  onUpdateProject?: (project: Project) => void;
+  onDeleteProject?: (projectId: string) => void;
+  onLinkDemand?: (demandId: string, projectId: string | null) => void;
+  onSelectDemand?: (id: string) => void;
+  onUpdateDemand?: (demand: Demand) => void;
 }
 
 export const ProjectsView: React.FC<ProjectsViewProps> = ({
-  projects,
-  demands,
-  areas,
+  projects = [],
+  demands = [],
+  areas = mockAreas,
   currentUser,
   onAddProject,
   onUpdateProject,
@@ -209,7 +211,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
               // Deadline maths
               const today = new Date();
               today.setHours(0,0,0,0);
-              const [y, m, d] = proj.dueDate.split('-').map(Number);
+              const dateParts = proj.dueDate ? proj.dueDate.split('-').map(Number) : [today.getFullYear(), today.getMonth() + 1, today.getDate()];
+              const [y, m, d] = dateParts.length === 3 ? dateParts : [today.getFullYear(), today.getMonth() + 1, today.getDate()];
               const dDate = new Date(y, m - 1, d);
               dDate.setHours(23,59,59,999);
               const daysLeft = Math.ceil((dDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -599,7 +602,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
           // Deadline calculation
           const today = new Date();
           today.setHours(0,0,0,0);
-          const [y, m, d] = detailProject.dueDate.split('-').map(Number);
+          const detailDateParts = detailProject.dueDate ? detailProject.dueDate.split('-').map(Number) : [today.getFullYear(), today.getMonth() + 1, today.getDate()];
+          const [y, m, d] = detailDateParts.length === 3 ? detailDateParts : [today.getFullYear(), today.getMonth() + 1, today.getDate()];
           const dDate = new Date(y, m - 1, d);
           dDate.setHours(23,59,59,999);
           const daysLeft = Math.ceil((dDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));

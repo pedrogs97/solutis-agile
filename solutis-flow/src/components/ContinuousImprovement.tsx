@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, Area } from '../types';
+import { mockUsers, mockAreas } from '../mockData';
 import { 
   Lightbulb, 
   Plus, 
@@ -40,21 +41,23 @@ export interface ImprovementIdea {
 }
 
 interface ContinuousImprovementProps {
-  ideas: ImprovementIdea[];
+  ideas?: ImprovementIdea[];
   currentUser: User;
-  users: User[];
-  areas: Area[];
+  users?: User[];
+  areas?: Area[];
   onAddIdea: (idea: ImprovementIdea) => void;
   onUpdateIdea?: (idea: ImprovementIdea) => void;
+  onLikeIdea?: (ideaId: string) => void;
 }
 
 export const ContinuousImprovement: React.FC<ContinuousImprovementProps> = ({
-  ideas,
+  ideas = [],
   currentUser,
-  users,
-  areas,
+  users = mockUsers,
+  areas = mockAreas,
   onAddIdea,
-  onUpdateIdea
+  onUpdateIdea,
+  onLikeIdea
 }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

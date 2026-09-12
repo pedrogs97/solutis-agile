@@ -2,10 +2,25 @@
 
 import os
 
+_IN_DOCKER = os.path.exists("/.dockerenv")
+
 SERVICE_HOSTS = {
-    "procurement": os.getenv("PROCUREMENT_SERVICE_HOST", "http://localhost:8001/api"),
-    "report": os.getenv("REPORT_SERVICE_HOST", "http://localhost:8002/api"),
-    "flow": os.getenv("FLOW_SERVICE_HOST", "http://localhost:8004/api"),
+    "procurement": os.getenv(
+        "PROCUREMENT_SERVICE_HOST",
+        "http://solutis-procurement:8001/api"
+        if _IN_DOCKER
+        else "http://localhost:8001/api",
+    ),
+    "report": os.getenv(
+        "REPORT_SERVICE_HOST",
+        "http://solutis-report:8002/api" if _IN_DOCKER else "http://localhost:8002/api",
+    ),
+    "flow": os.getenv(
+        "FLOW_SERVICE_HOST",
+        "http://solutis-flow-back:8004/api"
+        if _IN_DOCKER
+        else "http://localhost:8004/api",
+    ),
     "default": os.getenv("EXTERNAL_SERVICE_HOST", "http://localhost:8001"),
 }
 

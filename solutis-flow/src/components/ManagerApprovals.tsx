@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Demand, User, Area, CostCenter } from '../types';
+import { mockUsers, mockAreas, mockCostCenters } from '../mockData';
 import { 
   CheckCircle, 
   XCircle, 
@@ -15,26 +16,28 @@ import {
   Send,
   Workflow,
   Search,
-  ThumbsUp,
+  ThumbsUp, 
   Coins
 } from 'lucide-react';
 
 interface ManagerApprovalsProps {
-  demands: Demand[];
-  users: User[];
-  areas: Area[];
-  costCenters: CostCenter[];
+  demands?: Demand[];
+  users?: User[];
+  areas?: Area[];
+  costCenters?: CostCenter[];
   currentUser: User;
   onUpdateDemand: (demand: Demand) => void;
+  onSelectDemand?: (id: string) => void;
 }
 
 export const ManagerApprovals: React.FC<ManagerApprovalsProps> = ({
-  demands,
-  users,
-  areas,
-  costCenters,
+  demands = [],
+  users = mockUsers,
+  areas = mockAreas,
+  costCenters = mockCostCenters,
   currentUser,
-  onUpdateDemand
+  onUpdateDemand,
+  onSelectDemand,
 }) => {
   // We filter demands where approvalStatus is AGUARDANDO_APROVACAO
   const pendingApprovals = useMemo(() => {

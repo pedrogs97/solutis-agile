@@ -6,33 +6,37 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Demand, DemandType, DemandStatus, User, CostCenter, Area, Attachment, StandardProcedure, Project } from '../types';
+import { mockUsers, mockCostCenters, mockAreas } from '../mockData';
 import { X, Save, AlertTriangle, FileText, ClipboardList, Plus, Sparkles, UserCheck, CheckCircle2, FileUp, ListChecks, HelpCircle } from 'lucide-react';
 import { parseSopFileContent } from '../utils/sopParser';
 import { useToast } from './Toast';
 
 interface CreateDemandModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
-  users: User[];
+  users?: User[];
   demands?: Demand[];
-  costCenters: CostCenter[];
-  areas: Area[];
-  projects: Project[];
+  costCenters?: CostCenter[];
+  areas?: Area[];
+  projects?: Project[];
   currentUser: User;
-  onAddDemand: (demand: Demand) => void;
+  onAddDemand?: (demand: Demand) => void;
+  onSave?: (demand: Demand) => void;
 }
 
 export const CreateDemandModal: React.FC<CreateDemandModalProps> = ({
-  isOpen,
+  isOpen = true,
   onClose,
-  users,
+  users = mockUsers,
   demands = [],
-  costCenters,
-  areas,
-  projects,
+  costCenters = mockCostCenters,
+  areas = mockAreas,
+  projects = [],
   currentUser,
   onAddDemand,
+  onSave,
 }) => {
+  const handleSaveDemand = onAddDemand || onSave;
   const [title, setTitle] = useState('');
   const [type, setType] = useState<DemandType>('COMPRAS');
   const [description, setDescription] = useState('');
@@ -186,7 +190,7 @@ export const CreateDemandModal: React.FC<CreateDemandModalProps> = ({
     };
 
     // Callback de inclusão
-    onAddDemand(newDemand);
+    handleSaveDemand?.(newDemand);
 
     setSuccessMsg('🎉 Demanda cadastrada com sucesso! Notificações enviadas aos envolvidos e regras de automação aplicadas.');
     toastSuccess(`Demanda ${newDemand.id} cadastrada com sucesso!`);

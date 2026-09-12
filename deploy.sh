@@ -62,6 +62,15 @@ if [ -f "solutis-agile-frontend/.env" ]; then
   fi
 fi
 
+# Sincroniza FLOW_SERVICE_HOST no .env do backend se existir
+if [ -f "solutis_manager_back/.env" ]; then
+  if grep -q "FLOW_SERVICE_HOST" "solutis_manager_back/.env"; then
+    sed -i "s|FLOW_SERVICE_HOST=.*|FLOW_SERVICE_HOST='http://solutis-flow-back:8004/api'|" "solutis_manager_back/.env"
+  else
+    echo "FLOW_SERVICE_HOST='http://solutis-flow-back:8004/api'" >> "solutis_manager_back/.env"
+  fi
+fi
+
 # Iterate services and check for updates
 for item in "${SERVICES[@]}"; do
   IFS="|" read -r dir_name container_name compose_service file_type <<< "$item"

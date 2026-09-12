@@ -6,31 +6,35 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Demand, CostCenter, Area, User } from '../types';
+import { mockUsers, mockCostCenters, mockAreas } from '../mockData';
 import { Search, Filter, AlertTriangle, Eye, Clock, Calendar, CheckSquare, Layers, FolderHeart, ArrowRight, Plus } from 'lucide-react';
 
 interface DemandListProps {
-  demands: Demand[];
-  users: User[];
-  costCenters: CostCenter[];
-  areas: Area[];
+  demands?: Demand[];
+  users?: User[];
+  costCenters?: CostCenter[];
+  areas?: Area[];
   onSelectDemand: (id: string) => void;
   currentUser: User;
   onQuickCreateClick?: () => void;
+  onCreateDemand?: () => void;
   initialStatusFilter?: string;
   onClearInitialStatusFilter?: () => void;
 }
 
 export const DemandList: React.FC<DemandListProps> = ({
-  demands,
-  users,
-  costCenters,
-  areas,
+  demands = [],
+  users = mockUsers,
+  costCenters = mockCostCenters,
+  areas = mockAreas,
   onSelectDemand,
   currentUser,
   onQuickCreateClick,
+  onCreateDemand,
   initialStatusFilter = 'TODOS',
   onClearInitialStatusFilter
 }) => {
+  const handleQuickCreate = onQuickCreateClick || onCreateDemand;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('TODOS');
   const [selectedPriority, setSelectedPriority] = useState<string>('TODOS');
@@ -157,14 +161,15 @@ export const DemandList: React.FC<DemandListProps> = ({
             />
           </div>
 
-          {onQuickCreateClick && (
+          {handleQuickCreate && (
             <button
               id="btn-demand-list-create"
               type="button"
-              onClick={onQuickCreateClick}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-md flex items-center justify-center gap-1.5 transition shadow-xs whitespace-nowrap cursor-pointer font-display"
+              onClick={handleQuickCreate}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center space-x-2 transition shadow-md shadow-indigo-100 hover:shadow-indigo-200 cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> Cadastrar Demanda
+              <Plus className="w-4 h-4" />
+              <span>Nova Demanda</span>
             </button>
           )}
 

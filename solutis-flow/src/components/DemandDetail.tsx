@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Demand, User, DemandStatus, CostCenter, Area, Attachment, Comment, StandardProcedure, Project } from '../types';
-import { mockStandardProcedures, mockUsers } from '../mockData';
+import { mockStandardProcedures, mockUsers, mockCostCenters, mockAreas } from '../mockData';
 import { 
   X, Clock, Clipboard, FileText, Check, AlertCircle, ArrowRightLeft, 
   Send, UserPlus, Play, FileUp, Star, AlertOctagon, HelpCircle, Sparkles, ListChecks, Trash2, FolderKanban, Share2, Users
@@ -15,27 +15,31 @@ import { parseSopFileContent } from '../utils/sopParser';
 import { useToast } from './Toast';
 
 interface DemandDetailProps {
-  demandId: string;
-  demands: Demand[];
+  demandId?: string;
+  demand?: Demand;
+  demands?: Demand[];
   currentUser: User;
   onClose: () => void;
   onUpdateDemand: (updatedDemand: Demand) => void;
-  costCenters: CostCenter[];
-  areas: Area[];
-  projects: Project[];
+  costCenters?: CostCenter[];
+  areas?: Area[];
+  projects?: Project[];
+  users?: User[];
 }
 
 export const DemandDetail: React.FC<DemandDetailProps> = ({
   demandId,
-  demands,
+  demand: demandProp,
+  demands = [],
   currentUser,
   onClose,
   onUpdateDemand,
-  costCenters,
-  areas,
-  projects
+  costCenters = mockCostCenters,
+  areas = mockAreas,
+  projects = [],
+  users
 }) => {
-  const demand = demands.find(d => d.id === demandId);
+  const demand = demandProp || demands.find(d => d.id === demandId);
   if (!demand) return null;
 
   const { success: toastSuccess, error: toastError } = useToast();

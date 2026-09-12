@@ -1,5 +1,43 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-12] - Correção da Tela Branca, ErrorBoundary e Proxy do Flow (TaskView v0.1.5 e Manager Backend v1.26.11)
+- **Descrição**: Resolução do erro de tela branca (`Cannot read properties of undefined (reading 'map')`) e das falhas 502 Bad Gateway no acesso ao TaskView (`/taskview/`). Adicionadas proteções defensivas com defaults e encadeamento seguro em todos os componentes de view, criado componente global de `ErrorBoundary`, implementada hidratação automática de sessão compartilhada a partir de `auth-store`/`profile-store` e ajustada a resolução de host do `solutis_flow_back` no gateway do `solutis_manager_back` e no `docker-compose.prod.yml`.
+- **Arquivos afetados**:
+  - `solutis-flow/src/components/ErrorBoundary.tsx` [NOVO]
+  - `solutis-flow/src/components/Dashboard.tsx`
+  - `solutis-flow/src/components/Portal.tsx`
+  - `solutis-flow/src/components/DemandList.tsx`
+  - `solutis-flow/src/components/KanbanBoard.tsx`
+  - `solutis-flow/src/components/ProjectsView.tsx`
+  - `solutis-flow/src/components/ManagerApprovals.tsx`
+  - `solutis-flow/src/components/ContinuousImprovement.tsx`
+  - `solutis-flow/src/components/ReportsView.tsx`
+  - `solutis-flow/src/components/DemandDetail.tsx`
+  - `solutis-flow/src/components/CreateDemandModal.tsx`
+  - `solutis-flow/src/App.tsx`
+  - `solutis-flow/src/hooks/useAuth.ts`
+  - `solutis-flow/package.json`
+  - `solutis_manager_back/src/proxy/config.py`
+  - `solutis_manager_back/.env`
+  - `solutis_manager_back/.env.example`
+  - `solutis_manager_back/pyproject.toml`
+  - `docker-compose.prod.yml`
+  - `deploy.sh`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **TaskView Frontend (`solutis-flow`)**:
+    - `ErrorBoundary.tsx`: Criado componente global para capturar falhas de renderização e oferecer restauração graciosa ao usuário, eliminando telas brancas não tratadas.
+    - `App.tsx`: Envolvido no `ErrorBoundary` e corrigida a passagem de todas as props essenciais (`costCenters`, `areas`, `projects`, `users`, handlers) para todas as views e modais.
+    - `Dashboard.tsx`, `Portal.tsx`, `DemandList.tsx`, `KanbanBoard.tsx`, `ProjectsView.tsx`, etc.: Adicionados valores de fallback padrão (`mockUsers`, `mockCostCenters`, `mockAreas`, `mockInitialProjects`), proteção contra datas nulas (`dueDate.split`) e encadeamento seguro em chamadas a `.map()`.
+    - `useAuth.ts`: Adicionada detecção e hidratação automática do token e usuário a partir do `auth-store` e `profile-store` do Agile quando executando na mesma origem.
+    - Versão incrementada de `0.1.4` para `0.1.5`.
+  - **Manager Backend & Proxy Gateway (`solutis_manager_back`)**:
+    - `config.py`: Implementado fallback inteligente para `FLOW_SERVICE_HOST` direcionando para `http://solutis-flow-back:8004/api` quando em container Docker (`/.dockerenv`).
+    - `pyproject.toml`: Versão incrementada de `1.26.10` para `1.26.11`.
+  - **Infraestrutura e Deploy**:
+    - `docker-compose.prod.yml`: Configurado `FLOW_SERVICE_HOST: ${FLOW_SERVICE_HOST:-http://solutis-flow-back:8004/api}` no serviço `agile-back`.
+    - `deploy.sh`: Adicionada sincronização automática de `FLOW_SERVICE_HOST` no arquivo `.env` do backend durante o deploy.
+
 ## [2026-09-12] - Deploy Remoto em Produção: Agile Frontend v2.7.14 e TaskView v0.1.4 (Host Solutis - 172.21.3.225)
 - **Descrição**: Execução com sucesso do deploy remoto automatizado no host de produção Solutis (`172.21.3.225`). Foram reconstruídas e implantadas as novas imagens Docker do `solutis-agile-frontend` (v2.7.14) e do `solutis-flow` (`taskview-front`, v0.1.4), atualizando as variáveis de ambiente e habilitando a operação do TaskView sob o subpath `/taskview/` no proxy reverso do Nginx.
 - **Serviços Atualizados e Implantados**:

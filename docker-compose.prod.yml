@@ -59,6 +59,10 @@ services:
       - ./solutis_manager_back/.env:/solutis-agile/.env
     command: sh -c "uv run alembic upgrade head && uv run uvicorn src.main:appAPI --host 0.0.0.0 --port 8080"
     restart: always
+    environment:
+      FLOW_SERVICE_HOST: ${FLOW_SERVICE_HOST:-http://solutis-flow-back:8004/api}
+      REPORT_SERVICE_HOST: ${REPORT_SERVICE_HOST:-http://solutis-report:8002/api}
+      PROCUREMENT_SERVICE_HOST: ${PROCUREMENT_SERVICE_HOST:-http://solutis-procurement:8001/api}
     env_file:
       - ./solutis_manager_back/.env
     networks:

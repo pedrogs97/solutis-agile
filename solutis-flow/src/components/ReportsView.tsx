@@ -6,6 +6,7 @@
 import React, { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { Demand, Project, RecurringTask, CostCenter, Area, DemandType, DemandStatus, User } from '../types';
+import { mockUsers, mockCostCenters, mockAreas, mockInitialProjects, mockInitialRecurringTasks } from '../mockData';
 import { 
   FileText, Download, Calendar, Filter, Search, CheckSquare, 
   AlertTriangle, CheckCircle2, TrendingUp, HelpCircle, RefreshCw, BarChart2,
@@ -18,24 +19,24 @@ import {
 } from 'recharts';
 
 interface ReportsViewProps {
-  demands: Demand[];
-  projects: Project[];
-  recurringTasks: RecurringTask[];
-  costCenters: CostCenter[];
-  areas: Area[];
-  users: User[];
+  demands?: Demand[];
+  projects?: Project[];
+  recurringTasks?: RecurringTask[];
+  costCenters?: CostCenter[];
+  areas?: Area[];
+  users?: User[];
   ideas?: any[];
 }
 
 type ReportTab = 'DEMANDS' | 'PROJECTS' | 'RECURRING' | 'SLA_CUSTOS' | 'LABOR_COSTS' | 'PRODUCTIVITY';
 
 export const ReportsView: React.FC<ReportsViewProps> = ({
-  demands,
-  projects,
-  recurringTasks,
-  costCenters,
-  areas,
-  users,
+  demands = [],
+  projects = mockInitialProjects,
+  recurringTasks = mockInitialRecurringTasks,
+  costCenters = mockCostCenters,
+  areas = mockAreas,
+  users = mockUsers,
   ideas = []
 }) => {
   const [activeTab, setActiveTab] = useState<ReportTab>('DEMANDS');

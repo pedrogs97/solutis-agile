@@ -5,26 +5,29 @@
 
 import React, { useState } from 'react';
 import { Demand, User, DemandType, CostCenter, Area, Attachment } from '../types';
+import { mockUsers, mockCostCenters, mockAreas } from '../mockData';
 import { Plus, CheckCircle2, AlertTriangle, HelpCircle, FilePlus, Sparkles, Send, Eye, FileText, ClipboardList } from 'lucide-react';
 
 interface PortalProps {
-  demands: Demand[];
-  users: User[];
-  costCenters: CostCenter[];
-  areas: Area[];
+  demands?: Demand[];
+  users?: User[];
+  costCenters?: CostCenter[];
+  areas?: Area[];
   currentUser: User;
-  onAddDemand: (demand: Demand) => void;
+  onAddDemand?: (demand: Demand) => void;
   onSelectDemand: (id: string) => void;
+  onCreateDemand?: () => void;
 }
 
 export const Portal: React.FC<PortalProps> = ({
-  demands,
-  users,
-  costCenters,
-  areas,
+  demands = [],
+  users = mockUsers,
+  costCenters = mockCostCenters,
+  areas = mockAreas,
   currentUser,
   onAddDemand,
-  onSelectDemand
+  onSelectDemand,
+  onCreateDemand
 }) => {
   const [activePortalTab, setActivePortalTab] = useState<'MY_REQUESTS' | 'NEW_REQUEST'>('MY_REQUESTS');
   

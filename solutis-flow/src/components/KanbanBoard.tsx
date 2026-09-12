@@ -6,25 +6,32 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Demand, DemandStatus, User } from '../types';
+import { mockUsers } from '../mockData';
 import { Plus, ArrowRight, Clock, AlertTriangle, MessageSquare, Paperclip, ChevronRight, Check } from 'lucide-react';
 
 interface KanbanBoardProps {
-  demands: Demand[];
-  users: User[];
+  demands?: Demand[];
+  users?: User[];
   onSelectDemand: (id: string) => void;
   onQuickTransition?: (id: string, newStatus: DemandStatus) => void;
+  onUpdateDemand?: (demand: Demand) => void;
   currentUser: User;
   kanbanColumns?: any[];
+  columns?: any[];
 }
 
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
-  demands,
-  users,
+  demands = [],
+  users = mockUsers,
   onSelectDemand,
   onQuickTransition,
+  onUpdateDemand,
   currentUser,
-  kanbanColumns
+  kanbanColumns,
+  columns
 }) => {
+  const effectiveColumns = kanbanColumns || columns;
+  const handleTransition = onQuickTransition || ((id: string, newStatus: DemandStatus) => onUpdateDemand?.({ id, status: newStatus } as any));
   // Filter out demands if current user is 'SOLICITANTE'
   const allowedDemands = demands.filter(d => {
     if (currentUser.role === 'SOLICITANTE' && d.solicitorId !== currentUser.id && d.assigneeId !== currentUser.id && !d.observerIds.includes(currentUser.id)) {
@@ -102,7 +109,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     }
   };
 
-  const activeCols = (kanbanColumns || [
+  const activeCols = (effectiveColumns || [
     { id: 'PENDENTE', title: 'Pendente', visible: true, color: 'rose' },
     { id: 'EM_ANDAMENTO', title: 'Em Andamento', visible: true, color: 'indigo' },
     { id: 'AGUARDANDO_APROVACAO', title: 'Aguardando Aprovação', visible: true, color: 'amber' },

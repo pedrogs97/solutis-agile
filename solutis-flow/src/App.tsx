@@ -26,6 +26,7 @@ import { ContinuousImprovement, ImprovementIdea } from './components/ContinuousI
 import { ManagerApprovals } from './components/ManagerApprovals';
 import { CalendarView, SharedMeeting } from './components/CalendarView';
 import { FlowProvider, useFlow } from './context/FlowContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { 
   Layers, BarChart3, Settings as SettingsIcon, Kanban, 
   Calendar, Clock, CheckCircle, Bell, Plus, ShieldCheck, Zap, FolderKanban, LogOut, FileText,
@@ -468,7 +469,11 @@ function MainAppContent() {
           {activeTab === 'PORTAL' && (
             <Portal 
               demands={demands}
+              users={users}
+              costCenters={mockCostCenters}
+              areas={mockAreas}
               currentUser={currentUser}
+              onAddDemand={handleAddNewDemand}
               onSelectDemand={(id) => setSelectedDemandId(id)}
               onCreateDemand={() => setQuickCreateModal(true)}
             />
@@ -477,6 +482,9 @@ function MainAppContent() {
           {activeTab === 'DASHBOARD' && (
             <Dashboard 
               demands={demands} 
+              costCenters={mockCostCenters}
+              areas={mockAreas}
+              projects={projects}
               currentUser={currentUser} 
               onNavigate={handleDashboardNavigate} 
               onSelectDemand={(id) => {
@@ -489,9 +497,13 @@ function MainAppContent() {
           {activeTab === 'DEMANDS' && (
             <DemandList 
               demands={demands} 
+              users={users}
+              costCenters={mockCostCenters}
+              areas={mockAreas}
               currentUser={currentUser} 
               initialStatusFilter={initialStatusFilter}
               onSelectDemand={(id) => setSelectedDemandId(id)}
+              onQuickCreateClick={() => setQuickCreateModal(true)}
               onCreateDemand={() => setQuickCreateModal(true)}
             />
           )}
@@ -499,9 +511,12 @@ function MainAppContent() {
           {activeTab === 'KANBAN' && (
             <KanbanBoard 
               demands={demands} 
+              users={users}
               currentUser={currentUser} 
               columns={kanbanColumns}
+              kanbanColumns={kanbanColumns}
               onSelectDemand={(id) => setSelectedDemandId(id)}
+              onQuickTransition={(id, newStatus) => changeDemandStatus(id, newStatus)}
               onUpdateDemand={handleUpdateDemand}
             />
           )}
@@ -518,6 +533,9 @@ function MainAppContent() {
               }}
               onAddProject={addProject}
               onUpdateDemand={handleUpdateDemand}
+              onUpdateProject={(p) => {}}
+              onDeleteProject={(id) => {}}
+              onLinkDemand={(dId, pId) => {}}
             />
           )}
 
@@ -526,6 +544,8 @@ function MainAppContent() {
               demands={demands}
               currentUser={currentUser}
               users={users}
+              areas={mockAreas}
+              costCenters={mockCostCenters}
               onSelectDemand={(id) => {
                 setSelectedDemandId(id);
                 setActiveTab('DEMANDS');
@@ -540,6 +560,7 @@ function MainAppContent() {
               demands={demands}
               currentUser={currentUser}
               users={users}
+              onAddMeeting={handleScheduleMeeting}
               onScheduleMeeting={handleScheduleMeeting}
               onUpdateMeetingStatus={handleUpdateMeetingStatus}
               onSelectDemand={(id) => {
@@ -553,6 +574,8 @@ function MainAppContent() {
             <ContinuousImprovement 
               ideas={ideas}
               currentUser={currentUser}
+              users={users}
+              areas={mockAreas}
               onAddIdea={handleAddIdea}
               onLikeIdea={handleToggleLikeIdea}
             />
@@ -560,10 +583,13 @@ function MainAppContent() {
 
           {activeTab === 'REPORTS' && (
             <ReportsView 
-              demands={demands}
-              users={users}
-              areas={mockAreas}
+              demands={demands} 
+              projects={projects}
+              recurringTasks={recurringTasks}
               costCenters={mockCostCenters}
+              areas={mockAreas}
+              users={users}
+              ideas={ideas}
             />
           )}
 
@@ -578,6 +604,10 @@ function MainAppContent() {
               slaConfigs={slaConfigs}
               onUpdateSlaConfigs={setSlaConfigs}
               currentUser={currentUser}
+              onAddAutomation={(auto) => setAutomations(prev => [auto, ...prev])}
+              onToggleAutomation={(id) => setAutomations(prev => prev.map(a => a.id === id ? { ...a, active: !a.active } : a))}
+              onDeleteAutomation={(id) => setAutomations(prev => prev.filter(a => a.id !== id))}
+              onAddRecurringTask={(task) => setRecurringTasks(prev => [task, ...prev])}
             />
           )}
         </main>
@@ -588,10 +618,13 @@ function MainAppContent() {
         {selectedDemand && (
           <DemandDetail 
             demand={selectedDemand}
+            demandId={selectedDemand.id}
+            demands={demands}
             currentUser={currentUser}
             users={users}
             areas={mockAreas}
             costCenters={mockCostCenters}
+            projects={projects}
             onClose={() => setSelectedDemandId(null)}
             onUpdateDemand={handleUpdateDemand}
           />
@@ -602,12 +635,18 @@ function MainAppContent() {
       <AnimatePresence>
         {quickCreateModal && (
           <CreateDemandModal 
+            isOpen={quickCreateModal}
             currentUser={currentUser}
             users={users}
             areas={mockAreas}
             costCenters={mockCostCenters}
             projects={projects}
+            demands={demands}
             onClose={() => setQuickCreateModal(false)}
+            onAddDemand={(newDemand) => {
+              handleAddNewDemand(newDemand);
+              setQuickCreateModal(false);
+            }}
             onSave={(newDemand) => {
               handleAddNewDemand(newDemand);
               setQuickCreateModal(false);
@@ -621,8 +660,10 @@ function MainAppContent() {
 
 export default function App() {
   return (
-    <FlowProvider>
-      <MainAppContent />
-    </FlowProvider>
+    <ErrorBoundary>
+      <FlowProvider>
+        <MainAppContent />
+      </FlowProvider>
+    </ErrorBoundary>
   );
 }

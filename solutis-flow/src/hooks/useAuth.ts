@@ -4,27 +4,67 @@ import { mockUsers } from '../mockData';
 
 const AGILE_LOGIN_URL = (import.meta as any).env?.VITE_AGILE_APP_URL || 'http://localhost:3000/login';
 
-export function useAuth() {
-  const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('flowta_token');
-  });
+function getInitialToken(): string | null {
+  const flowtaToken = typeof window !== 'undefined' ? localStorage.getItem('flowta_token') : null;
+  if (flowtaToken) return flowtaToken;
 
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    return localStorage.getItem('flowta_is_logged_in') === 'true';
-  });
+  if (typeof window !== 'undefined') {
+    const authStoreRaw = localStorage.getItem('auth-store');
+    if (authStoreRaw) {
+      try {
+        const parsed = JSON.parse(authStoreRaw);
+        if (parsed?.state?.accessToken) {
+          return parsed.state.accessToken;
+        }
+      } catch (e) {}
+    }
+  }
+  return null;
+}
 
-  const [currentUser, setCurrentUser] = useState<User>(() => {
+function getInitialUser(): User {
+  if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('flowta_user');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        return parsed;
+        return JSON.parse(saved);
       } catch (e) {}
     }
-    return mockUsers[1]; // Default to Gestor
+
+    const profileStoreRaw = localStorage.getItem('profile-store');
+    if (profileStoreRaw) {
+      try {
+        const parsed = JSON.parse(profileStoreRaw);
+        const profile = parsed?.state?.profile;
+        if (profile) {
+          return {
+            id: String(profile.id || 'usr-agile'),
+            name: profile.full_name || profile.name || 'Usuário Solutis',
+            email: profile.email || 'usuario@solutis.com.br',
+            role: (profile.group === 'admin' || profile.group === 'MASTER') ? 'ADMIN' : 'GESTOR',
+            avatar: profile.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
+            areaId: 'area-compras',
+          };
+        }
+      } catch (e) {}
+    }
+  }
+  return mockUsers[1]; // Default to Gestor
+}
+
+export function useAuth() {
+  const [token, setToken] = useState<string | null>(() => getInitialToken());
+
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('flowta_is_logged_in') === 'true') {
+      return true;
+    }
+    return !!getInitialToken();
   });
 
-  // Handoff check from Unified Login (URL params ?token=...&user=...)
+  const [currentUser, setCurrentUser] = useState<User>(() => getInitialUser());
+
+  // Handoff check from Unified Login (URL params ?token=...&user=...) or existing auth-store
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tokenParam = urlParams.get('token');
@@ -57,8 +97,17 @@ export function useAuth() {
       // Clean query params from address bar without reloading
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
+    } else {
+      // Sync from shared origin stores if present
+      const sharedToken = getInitialToken();
+      if (sharedToken && !token) {
+        setToken(sharedToken);
+        setIsLoggedIn(true);
+        localStorage.setItem('flowta_token', sharedToken);
+        localStorage.setItem('flowta_is_logged_in', 'true');
+      }
     }
-  }, []);
+  }, [token]);
 
   const login = useCallback((user: User, customToken?: string) => {
     setCurrentUser(user);

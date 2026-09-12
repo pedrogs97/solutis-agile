@@ -6,7 +6,7 @@
 import React, { useMemo } from 'react';
 import { Demand, CostCenter, Area, Project, DemandType, User } from '../types';
 import { Clock, CheckCircle2, AlertTriangle, BarChart3, TrendingUp, Layers, Users, FolderKanban, Calendar, ArrowUpRight, ExternalLink } from 'lucide-react';
-import { mockUsers } from '../mockData';
+import { mockUsers, mockCostCenters, mockAreas } from '../mockData';
 import { 
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   PieChart, Pie, Cell
@@ -16,28 +16,41 @@ import {
 const CC_COLORS = ['#6366f1', '#0ea5e9', '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
 
 interface DashboardProps {
-  demands: Demand[];
-  costCenters: CostCenter[];
-  areas: Area[];
-  projects: Project[];
+  demands?: Demand[];
+  costCenters?: CostCenter[];
+  areas?: Area[];
+  projects?: Project[];
   currentUser: User;
   onSelectDemand?: (demandId: string) => void;
   onNavigate?: (tab: string, filters?: { status?: string }) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ demands, costCenters, areas, projects, currentUser, onSelectDemand, onNavigate }) => {
-  // Calculated stats
-  const total = demands.length;
-  const pending = demands.filter(d => d.status === 'PENDENTE').length;
-  const inProgress = demands.filter(d => d.status === 'EM_ANDAMENTO').length;
-  const completed = demands.filter(d => d.status === 'CONCLUIDO').length;
+export const Dashboard: React.FC<DashboardProps> = ({
+  demands = [],
+  costCenters = mockCostCenters,
+  areas = mockAreas,
+  projects = [],
+  currentUser,
+  onSelectDemand,
+  onNavigate
+}) => {
+  const safeDemands = demands || [];
+  const safeCostCenters = (costCenters && costCenters.length > 0) ? costCenters : mockCostCenters;
+  const safeAreas = (areas && areas.length > 0) ? areas : mockAreas;
+  const safeProjects = projects || [];
 
-  const overdue = demands.filter(d => {
+  // Calculated stats
+  const total = safeDemands.length;
+  const pending = safeDemands.filter(d => d.status === 'PENDENTE').length;
+  const inProgress = safeDemands.filter(d => d.status === 'EM_ANDAMENTO').length;
+  const completed = safeDemands.filter(d => d.status === 'CONCLUIDO').length;
+
+  const overdue = safeDemands.filter(d => {
     // Overdue is either SLA spent > SLA limit or specifically flagged
     return d.status !== 'CONCLUIDO' && d.slaSpentHours > d.slaLimitHours;
   }).length;
 
-  const inRisk = demands.filter(d => {
+  const inRisk = safeDemands.filter(d => {
     return d.status !== 'CONCLUIDO' && d.slaSpentHours <= d.slaLimitHours && (d.slaLimitHours - d.slaSpentHours <= 6);
   }).length;
 
@@ -45,7 +58,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ demands, costCenters, area
   const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   // Average execution time vs estimated
-  const completedDemands = demands.filter(d => d.status === 'CONCLUIDO');
+  const completedDemands = safeDemands.filter(d => d.status === 'CONCLUIDO');
   const avgSpent = completedDemands.length > 0 
     ? (completedDemands.reduce((acc, d) => acc + d.timeSpentHours, 0) / completedDemands.length).toFixed(1)
     : '0';
@@ -54,8 +67,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ demands, costCenters, area
     : '0';
 
   // Cost Center distribution
-  const ccData = costCenters.map(cc => {
-    const ccDemands = demands.filter(d => d.costCenterId === cc.id);
+  const ccData = safeCostCenters.map(cc => {
+    const ccDemands = safeDemands.filter(d => d.costCenterId === cc.id);
     return {
       name: cc.name,
       code: cc.code,
@@ -65,8 +78,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ demands, costCenters, area
   });
 
   // Department distribution
-  const deptData = areas.map(area => {
-    const areaDemands = demands.filter(d => d.areaId === area.id);
+  const deptData = safeAreas.map(area => {
+    const areaDemands = safeDemands.filter(d => d.areaId === area.id);
     return {
       name: area.name,
       count: areaDemands.length,
@@ -77,15 +90,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ demands, costCenters, area
   });
 
   // SLA issues checklist
-  const urgentDemands = demands.filter(d => d.status !== 'CONCLUIDO' && (d.priority === 'ALTA' || d.slaSpentHours > d.slaLimitHours));
+  const urgentDemands = safeDemands.filter(d => d.status !== 'CONCLUIDO' && (d.priority === 'ALTA' || d.slaSpentHours > d.slaLimitHours));
 
   // Dynamic Team productivity metrics calculations
-  const teamMetrics = mockUsers.filter(u => u.role !== 'SOLICITANTE' && u.name !== 'Solicitador Integrado').map(user => {
+  const teamMetrics = (mockUsers || []).filter(u => u.role !== 'SOLICITANTE' && u.name !== 'Solicitador Integrado').map(user => {
     let relevantCount = 0;
     let completedCount = 0;
     
     if (user.role === 'GESTOR') {
-      const relevant = demands.filter(d => d.managerId === user.id);
+      const relevant = safeDemands.filter(d => d.managerId === user.id);
       relevantCount = relevant.length;
       completedCount = relevant.filter(d => d.status === 'CONCLUIDO').length;
     } else {
@@ -531,13 +544,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ demands, costCenters, area
             <p className="text-xs text-slate-500">Monitoramento integrado de prazos executivos, entregas e eficiência de atividades vinculadas</p>
           </div>
           <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 py-1 px-3 rounded-full border border-indigo-100 font-mono">
-            {projects.filter(p => p.status === 'EM_ANDAMENTO').length} Em Execução
+            {safeProjects.filter(p => p.status === 'EM_ANDAMENTO').length} Em Execução
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {projects.map((p) => {
-            const pDemands = demands.filter(d => d.projectId === p.id);
+          {safeProjects.map((p) => {
+            const pDemands = safeDemands.filter(d => d.projectId === p.id);
             const totalCount = pDemands.length;
             const completedCount = pDemands.filter(d => d.status === 'CONCLUIDO').length;
             const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -547,7 +560,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ demands, costCenters, area
             today.setHours(0, 0, 0, 0);
             
             // Handle due date format (YYYY-MM-DD) safely
-            const [year, month, day] = p.dueDate.split('-').map(Number);
+            const dateParts = p.dueDate ? p.dueDate.split('-').map(Number) : [today.getFullYear(), today.getMonth() + 1, today.getDate()];
+            const [year, month, day] = dateParts.length === 3 ? dateParts : [today.getFullYear(), today.getMonth() + 1, today.getDate()];
             const projectDueDate = new Date(year, month - 1, day);
             projectDueDate.setHours(23, 59, 59, 999);
             const timeDiff = projectDueDate.getTime() - today.getTime();
