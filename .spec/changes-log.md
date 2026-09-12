@@ -1,25 +1,13 @@
 # Histórico de Alterações do Projeto
 
-## [2026-09-12] - Configuração de Subpath /taskview/ e Atualização de Ambientes (Agile v2.7.14 e TaskView v0.1.4)
-- **Descrição**: Adequação do TaskView (`solutis-flow`) para operar sob o subpath `/taskview/` no proxy reverso do Nginx na mesma origem e porta 443 do Agile (`https://agile.solutis.net.br/taskview`). Configurado o `base: '/taskview/'` no Vite, ajustados os endpoints relativos do gateway para `/api/v1/proxy/flow/v1` e atualizado o redirecionamento e variáveis de ambiente do Agile Frontend (`solutis-agile-frontend`) para apontar para `/taskview`. Incrementadas as versões de ambos os serviços para disparar o rebuild automático de produção no deploy.
-- **Arquivos afetados**:
-  - `solutis-flow/vite.config.ts`
-  - `solutis-flow/package.json`
-  - `solutis-flow/src/services/api.ts`
-  - `solutis-flow/src/hooks/useSSE.ts`
-  - `solutis-agile-frontend/package.json`
-  - `solutis-agile-frontend/src/constants/env.ts`
-  - `solutis-agile-frontend/.env`
-  - `.spec/changes-log.md`
-- **Impacto / Mudanças principais**:
-  - **TaskView Frontend (`solutis-flow`)**:
-    - `vite.config.ts`: Adicionada diretiva `base: '/taskview/'` garantindo resolução correta de chunks e assets sob o caminho `/taskview/`.
-    - `api.ts` e `useSSE.ts`: Ajustados fallbacks dos endpoints de gateway e stream de eventos SSE para o caminho relativo `/api/v1/proxy/flow/v1`.
-    - Versão incrementada de `0.1.3` para `0.1.4`.
-  - **Agile Frontend (`solutis-agile-frontend`)**:
-    - `env.ts`: Atualizado fallback de `flowAppURL` para `import.meta.env.VITE_FLOW_APP_URL || '/taskview'`.
-    - `.env`: Adicionada variável `VITE_FLOW_APP_URL=/taskview`.
-    - Versão incrementada de `2.7.13` para `2.7.14` garantindo novo build das variáveis de ambiente na imagem Docker.
+## [2026-09-12] - Deploy Remoto em Produção: Agile Frontend v2.7.14 e TaskView v0.1.4 (Host Solutis - 172.21.3.225)
+- **Descrição**: Execução com sucesso do deploy remoto automatizado no host de produção Solutis (`172.21.3.225`). Foram reconstruídas e implantadas as novas imagens Docker do `solutis-agile-frontend` (v2.7.14) e do `solutis-flow` (`taskview-front`, v0.1.4), atualizando as variáveis de ambiente e habilitando a operação do TaskView sob o subpath `/taskview/` no proxy reverso do Nginx.
+- **Serviços Atualizados e Implantados**:
+  - `solutis-agile-frontend` (v2.7.14): Rebuild da imagem Docker com Vite/Nginx capturando a nova variável `VITE_FLOW_APP_URL=/taskview` e container `solutis-agile-frontend-prod` recriado.
+  - `solutis-flow` / `taskview-front` (v0.1.4): Rebuild com multi-stage build com `base: '/taskview/'` e endpoints de API/SSE relativos (`/api/v1/proxy/flow/v1`), com container `solutis-taskview-prod` recriado na porta 3001.
+  - `deploy.sh`: Atualizado pipeline para sincronizar automaticamente `VITE_FLOW_APP_URL=/taskview` no `.env` do frontend antes do build.
+  - `solutis-sync` (v0.1.4), `solutis_manager_back` (v1.26.10), `solutis-procurement` (v2.18.4), `solutis-report` (v1.3.2) e `solutis_flow_back` (v0.1.1): Mantidos estáveis sem pendências.
+- **Status da Execução**: Sucesso (Exit code 0). Todos os containers do ecossistema em execução saudável.
 
 ## [2026-09-11] - Deploy Remoto em Produção: TaskView v0.1.3, Agile Frontend v2.7.13 e Flow Backend v0.1.1 (Host Solutis - 172.21.3.225)
 - **Descrição**: Execução com sucesso do deploy remoto automatizado no host de produção Solutis (`172.21.3.225`). Foram construídas as novas imagens Docker e provisionados os containers de frontend e da infraestrutura completa de backend de governança e eventos do TaskView/Flow.
