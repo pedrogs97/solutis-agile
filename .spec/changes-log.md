@@ -1,5 +1,12 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-12] - Deploy Remoto em Produção: Procurement v2.18.5 (Host Solutis - 172.21.3.225)
+- **Descrição**: Execução com sucesso do deploy remoto automatizado no host de produção Solutis (`172.21.3.225`). Foi sincronizada a branch `main` no servidor via `git pull` e executado o pipeline `./deploy.sh`, realizando a compilação da nova imagem Docker do microsserviço `solutis_procurement` (v2.18.5) e a recriação do contêiner `solutis-procurement-prod` com suporte completo à sincronização dinâmica via CSV.
+- **Serviços Atualizados e Implantados**:
+  - `solutis-procurement` (v2.18.5): Rebuild da imagem Docker com Python 3.13, pacotes MariaDB/SSL e dependências `uv`, com contêiner `solutis-procurement-prod` recriado e iniciado com sucesso.
+  - Demais serviços (`solutis-agile-frontend`, `solutis-taskview`, `solutis-sync`, `solutis_manager_back`, `solutis-report`, `solutis-flow-back`): Sem alterações de versão pendentes (mantidos operacionais e estáveis).
+- **Status da Execução**: Sucesso (Exit code 0). Todos os serviços e contêineres do ecossistema operando normalmente.
+
 ## [2026-09-12] - Entrada Dinâmica via CSV na Sincronização de Fornecedores (Procurement v2.18.5)
 - **Descrição**: Parametrização da sincronização de fornecedores do TOTVS no microsserviço `solutis_procurement` para aceitar a entrada de dados (nome, cnpj e grau de risco) a partir de arquivo CSV, eliminando a dependência de CNPJs e graus de risco estáticos no código (`_risk_mapping`). Criados os arquivos CSV contendo os dados reais correspondentes aos registros antes fixados em hard code, adicionado suporte a argumento de linha de comando (`--csv-file`) no comando de gerenciamento do Django (`sync_suppliers`), suporte a path customizado via API e implementada suíte de testes unitários.
 - **Arquivos afetados**:
