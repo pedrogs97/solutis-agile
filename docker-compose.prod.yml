@@ -81,6 +81,8 @@ services:
       - ./solutis_procurement/logs:/app/logs
       - ./solutis_procurement/.env:/app/.env
       - ./solutis_procurement/db.sqlite3:/app/db.sqlite3
+      - ./solutis_procurement/data:/app/data
+      - ./solutis_procurement/fornecedores.csv:/app/fornecedores.csv
     command: >
       sh -c "python manage.py migrate --noinput &&
              python manage.py collectstatic --noinput --clear &&

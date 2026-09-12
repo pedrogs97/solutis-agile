@@ -19,6 +19,8 @@ COPY ./uv.lock /app/
 COPY ./manage.py /app/
 COPY ./config /app/config
 COPY ./src /app/src
+COPY ./data /app/data
+COPY ./fornecedores.csv /app/fornecedores.csv
 
 WORKDIR /app
 

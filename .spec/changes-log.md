@@ -1,5 +1,15 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-12] - Sincronização de Fornecedores em Produção e Persistência do CSV (Procurement v2.18.5)
+- **Descrição**: Execução com sucesso do comando de sincronização de fornecedores (`python manage.py sync_suppliers`) diretamente no contêiner `solutis-procurement-prod` do servidor de produção Solutis (`172.21.3.225`). Foram processados e sincronizados 39 fornecedores ativos com integração ao banco TOTVS (totalizando 44 fornecedores no banco com seus dados bancários, de pagamento e classificação de risco). Adicionada a inclusão explícita de `COPY ./data /app/data` e `COPY ./fornecedores.csv /app/fornecedores.csv` no `solutis_procurement/Dockerfile` e o mapeamento de volumes correspondente no `docker-compose.prod.yml` para garantir que o arquivo CSV esteja disponível em todos os futuros builds e deploys.
+- **Arquivos afetados**:
+  - `solutis_procurement/Dockerfile`
+  - `docker-compose.prod.yml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Execução em Produção**: Comando `python manage.py sync_suppliers` executado via SSH no contêiner `solutis-procurement-prod`, resultando na sincronização com êxito de todos os fornecedores ativos do TOTVS baseados na lista do arquivo CSV.
+  - **Persistência de Arquivos de Entrada**: `Dockerfile` e `docker-compose.prod.yml` atualizados com cópia e volumes para `/app/fornecedores.csv` e `/app/data`, assegurando que atualizações manuais no host ou recompilações de container carreguem automaticamente os arquivos de dados.
+
 ## [2026-09-12] - Deploy Remoto em Produção: Procurement v2.18.5 (Host Solutis - 172.21.3.225)
 - **Descrição**: Execução com sucesso do deploy remoto automatizado no host de produção Solutis (`172.21.3.225`). Foi sincronizada a branch `main` no servidor via `git pull` e executado o pipeline `./deploy.sh`, realizando a compilação da nova imagem Docker do microsserviço `solutis_procurement` (v2.18.5) e a recriação do contêiner `solutis-procurement-prod` com suporte completo à sincronização dinâmica via CSV.
 - **Serviços Atualizados e Implantados**:
