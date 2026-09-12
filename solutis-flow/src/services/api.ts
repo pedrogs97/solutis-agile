@@ -7,7 +7,16 @@ function getAuthHeaders(token?: string): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  const effectiveToken = token || (typeof window !== 'undefined' ? localStorage.getItem('flowta_token') : null);
+  let effectiveToken = token || (typeof window !== 'undefined' ? localStorage.getItem('flowta_token') : null);
+  if (!effectiveToken && typeof window !== 'undefined') {
+    const authStoreRaw = localStorage.getItem('auth-store');
+    if (authStoreRaw) {
+      try {
+        const parsed = JSON.parse(authStoreRaw);
+        effectiveToken = parsed?.state?.accessToken || null;
+      } catch (e) {}
+    }
+  }
   if (effectiveToken) {
     headers['Authorization'] = `Bearer ${effectiveToken}`;
   }

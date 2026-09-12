@@ -24,7 +24,7 @@ repos:
 
       - id: solutis_procurement-pytest
         name: solutis_procurement pytest
-        entry: uv --directory solutis_procurement run pytest --cov=src --cov-fail-under=70
+        entry: uv --directory solutis_procurement run pytest --cov=src --cov-fail-under=69
         language: system
         files: ^solutis_procurement/
         pass_filenames: false

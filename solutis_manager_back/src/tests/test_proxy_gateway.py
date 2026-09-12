@@ -230,4 +230,11 @@ class TestProxyGateway(TestBase):
         response = self.client.get(f"{BASE_API}/proxy/procurement/v1/supplier/")
         assert response.status_code == 401
 
+        # 6. Test token via query param (SSE connection support) - should succeed
+        response = self.client.get(
+            f"{BASE_API}/proxy/procurement/v1/supplier/?token={token_supplier}"
+        )
+        assert response.status_code == 200
+        assert response.content == b"procurement get ok"
+
         db_session.close()

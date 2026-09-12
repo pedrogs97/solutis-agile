@@ -59,7 +59,7 @@ SERVICES_MAP = {
         "name": "Solutis Flow Backend",
         "dir": "solutis_flow_back",
         "log_folder": "solutis_flow_back/logs",
-        "containers": ["solutis-flow-back", "solutis-flow-worker"],
+        "containers": ["solutis-flow-back-prod", "solutis-flow-worker-prod", "solutis-flow-back", "solutis-flow-worker"],
         "default_port": 8004,
     },
     "frontend_agile": {
@@ -73,7 +73,7 @@ SERVICES_MAP = {
         "name": "Frontend Solutis Flow",
         "dir": "solutis-flow",
         "log_folder": None,
-        "containers": ["solutis-flow"],
+        "containers": ["solutis-taskview-prod", "solutis-flow"],
         "default_port": 3000,
     },
     "redis": {

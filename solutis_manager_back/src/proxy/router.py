@@ -1,7 +1,7 @@
 """Proxy router with permission validation"""
 
 import re
-from typing import Any, Dict, Generator, Optional, Union
+from typing import Any, Dict, Generator, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from loguru import logger
@@ -21,23 +21,27 @@ def get_proxy_authenticated_user(
 ) -> Generator[Union[UserModel, None], None, None]:
     """Authenticate proxy requests using opaque access token from headers."""
     try:
+        token = None
         authorization = request.headers.get("Authorization")
-        if not authorization:
-            logger.warning("No Authorization header provided")
+        if authorization:
+            parts = authorization.split()
+            if len(parts) == 2 and parts[0].lower() == "bearer":
+                token = parts[1]
+            else:
+                logger.warning("Invalid Authorization header format")
+
+        if not token:
+            token = request.query_params.get("token")
+
+        if not token:
+            logger.warning("No Authorization header or token query parameter provided")
             yield None
             return
 
-        parts = authorization.split()
-        if len(parts) != 2 or parts[0].lower() != "bearer":
-            logger.warning("Invalid Authorization header format")
-            yield None
-            return
-
-        token = parts[1]
         token_db = (
             db_session.query(TokenModel).filter(TokenModel.token == token).first()
         )
-        if not token_is_valid(token_db):
+        if not token_db or not token_is_valid(token_db):
             logger.warning("Invalid token")
             yield None
             return

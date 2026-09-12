@@ -1,5 +1,34 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-12] - Correção dos Erros de Requisição do TaskView: Streaming SSE, Auth Query Param e Restauração do Flow Back (TaskView v0.1.6 e Manager Backend v1.26.12)
+- **Descrição**: Resolução dos erros HTTP 502 Bad Gateway e 401 Unauthorized nas requisições do TaskView (`/dashboard/metrics`, `/projects`, `/demands` e `/events/stream`). Identificada e sanada a falha de autenticação PostgreSQL do contêiner `solutis-flow-back-prod`, adicionado suporte a autenticação por query parameter `token` no gateway de proxy do `solutis_manager_back`, implementado streaming com `StreamingResponse` para conexões SSE e incluído fallback resiliente de token a partir do `auth-store` no frontend `solutis-flow`.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/proxy/router.py`
+  - `solutis_manager_back/src/proxy/service.py`
+  - `solutis_manager_back/src/tests/test_proxy_gateway.py`
+  - `solutis_manager_back/pyproject.toml`
+  - `solutis-flow/src/hooks/useSSE.ts`
+  - `solutis-flow/src/context/FlowContext.tsx`
+  - `solutis-flow/src/services/api.ts`
+  - `solutis-flow/package.json`
+  - `.agents/skills/log-investigator/scripts/extract_logs.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Manager Backend Gateway (`solutis_manager_back`)**:
+    - `router.py`: `get_proxy_authenticated_user` atualizado para extrair o token do query parameter `token` caso o header `Authorization` não esteja presente, habilitando conexões SSE via `EventSource`.
+    - `service.py`: Implementado `proxy_stream_request` com `StreamingResponse`, `X-Accel-Buffering: no` e `Content-Type: text/event-stream` sem timeout de 30s para conexões em tempo real.
+    - `test_proxy_gateway.py`: Adicionado teste unitário de autenticação via query param token no gateway com 100% de sucesso.
+    - `pyproject.toml`: Versão incrementada de `1.26.11` para `1.26.12`.
+  - **TaskView Frontend (`solutis-flow`)**:
+    - `useSSE.ts`: Condicionada a conexão `EventSource` à presença de token válido e adicionado fallback de token a partir de `flowta_token` e `auth-store` do localStorage, evitando erros 401 prematuros.
+    - `FlowContext.tsx`: Repassado `auth.token` ao hook `useSSE`.
+    - `api.ts`: Função `getAuthHeaders` atualizada com fallback automático para `auth-store` do localStorage na inicialização da aplicação.
+    - `package.json`: Versão incrementada de `0.1.5` para `0.1.6`.
+  - **Infraestrutura Flow Backend no Servidor**:
+    - Criado e configurado o usuário `flow_prod` com os privilégios necessários no banco `flow_db` do PostgreSQL (`solutis-flow-db-prod`), restabelecendo a conectividade e saúde dos contêineres `solutis-flow-back-prod` e `solutis-flow-worker-prod`.
+  - **Ferramentas de Investigação**:
+    - Atualizados os mapeamentos de contêineres em `extract_logs.py` para incluir `solutis-flow-back-prod` e `solutis-taskview-prod`.
+
 ## [2026-09-12] - Correção da Tela Branca, ErrorBoundary e Proxy do Flow (TaskView v0.1.5 e Manager Backend v1.26.11)
 - **Descrição**: Resolução do erro de tela branca (`Cannot read properties of undefined (reading 'map')`) e das falhas 502 Bad Gateway no acesso ao TaskView (`/taskview/`). Adicionadas proteções defensivas com defaults e encadeamento seguro em todos os componentes de view, criado componente global de `ErrorBoundary`, implementada hidratação automática de sessão compartilhada a partir de `auth-store`/`profile-store` e ajustada a resolução de host do `solutis_flow_back` no gateway do `solutis_manager_back` e no `docker-compose.prod.yml`.
 - **Arquivos afetados**:

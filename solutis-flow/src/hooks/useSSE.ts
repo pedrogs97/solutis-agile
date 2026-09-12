@@ -12,9 +12,27 @@ export interface SSEDomainEvent {
   timestamp?: string;
 }
 
-export function useSSE(onEventReceived: (event: SSEDomainEvent) => void, token?: string) {
+export function useSSE(onEventReceived: (event: SSEDomainEvent) => void, token?: string | null) {
   useEffect(() => {
-    const url = token ? `${GATEWAY_SSE_URL}?token=${token}` : GATEWAY_SSE_URL;
+    const effectiveToken =
+      token ||
+      (typeof window !== 'undefined'
+        ? localStorage.getItem('flowta_token') ||
+          (() => {
+            try {
+              const raw = localStorage.getItem('auth-store');
+              return raw ? JSON.parse(raw)?.state?.accessToken : null;
+            } catch (e) {
+              return null;
+            }
+          })()
+        : null);
+
+    if (!effectiveToken) {
+      return;
+    }
+
+    const url = `${GATEWAY_SSE_URL}?token=${encodeURIComponent(effectiveToken)}`;
     let eventSource: EventSource | null = null;
 
     try {
@@ -29,7 +47,7 @@ export function useSSE(onEventReceived: (event: SSEDomainEvent) => void, token?:
         }
       });
 
-      eventSource.onerror = (err) => {
+      eventSource.onerror = () => {
         // Closed gracefully or retrying
       };
     } catch (e) {

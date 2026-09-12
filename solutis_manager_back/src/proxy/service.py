@@ -7,7 +7,7 @@ from urllib.parse import quote
 
 import httpx
 from fastapi import HTTPException, Request, status
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from loguru import logger
 from src.auth.models import UserModel
 from src.config import NOT_ALLOWED
@@ -271,7 +271,7 @@ class ProxyService:
     async def handle_request_body(self, request: Request):
         """Extract and handle request body based on content type"""
         headers = dict(request.headers)
-        content_type = str(headers.get("content-type", "")).lower()
+        content_type = headers.get("content-type", "").lower()
         raw_body = await request.body()
 
         if not raw_body:
@@ -290,6 +290,55 @@ class ProxyService:
 
         return headers, None, raw_body
 
+    async def proxy_stream_request(
+        self,
+        service_name: str,
+        path: str,
+        headers: Dict[str, str],
+        params: Dict[str, Any],
+    ) -> StreamingResponse:
+        """Proxy streaming GET request (e.g. SSE) to external service"""
+        url = get_external_service_url(service_name, path)
+        filtered_headers = self._filter_headers(headers)
+
+        client = httpx.AsyncClient(timeout=None)
+        try:
+            req = client.build_request(
+                "GET", url, headers=filtered_headers, params=params
+            )
+            upstream_response = await client.send(req, stream=True)
+
+            async def event_generator():
+                try:
+                    async for chunk in upstream_response.aiter_bytes():
+                        yield chunk
+                finally:
+                    await upstream_response.aclose()
+                    await client.aclose()
+
+            stream_headers = {
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "Content-Type": upstream_response.headers.get(
+                    "content-type", "text/event-stream"
+                ),
+                "X-Accel-Buffering": "no",
+            }
+
+            return StreamingResponse(
+                event_generator(),
+                status_code=upstream_response.status_code,
+                headers=stream_headers,
+                media_type="text/event-stream",
+            )
+        except Exception as e:
+            await client.aclose()
+            logger.error("Error streaming proxy request to {}: {}", url, str(e))
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Error connecting to stream: {str(e)}",
+            ) from e
+
     async def proxy_get_request(
         self,
         service_name: str,
@@ -302,6 +351,13 @@ class ProxyService:
 
         headers = self._prepare_proxy_headers(dict(request.headers), current_user)
         params = dict(request.query_params)
+
+        is_sse = "text/event-stream" in request.headers.get(
+            "accept", ""
+        ) or path.rstrip("/").endswith("events/stream")
+
+        if is_sse:
+            return await self.proxy_stream_request(service_name, path, headers, params)
 
         try:
             response = await self.get(

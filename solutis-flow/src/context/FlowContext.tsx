@@ -50,7 +50,7 @@ export function FlowProvider({ children, onNotification }: { children: ReactNode
       demandsHook.refreshDemands();
       metricsHook.refreshMetrics();
     }
-  });
+  }, auth.token);
 
   const stateValue: FlowState = {
     currentUser: auth.currentUser,
