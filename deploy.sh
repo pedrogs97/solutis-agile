@@ -53,6 +53,15 @@ echo "  Report:         $REPORT_TAG"
 echo "  Flow Backend:   $FLOW_BACK_TAG"
 echo ""
 
+# Sincroniza VITE_FLOW_APP_URL no .env do frontend se existir
+if [ -f "solutis-agile-frontend/.env" ]; then
+  if grep -q "VITE_FLOW_APP_URL" "solutis-agile-frontend/.env"; then
+    sed -i "s|VITE_FLOW_APP_URL=.*|VITE_FLOW_APP_URL=/taskview|" "solutis-agile-frontend/.env"
+  else
+    echo "VITE_FLOW_APP_URL=/taskview" >> "solutis-agile-frontend/.env"
+  fi
+fi
+
 # Iterate services and check for updates
 for item in "${SERVICES[@]}"; do
   IFS="|" read -r dir_name container_name compose_service file_type <<< "$item"
