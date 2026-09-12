@@ -17,7 +17,7 @@ export function useProjects(token?: string) {
   const refreshProjects = useCallback(async () => {
     try {
       const data = await apiFetchProjects(token);
-      if (data && data.length > 0) {
+      if (Array.isArray(data)) {
         setProjects(data);
       }
     } catch (e) {

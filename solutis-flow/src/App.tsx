@@ -6,9 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  mockUsers, mockAreas, mockCostCenters, mockInitialDemands, 
-  mockInitialAutomations, mockInitialRecurringTasks, mockSlaConfigs,
-  mockInitialProjects
+  mockInitialAutomations, mockInitialRecurringTasks, mockSlaConfigs
 } from './mockData';
 import { User, Demand, Automation, RecurringTask, DemandStatus, SLAConfiguration, Project } from './types';
 import { RoleSwitcher } from './components/RoleSwitcher';
@@ -43,14 +41,15 @@ function MainAppContent() {
     demands,
     projects,
     metrics,
+    users,
+    areas,
+    costCenters,
     addDemand,
     changeDemandStatus,
     transferDemand,
     sendFeedback,
     addProject,
   } = useFlow();
-
-  const [users] = useState<User[]>(mockUsers);
   
   const [ideas, setIdeas] = useState<ImprovementIdea[]>(() => {
     const saved = localStorage.getItem('flowta_ideas');
@@ -468,8 +467,8 @@ function MainAppContent() {
             <Portal 
               demands={demands}
               users={users}
-              costCenters={mockCostCenters}
-              areas={mockAreas}
+              costCenters={costCenters}
+              areas={areas}
               currentUser={currentUser}
               onAddDemand={handleAddNewDemand}
               onSelectDemand={(id) => setSelectedDemandId(id)}
@@ -480,9 +479,11 @@ function MainAppContent() {
           {activeTab === 'DASHBOARD' && (
             <Dashboard 
               demands={demands} 
-              costCenters={mockCostCenters}
-              areas={mockAreas}
+              metrics={metrics}
+              costCenters={costCenters}
+              areas={areas}
               projects={projects}
+              users={users}
               currentUser={currentUser} 
               onNavigate={handleDashboardNavigate} 
               onSelectDemand={(id) => {
@@ -496,8 +497,8 @@ function MainAppContent() {
             <DemandList 
               demands={demands} 
               users={users}
-              costCenters={mockCostCenters}
-              areas={mockAreas}
+              costCenters={costCenters}
+              areas={areas}
               currentUser={currentUser} 
               initialStatusFilter={initialStatusFilter}
               onSelectDemand={(id) => setSelectedDemandId(id)}
@@ -524,7 +525,7 @@ function MainAppContent() {
               demands={demands}
               projects={projects}
               currentUser={currentUser}
-              areas={mockAreas}
+              areas={areas}
               onSelectDemand={(id) => {
                 setSelectedDemandId(id);
                 setActiveTab('DEMANDS');
@@ -542,8 +543,8 @@ function MainAppContent() {
               demands={demands}
               currentUser={currentUser}
               users={users}
-              areas={mockAreas}
-              costCenters={mockCostCenters}
+              areas={areas}
+              costCenters={costCenters}
               onSelectDemand={(id) => {
                 setSelectedDemandId(id);
                 setActiveTab('DEMANDS');
@@ -573,7 +574,7 @@ function MainAppContent() {
               ideas={ideas}
               currentUser={currentUser}
               users={users}
-              areas={mockAreas}
+              areas={areas}
               onAddIdea={handleAddIdea}
               onLikeIdea={handleToggleLikeIdea}
             />
@@ -584,8 +585,8 @@ function MainAppContent() {
               demands={demands} 
               projects={projects}
               recurringTasks={recurringTasks}
-              costCenters={mockCostCenters}
-              areas={mockAreas}
+              costCenters={costCenters}
+              areas={areas}
               users={users}
               ideas={ideas}
             />
@@ -620,8 +621,8 @@ function MainAppContent() {
             demands={demands}
             currentUser={currentUser}
             users={users}
-            areas={mockAreas}
-            costCenters={mockCostCenters}
+            areas={areas}
+            costCenters={costCenters}
             projects={projects}
             onClose={() => setSelectedDemandId(null)}
             onUpdateDemand={handleUpdateDemand}
@@ -636,8 +637,8 @@ function MainAppContent() {
             isOpen={quickCreateModal}
             currentUser={currentUser}
             users={users}
-            areas={mockAreas}
-            costCenters={mockCostCenters}
+            areas={areas}
+            costCenters={costCenters}
             projects={projects}
             demands={demands}
             onClose={() => setQuickCreateModal(false)}

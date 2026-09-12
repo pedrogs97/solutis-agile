@@ -1,4 +1,4 @@
-import { Demand, DemandStatus, Area, CostCenter, Project, DashboardMetrics } from '../types';
+import { Demand, DemandStatus, Area, CostCenter, Project, DashboardMetrics, User } from '../types';
 
 export const GATEWAY_BASE_URL =
   (import.meta as any).env?.VITE_FLOW_GATEWAY_URL || '/api/v1/proxy/flow/v1';
@@ -251,4 +251,22 @@ export async function fetchDashboardMetrics(token?: string): Promise<DashboardMe
     totalEstimatedHours: data.total_estimated_hours ?? 0,
     totalSpentHours: data.total_spent_hours ?? 0,
   };
+}
+
+export async function fetchUsers(token?: string): Promise<User[]> {
+  const response = await fetch(`${GATEWAY_BASE_URL}/users`, {
+    headers: getAuthHeaders(token),
+  });
+  if (!response.ok) {
+    throw new Error('Falha ao buscar usuários do sistema');
+  }
+  const data = await response.json();
+  return data.map((u: any) => ({
+    id: String(u.id),
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    avatar: u.avatar || '',
+    areaId: String(u.areaId || '1'),
+  }));
 }

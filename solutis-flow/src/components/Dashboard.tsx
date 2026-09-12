@@ -4,8 +4,11 @@
  */
 
 import React, { useMemo } from 'react';
-import { Demand, CostCenter, Area, Project, DemandType, User } from '../types';
-import { Clock, CheckCircle2, AlertTriangle, BarChart3, TrendingUp, Layers, Users, FolderKanban, Calendar, ArrowUpRight, ExternalLink } from 'lucide-react';
+import { Demand, CostCenter, Area, Project, DemandType, User, DashboardMetrics } from '../types';
+import { 
+  Clock, CheckCircle2, AlertTriangle, BarChart3, TrendingUp, Layers, 
+  Users, FolderKanban, Calendar, ArrowUpRight, User as UserIcon, Sparkles 
+} from 'lucide-react';
 import { mockUsers, mockCostCenters, mockAreas } from '../mockData';
 import { 
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
@@ -17,9 +20,11 @@ const CC_COLORS = ['#6366f1', '#0ea5e9', '#06b6d4', '#10b981', '#f59e0b', '#ec48
 
 interface DashboardProps {
   demands?: Demand[];
+  metrics?: DashboardMetrics | null;
   costCenters?: CostCenter[];
   areas?: Area[];
   projects?: Project[];
+  users?: User[];
   currentUser: User;
   onSelectDemand?: (demandId: string) => void;
   onNavigate?: (tab: string, filters?: { status?: string }) => void;
@@ -27,9 +32,11 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({
   demands = [],
+  metrics = null,
   costCenters = mockCostCenters,
   areas = mockAreas,
   projects = [],
+  users = mockUsers,
   currentUser,
   onSelectDemand,
   onNavigate
@@ -38,15 +45,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const safeCostCenters = (costCenters && costCenters.length > 0) ? costCenters : mockCostCenters;
   const safeAreas = (areas && areas.length > 0) ? areas : mockAreas;
   const safeProjects = projects || [];
+  const safeUsers = (users && users.length > 0) ? users : mockUsers;
 
-  // Calculated stats
-  const total = safeDemands.length;
-  const pending = safeDemands.filter(d => d.status === 'PENDENTE').length;
-  const inProgress = safeDemands.filter(d => d.status === 'EM_ANDAMENTO').length;
-  const completed = safeDemands.filter(d => d.status === 'CONCLUIDO').length;
+  // Calculated stats based on real database records
+  const total = metrics?.totalDemands ?? safeDemands.length;
+  const pending = metrics?.pending ?? safeDemands.filter(d => d.status === 'PENDENTE').length;
+  const inProgress = metrics?.inProgress ?? safeDemands.filter(d => d.status === 'EM_ANDAMENTO').length;
+  const completed = metrics?.completed ?? safeDemands.filter(d => d.status === 'CONCLUIDO').length;
 
   const overdue = safeDemands.filter(d => {
-    // Overdue is either SLA spent > SLA limit or specifically flagged
     return d.status !== 'CONCLUIDO' && d.slaSpentHours > d.slaLimitHours;
   }).length;
 
@@ -61,112 +68,117 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const completedDemands = safeDemands.filter(d => d.status === 'CONCLUIDO');
   const avgSpent = completedDemands.length > 0 
     ? (completedDemands.reduce((acc, d) => acc + d.timeSpentHours, 0) / completedDemands.length).toFixed(1)
-    : '0';
+    : metrics?.totalSpentHours ? (metrics.totalSpentHours / Math.max(completed, 1)).toFixed(1) : '0.0';
   const avgEstimated = completedDemands.length > 0
     ? (completedDemands.reduce((acc, d) => acc + d.timeEstimatedHours, 0) / completedDemands.length).toFixed(1)
-    : '0';
+    : metrics?.totalEstimatedHours ? (metrics.totalEstimatedHours / Math.max(total, 1)).toFixed(1) : '0.0';
 
-  // Cost Center distribution
-  const ccData = safeCostCenters.map(cc => {
-    const ccDemands = safeDemands.filter(d => d.costCenterId === cc.id);
-    return {
-      name: cc.name,
-      code: cc.code,
-      count: ccDemands.length,
-      completed: ccDemands.filter(d => d.status === 'CONCLUIDO').length
-    };
-  });
+  const efficiencyRate = Number(avgSpent) > 0 
+    ? Math.round((Number(avgEstimated) / Number(avgSpent)) * 100) 
+    : 100;
 
-  // Department distribution
-  const deptData = safeAreas.map(area => {
-    const areaDemands = safeDemands.filter(d => d.areaId === area.id);
-    return {
-      name: area.name,
-      count: areaDemands.length,
-      pending: areaDemands.filter(d => d.status === 'PENDENTE').length,
-      inProgress: areaDemands.filter(d => d.status === 'EM_ANDAMENTO').length,
-      completed: areaDemands.filter(d => d.status === 'CONCLUIDO').length
-    };
-  });
+  // Cost Center distribution dynamic calculation
+  const ccData = useMemo(() => {
+    return safeCostCenters.map(cc => {
+      const ccDemands = safeDemands.filter(d => d.costCenterId === cc.id || d.costCenterId === cc.code);
+      return {
+        name: cc.name,
+        code: cc.code,
+        count: ccDemands.length,
+        completed: ccDemands.filter(d => d.status === 'CONCLUIDO').length
+      };
+    });
+  }, [safeCostCenters, safeDemands]);
+
+  // Department distribution dynamic calculation
+  const deptData = useMemo(() => {
+    return safeAreas.map(area => {
+      const areaDemands = safeDemands.filter(d => d.areaId === area.id || d.areaId === String(area.id));
+      return {
+        name: area.name,
+        count: areaDemands.length,
+        pending: areaDemands.filter(d => d.status === 'PENDENTE').length,
+        inProgress: areaDemands.filter(d => d.status === 'EM_ANDAMENTO').length,
+        completed: areaDemands.filter(d => d.status === 'CONCLUIDO').length
+      };
+    }).filter(a => a.count > 0 || safeDemands.length === 0);
+  }, [safeAreas, safeDemands]);
 
   // SLA issues checklist
-  const urgentDemands = safeDemands.filter(d => d.status !== 'CONCLUIDO' && (d.priority === 'ALTA' || d.slaSpentHours > d.slaLimitHours));
+  const urgentDemands = useMemo(() => {
+    return safeDemands.filter(d => d.status !== 'CONCLUIDO' && (d.priority === 'ALTA' || d.slaSpentHours > d.slaLimitHours));
+  }, [safeDemands]);
 
   // Dynamic Team productivity metrics calculations
-  const teamMetrics = (mockUsers || []).filter(u => u.role !== 'SOLICITANTE' && u.name !== 'Solicitador Integrado').map(user => {
-    let relevantCount = 0;
-    let completedCount = 0;
-    
-    if (user.role === 'GESTOR') {
-      const relevant = safeDemands.filter(d => d.managerId === user.id);
-      relevantCount = relevant.length;
-      completedCount = relevant.filter(d => d.status === 'CONCLUIDO').length;
-    } else {
-      const relevant = demands.filter(d => d.assigneeId === user.id);
-      relevantCount = relevant.length;
-      completedCount = relevant.filter(d => d.status === 'CONCLUIDO').length;
-    }
-    
-    const activeCount = relevantCount - completedCount;
-    // Round rate with soft cap at 100
-    const rate = relevantCount > 0 ? Math.min(Math.round((completedCount / relevantCount) * 100), 100) : 100;
-    
-    return {
-      id: user.id,
-      name: user.name,
-      firstName: user.name.split(' ')[0],
-      position: user.role === 'GESTOR' ? 'Gestora Operacional' : user.role === 'ADMIN' ? 'Administrador' : 'Analista Financeiro',
-      avatar: user.id === 'usr-analista' 
-        ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80' 
-        : user.id === 'usr-gestor'
-        ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80'
-        : 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&auto=format&fit=crop&q=80',
-      total: relevantCount,
-      completed: completedCount,
-      active: activeCount,
-      rate
-    };
-  });
+  const teamMetrics = useMemo(() => {
+    return safeUsers
+      .filter(u => u.role !== 'SOLICITANTE' && u.name !== 'Solicitador Integrado')
+      .map(user => {
+        let relevantCount = 0;
+        let completedCount = 0;
+        
+        if (user.role === 'GESTOR' || user.role === 'ADMIN') {
+          const relevant = safeDemands.filter(d => d.managerId === user.id || String(d.managerId) === String(user.id));
+          relevantCount = relevant.length;
+          completedCount = relevant.filter(d => d.status === 'CONCLUIDO').length;
+        } else {
+          const relevant = safeDemands.filter(d => d.assigneeId === user.id || String(d.assigneeId) === String(user.id));
+          relevantCount = relevant.length;
+          completedCount = relevant.filter(d => d.status === 'CONCLUIDO').length;
+        }
+        
+        const activeCount = relevantCount - completedCount;
+        const rate = relevantCount > 0 ? Math.min(Math.round((completedCount / relevantCount) * 100), 100) : 100;
+        
+        return {
+          id: user.id,
+          name: user.name,
+          firstName: user.name.split(' ')[0],
+          role: user.role,
+          position: user.role === 'GESTOR' ? 'Gestão Operacional' : user.role === 'ADMIN' ? 'Administração' : 'Analista Operacional',
+          total: relevantCount,
+          completed: completedCount,
+          active: activeCount,
+          rate
+        };
+      });
+  }, [safeUsers, safeDemands]);
 
-  // Process KPI metrics of Estimated vs Spent per Process type (migrated from ReportsView)
+  // Process KPI metrics of Estimated vs Spent per Process type
   const processGroupedMetrics = useMemo(() => {
     const types: DemandType[] = ['COMPRAS', 'REEMBOLSO', 'CONTRATOS', 'INVENTARIO', 'ESG', 'ESPORADICA'];
     return types.map(t => {
-      const typeDemands = demands.filter(d => d.type === t);
-      const total = typeDemands.length;
-      const completed = typeDemands.filter(d => d.status === 'CONCLUIDO');
-      const avgSpent = completed.length > 0 
-        ? parseFloat((completed.reduce((acc, d) => acc + d.timeSpentHours, 0) / completed.length).toFixed(1))
+      const typeDemands = safeDemands.filter(d => d.type === t);
+      const totalType = typeDemands.length;
+      const completedType = typeDemands.filter(d => d.status === 'CONCLUIDO');
+      const avgSpentType = completedType.length > 0 
+        ? parseFloat((completedType.reduce((acc, d) => acc + d.timeSpentHours, 0) / completedType.length).toFixed(1))
         : 0;
-      const avgEstimated = completed.length > 0
-        ? parseFloat((completed.reduce((acc, d) => acc + d.timeEstimatedHours, 0) / completed.length).toFixed(1))
+      const avgEstimatedType = completedType.length > 0
+        ? parseFloat((completedType.reduce((acc, d) => acc + d.timeEstimatedHours, 0) / completedType.length).toFixed(1))
         : 0;
 
       return {
         name: t,
-        volume: total,
-        tempoEstimado: avgEstimated,
-        tempoReal: avgSpent,
-        concluidas: completed.length
+        volume: totalType,
+        tempoEstimado: avgEstimatedType,
+        tempoReal: avgSpentType,
+        concluidas: completedType.length
       };
     }).filter(m => m.volume > 0);
-  }, [demands]);
+  }, [safeDemands]);
 
   // Status Distribution Data
   const statusData = useMemo(() => {
-    const pendingCount = demands.filter(d => d.status === 'PENDENTE').length;
-    const inProgressCount = demands.filter(d => d.status === 'EM_ANDAMENTO').length;
-    const completedCount = demands.filter(d => d.status === 'CONCLUIDO').length;
-
     return [
-      { name: 'Pendente', value: pendingCount, color: '#f59e0b' },     // Amber
-      { name: 'Em Andamento', value: inProgressCount, color: '#3b82f6' }, // Blue
-      { name: 'Concluído', value: completedCount, color: '#10b981' }     // Emerald
+      { name: 'Pendente', value: pending, color: '#f59e0b' },     // Amber
+      { name: 'Em Andamento', value: inProgress, color: '#3b82f6' }, // Blue
+      { name: 'Concluído', value: completed, color: '#10b981' }     // Emerald
     ];
-  }, [demands]);
+  }, [pending, inProgress, completed]);
 
   const isManagerOrAdmin = currentUser.role === 'GESTOR' || currentUser.role === 'ADMIN';
-  const firstName = currentUser.name.replace(/\s*\(.*\)\s*/g, '').split(' ')[0]; // Strip roles like (Admin) and take first name
+  const firstName = currentUser.name.replace(/\s*\(.*\)\s*/g, '').split(' ')[0];
   const greetingPhrase = useMemo(() => {
     const hr = new Date().getHours();
     if (hr < 12) return 'Bom dia';
@@ -175,47 +187,61 @@ export const Dashboard: React.FC<DashboardProps> = ({
   }, []);
 
   const pendingOperational = useMemo(() => {
-    return demands.filter(d => d.status !== 'CONCLUIDO' && (d.assigneeId === currentUser.id || d.solicitorId === currentUser.id)).length;
-  }, [demands, currentUser]);
+    return safeDemands.filter(d => d.status !== 'CONCLUIDO' && (d.assigneeId === currentUser.id || d.solicitorId === currentUser.id)).length;
+  }, [safeDemands, currentUser]);
 
   const pendingValidation = useMemo(() => {
-    // Activities that need validation (completed but no feedback or awaiting approval status)
-    return demands.filter(d => d.status === 'CONCLUIDO' && (!d.feedback || d.approvalStatus === 'AGUARDANDO_APROVACAO')).length;
-  }, [demands]);
+    return safeDemands.filter(d => d.status === 'CONCLUIDO' && (!d.feedback || d.approvalStatus === 'AGUARDANDO_APROVACAO')).length;
+  }, [safeDemands]);
+
+  // Dynamic Productivity Insight computed from live data
+  const dynamicInsight = useMemo(() => {
+    if (safeDemands.length === 0) {
+      return 'Nenhuma atividade registrada no momento. O fluxo operacional está pronto para novas demandas.';
+    }
+    const ccsWithDemands = ccData.filter(c => c.count > 0);
+    if (ccsWithDemands.length > 0) {
+      const topCC = [...ccsWithDemands].sort((a, b) => b.completed - a.completed)[0];
+      return `O Centro de Custo com maior entrega é o ${topCC.code} (${topCC.name}) com ${topCC.completed} atividades finalizadas. ${overdue > 0 ? `Atenção: ${overdue} demanda(s) com SLA excedido necessitam de intervenção.` : 'Todos os prazos de SLA estão sob controle.'}`;
+    }
+    return `Operação com ${completionRate}% de taxa de conclusão geral e ${safeDemands.length} demandas registradas.`;
+  }, [safeDemands, ccData, overdue, completionRate]);
 
   return (
     <div id="dashboard-main" className="space-y-6">
       
-      {/* 1. On-Screen Greetings and Task Information Interaction Header */}
-      <div id="dashboard-greetings-header" className="text-left py-2 border-b border-slate-200/60 pb-5 animate-fadeIn">
-        <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-sans">
+      {/* 1. Greetings Header */}
+      <div id="dashboard-greetings-header" className="text-left py-2 border-b border-slate-800 pb-5 animate-fadeIn">
+        <p className="text-[11px] font-bold tracking-widest text-indigo-400 uppercase font-sans flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
           {isManagerOrAdmin ? 'VISÃO EXECUTIVA' : 'VISÃO OPERACIONAL'}
         </p>
-        <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight mt-1.5 font-display">
+        <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-100 tracking-tight mt-1.5 font-display">
           {greetingPhrase}, {firstName}.
         </h2>
-        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1.5 leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1.5 leading-relaxed">
           {isManagerOrAdmin ? (
             <span>
-              Você tem <strong className="font-extrabold text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">{pendingValidation}</strong> {pendingValidation === 1 ? 'atividade pendente' : 'atividades pendentes'} de validação corporativa sob sua gestão.
+              Você tem <strong className="font-extrabold text-indigo-400 font-mono bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-800/80">{pendingValidation}</strong> {pendingValidation === 1 ? 'atividade pendente' : 'atividades pendentes'} de validação corporativa sob sua gestão.
             </span>
           ) : (
             <span>
-              Você tem <strong className="font-extrabold text-blue-600 font-mono bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">{pendingOperational}</strong> {pendingOperational === 1 ? 'atividade' : 'atividades'} em aberto vinculadas a você.
+              Você tem <strong className="font-extrabold text-blue-400 font-mono bg-blue-950/70 px-2 py-0.5 rounded border border-blue-800/80">{pendingOperational}</strong> {pendingOperational === 1 ? 'atividade' : 'atividades'} em aberto vinculadas a você.
             </span>
           )}
         </p>
       </div>
       
-      {/* Top executive summary stats */}
+      {/* 2. Top executive summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-fadeIn">
         
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between text-left">
+        {/* Card 1: Atividades em Andamento */}
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-5 rounded-xl shadow-xl shadow-black/20 flex items-center justify-between text-left">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Atividades em Andamento</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Atividades em Andamento</p>
             <button
               onClick={() => onNavigate?.('DEMANDS', { status: 'TODOS' })}
-              className="text-3xl font-bold font-sans text-slate-900 mt-1 hover:text-blue-600 transition hover:underline cursor-pointer focus:outline-hidden block text-left"
+              className="text-3xl font-bold font-sans text-slate-100 mt-1 hover:text-indigo-400 transition hover:underline cursor-pointer focus:outline-hidden block text-left"
               title="Acessar página de atividades"
             >
               {pending + inProgress}
@@ -223,15 +249,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <p className="text-xs text-slate-400 mt-1.5 flex flex-wrap gap-x-1.5 gap-y-0.5 items-center">
               <button
                 onClick={() => onNavigate?.('DEMANDS', { status: 'PENDENTE' })}
-                className="text-amber-600 hover:text-amber-800 font-semibold hover:underline cursor-pointer focus:outline-hidden"
+                className="text-amber-400 hover:text-amber-300 font-semibold hover:underline cursor-pointer focus:outline-hidden"
                 title="Acessar página de atividades pendentes"
               >
                 {pending} pendentes
               </button>
-              <span>•</span>
+              <span className="text-slate-600">•</span>
               <button
                 onClick={() => onNavigate?.('DEMANDS', { status: 'EM_ANDAMENTO' })}
-                className="text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer focus:outline-hidden"
+                className="text-blue-400 hover:text-blue-300 font-semibold hover:underline cursor-pointer focus:outline-hidden"
                 title="Acessar página de atividades em andamento"
               >
                 {inProgress} em andamento
@@ -240,67 +266,72 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
           <button 
             onClick={() => onNavigate?.('DEMANDS', { status: 'TODOS' })}
-            className="bg-slate-100 p-3 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer focus:outline-hidden"
+            className="bg-slate-800/80 p-3 rounded-xl text-slate-400 hover:bg-indigo-950/60 hover:text-indigo-400 transition cursor-pointer border border-slate-700/60 focus:outline-hidden"
             title="Acessar página de atividades"
           >
             <Layers className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between text-left">
+        {/* Card 2: Taxa de Conclusão */}
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-5 rounded-xl shadow-xl shadow-black/20 flex items-center justify-between text-left">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Taxa de Conclusão</p>
-            <h3 className="text-3xl font-bold font-sans text-emerald-600 mt-1">{completionRate}%</h3>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Taxa de Conclusão</p>
+            <h3 className="text-3xl font-bold font-sans text-emerald-400 mt-1">{completionRate}%</h3>
             <p className="text-xs text-slate-400 mt-1">
-              <span className="text-slate-700 font-medium">{completed} de {total}</span> finalizadas
+              <span className="text-slate-200 font-medium">{completed} de {total}</span> finalizadas
             </p>
           </div>
-          <div className="bg-emerald-50 p-3 rounded-xl text-emerald-600 border border-emerald-100">
+          <div className="bg-emerald-500/10 p-3 rounded-xl text-emerald-400 border border-emerald-500/20">
             <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between text-left">
+        {/* Card 3: Fora do Prazo (SLA) */}
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-5 rounded-xl shadow-xl shadow-black/20 flex items-center justify-between text-left">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fora do Prazo (SLA)</p>
-            <h3 className={`text-3xl font-bold font-sans mt-1 ${overdue > 0 ? 'text-red-600' : 'text-slate-900'}`}>{overdue}</h3>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Fora do Prazo (SLA)</p>
+            <h3 className={`text-3xl font-bold font-sans mt-1 ${overdue > 0 ? 'text-rose-400' : 'text-slate-100'}`}>
+              {overdue}
+            </h3>
             <p className="text-xs text-slate-400 mt-1">
-              <span className="text-rose-600 font-medium">{overdue} estouradas</span> • <span className="text-amber-600 font-semibold">{inRisk} em risco</span>
+              <span className="text-rose-400 font-medium">{overdue} estouradas</span> • <span className="text-amber-400 font-semibold">{inRisk} em risco</span>
             </p>
           </div>
-          <div className={`p-3 rounded-xl ${overdue > 0 ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-100 text-slate-600'}`}>
+          <div className={`p-3 rounded-xl ${overdue > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700/60'}`}>
             <AlertTriangle className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between text-left">
+        {/* Card 4: Eficiência de Produção */}
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-5 rounded-xl shadow-xl shadow-black/20 flex items-center justify-between text-left">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Eficiência de Produção</p>
-            <h3 className="text-3xl font-bold font-sans text-indigo-600 mt-1">
-              {Number(avgSpent) > 0 ? Math.round((Number(avgEstimated) / Number(avgSpent)) * 100) : 100}%
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Eficiência de Produção</p>
+            <h3 className="text-3xl font-bold font-sans text-indigo-400 mt-1">
+              {efficiencyRate}%
             </h3>
             <p className="text-xs text-slate-400 mt-1">
-              tempo <span className="font-semibold text-indigo-650">{avgSpent}h real</span> vs <span className="font-semibold text-slate-600">{avgEstimated}h</span> estimado
+              tempo <span className="font-semibold text-indigo-300">{avgSpent}h real</span> vs <span className="font-semibold text-slate-300">{avgEstimated}h</span> estimado
             </p>
           </div>
-          <div className="bg-indigo-50 p-3 rounded-xl text-indigo-600 border border-indigo-100">
+          <div className="bg-indigo-500/10 p-3 rounded-xl text-indigo-400 border border-indigo-500/20">
             <Clock className="w-6 h-6" />
           </div>
         </div>
 
       </div>
 
-      {/* Main Charts & Visualizations layout */}
+      {/* 3. Main Charts & Visualizations layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Column 1: Capacity & Volume by Department */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs lg:col-span-2 space-y-4">
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-6 rounded-xl shadow-xl shadow-black/20 lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h4 className="text-base font-bold text-slate-900">Volume de Atividades por Área</h4>
-              <p className="text-xs text-slate-500">Fluxo operacional segmentado por setor e status atual</p>
+              <h4 className="text-base font-bold text-slate-100">Volume de Atividades por Área</h4>
+              <p className="text-xs text-slate-400">Fluxo operacional segmentado por setor e status atual</p>
             </div>
-            <BarChart3 className="w-5 h-5 text-indigo-500" />
+            <BarChart3 className="w-5 h-5 text-indigo-400" />
           </div>
 
           <div className="h-72 w-full pt-1">
@@ -311,47 +342,54 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   layout="vertical"
                   margin={{ top: 10, right: 10, left: 20, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={true} vertical={false} />
-                  <XAxis type="number" stroke="#94a3b8" fontSize={11} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={true} vertical={false} />
+                  <XAxis type="number" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 11 }} />
                   <YAxis 
                     dataKey="name" 
                     type="category" 
-                    stroke="#475569" 
-                    fontSize={11} 
+                    stroke="#64748b" 
+                    tick={{ fill: '#94a3b8', fontSize: 11 }} 
                     width={110}
                     tickFormatter={(value) => value.length > 18 ? `${value.substring(0, 16)}...` : value}
                   />
                   <Tooltip 
-                    contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', fontSize: '11px' }}
-                    labelClassName="font-extrabold text-slate-800"
-                    cursor={{ fill: '#f8fafc' }}
+                    contentStyle={{ 
+                      backgroundColor: '#0f172a', 
+                      borderColor: '#334155', 
+                      borderRadius: '10px', 
+                      color: '#f8fafc',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                      fontSize: '11px' 
+                    }}
+                    labelClassName="font-extrabold text-slate-100"
+                    cursor={{ fill: '#1e293b' }}
                   />
                   <Legend 
                     verticalAlign="top" 
                     height={32} 
                     iconType="circle" 
                     iconSize={8}
-                    wrapperStyle={{ fontSize: '11px', paddingBottom: '10px' }}
+                    wrapperStyle={{ fontSize: '11px', paddingBottom: '10px', color: '#94a3b8' }}
                   />
                   <Bar dataKey="completed" name="Concluído" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} barSize={16} />
                   <Bar dataKey="inProgress" name="Em Andamento" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} barSize={16} />
-                  <Bar dataKey="pending" name="Pendente" stackId="a" fill="#94a3b8" radius={[0, 4, 4, 0]} barSize={16} />
+                  <Bar dataKey="pending" name="Pendente" stackId="a" fill="#64748b" radius={[0, 4, 4, 0]} barSize={16} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">Nenhum registro para exibir</div>
+              <div className="h-full flex items-center justify-center text-xs text-slate-500">Nenhum registro para exibir</div>
             )}
           </div>
         </div>
 
         {/* Column 2: Cost Center Burden allocation */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-6 rounded-xl shadow-xl shadow-black/20 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-base font-bold text-slate-900">Carga por Centro de Custo</h4>
-              <p className="text-xs text-slate-500">Alocação financeira e execução (Volume total)</p>
+              <h4 className="text-base font-bold text-slate-100">Carga por Centro de Custo</h4>
+              <p className="text-xs text-slate-400">Alocação financeira e execução (Volume total)</p>
             </div>
-            <TrendingUp className="w-5 h-5 text-indigo-500" />
+            <TrendingUp className="w-5 h-5 text-indigo-400" />
           </div>
 
           <div className="h-52 w-full flex items-center justify-center relative">
@@ -368,45 +406,51 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     dataKey="count"
                     nameKey="name"
                   >
-                    {ccData.filter(c => c.count > 0).map((entry, index) => (
+                    {ccData.filter(c => c.count > 0).map((_, index) => (
                       <Cell key={`cell-${index}`} fill={CC_COLORS[index % CC_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', fontSize: '11px' }}
+                    contentStyle={{ 
+                      backgroundColor: '#0f172a', 
+                      borderColor: '#334155', 
+                      borderRadius: '10px', 
+                      color: '#f8fafc',
+                      fontSize: '11px' 
+                    }}
                     formatter={(value, name) => [`${value} atividades`, name]}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">Nenhuma atividade registrada</div>
+              <div className="h-full flex items-center justify-center text-xs text-slate-500">Nenhuma atividade registrada</div>
             )}
             
             {/* Center total count label */}
             {ccData.some(c => c.count > 0) && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-10px]">
-                <span className="text-2xl font-black text-slate-800 leading-none">
+                <span className="text-2xl font-black text-slate-100 leading-none">
                   {ccData.reduce((acc, c) => acc + c.count, 0)}
                 </span>
-                <span className="text-[9px] text-slate-450 tracking-wider font-black mt-1">Total CC</span>
+                <span className="text-[9px] text-slate-400 tracking-wider font-black mt-1">Total CC</span>
               </div>
             )}
           </div>
 
           {/* Dynamic Interactive Legend mapping below */}
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 max-h-[140px] overflow-y-auto custom-scrollbar">
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 max-h-[140px] overflow-y-auto custom-scrollbar">
             {ccData.map((cc, idx) => {
               if (cc.count === 0) return null;
               const color = CC_COLORS[idx % CC_COLORS.length];
               return (
-                <div key={idx} className="flex items-center gap-1.5 p-1.5 hover:bg-slate-50 rounded-lg transition-all text-left">
+                <div key={idx} className="flex items-center gap-1.5 p-1.5 hover:bg-slate-800/60 rounded-lg transition-all text-left">
                   <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-semibold text-slate-700 truncate mr-1" title={cc.name}>{cc.name}</span>
-                      <span className="font-extrabold text-slate-900 font-mono shrink-0">{cc.count}</span>
+                      <span className="font-semibold text-slate-300 truncate mr-1" title={cc.name}>{cc.name}</span>
+                      <span className="font-extrabold text-slate-100 font-mono shrink-0">{cc.count}</span>
                     </div>
-                    <span className="block text-[8px] text-slate-400 uppercase font-mono tracking-wider font-semibold">
+                    <span className="block text-[8px] text-slate-500 uppercase font-mono tracking-wider font-semibold">
                       {cc.code} • {cc.completed} concluídas
                     </span>
                   </div>
@@ -418,15 +462,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       </div>
 
-      {/* Gráficos de Performance e Distribuição de Processos (vindos da Grade de Demandas) */}
+      {/* 4. Gráficos de Performance e Distribuição de Processos */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4 text-left">
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-6 rounded-xl shadow-xl shadow-black/20 space-y-4 text-left">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-base font-bold text-slate-900">Distribuição por Status</h4>
-              <p className="text-xs text-slate-500">Divisão das atividades atuais e concluídas</p>
+              <h4 className="text-base font-bold text-slate-100">Distribuição por Status</h4>
+              <p className="text-xs text-slate-400">Divisão das atividades atuais e concluídas</p>
             </div>
-            <Clock className="w-5 h-5 text-indigo-500" />
+            <Clock className="w-5 h-5 text-indigo-400" />
           </div>
           
           <div className="h-64 pt-2 flex flex-col justify-between">
@@ -448,62 +492,62 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '11px' }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc', fontSize: '11px' }} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-xs text-slate-300">Sem dados para exibir</div>
+                <div className="h-full flex items-center justify-center text-xs text-slate-500">Sem dados para exibir</div>
               )}
             </div>
 
             {/* Legend for individual statuses */}
-            <div className="flex justify-around items-center gap-1.5 pt-2 border-t border-slate-100 flex-wrap">
+            <div className="flex justify-around items-center gap-1.5 pt-2 border-t border-slate-800 flex-wrap">
               {statusData.map((status, idx) => (
                 <div key={idx} className="flex items-center gap-1">
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: status.color }} />
-                  <span className="text-[10px] font-semibold text-slate-550 font-sans">{status.name}:</span>
-                  <span className="text-[10px] font-extrabold font-mono text-slate-900">{status.value}</span>
+                  <span className="text-[10px] font-semibold text-slate-400 font-sans">{status.name}:</span>
+                  <span className="text-[10px] font-extrabold font-mono text-slate-100">{status.value}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4 text-left">
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-6 rounded-xl shadow-xl shadow-black/20 space-y-4 text-left">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-base font-bold text-slate-900">Performance de Tempo: Estimado vs Real</h4>
-              <p className="text-xs text-slate-500">Média de esforço real executado vs planejado por tipo de processo</p>
+              <h4 className="text-base font-bold text-slate-100">Performance de Tempo: Estimado vs Real</h4>
+              <p className="text-xs text-slate-400">Média de esforço real executado vs planejado por tipo de processo</p>
             </div>
-            <TrendingUp className="w-5 h-5 text-indigo-500" />
+            <TrendingUp className="w-5 h-5 text-indigo-400" />
           </div>
           
           <div className="h-64 pt-2">
             {processGroupedMetrics.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={processGroupedMetrics} margin={{ top: 10, right: 10, left: -25, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
-                  <YAxis stroke="#94a3b8" fontSize={10} />
-                  <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '11px' }} />
-                  <Legend iconSize={8} wrapperStyle={{ fontSize: '10px' }} />
-                  <Bar dataKey="tempoEstimado" name="Esforço Estimado (h)" fill="#94a3b8" radius={[2, 2, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                  <XAxis dataKey="name" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                  <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc', fontSize: '11px' }} />
+                  <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', color: '#94a3b8' }} />
+                  <Bar dataKey="tempoEstimado" name="Esforço Estimado (h)" fill="#64748b" radius={[2, 2, 0, 0]} />
                   <Bar dataKey="tempoReal" name="Tempo Real Gasto (h)" fill="#6366f1" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-300">Sem dados conclusivos para exibir</div>
+              <div className="h-full flex items-center justify-center text-xs text-slate-500">Sem dados conclusivos para exibir</div>
             )}
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4 text-left">
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-6 rounded-xl shadow-xl shadow-black/20 space-y-4 text-left">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-base font-bold text-slate-900">Distribuição Operacional de Processos</h4>
-              <p className="text-xs text-slate-500">Volume total de chamados ativos por categoria de operação</p>
+              <h4 className="text-base font-bold text-slate-100">Distribuição Operacional de Processos</h4>
+              <p className="text-xs text-slate-400">Volume total de chamados ativos por categoria de operação</p>
             </div>
-            <BarChart3 className="w-5 h-5 text-indigo-500" />
+            <BarChart3 className="w-5 h-5 text-indigo-400" />
           </div>
           
           <div className="h-64 pt-2">
@@ -520,37 +564,37 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     dataKey="volume"
                     nameKey="name"
                   >
-                    {processGroupedMetrics.map((entry, index) => (
+                    {processGroupedMetrics.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'][index % 6]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '11px' }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc', fontSize: '11px' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-300">Sem dados para exibir</div>
+              <div className="h-full flex items-center justify-center text-xs text-slate-500">Sem dados para exibir</div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Seção de Projetos em Andamento e Prazos */}
-      <div id="projects-dashboard-section" className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      {/* 5. Seção de Projetos em Andamento e Prazos */}
+      <div id="projects-dashboard-section" className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-6 rounded-xl shadow-xl shadow-black/20 space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div>
-            <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <FolderKanban className="w-5 h-5 text-indigo-600" /> Acompanhamento de Projetos em Andamento
+            <h4 className="text-base font-bold text-slate-100 flex items-center gap-2">
+              <FolderKanban className="w-5 h-5 text-indigo-400" /> Acompanhamento de Projetos em Andamento
             </h4>
-            <p className="text-xs text-slate-500">Monitoramento integrado de prazos executivos, entregas e eficiência de atividades vinculadas</p>
+            <p className="text-xs text-slate-400">Monitoramento integrado de prazos executivos, entregas e eficiência de atividades vinculadas</p>
           </div>
-          <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 py-1 px-3 rounded-full border border-indigo-100 font-mono">
+          <span className="text-xs font-semibold bg-indigo-950 text-indigo-300 py-1 px-3 rounded-full border border-indigo-800/80 font-mono">
             {safeProjects.filter(p => p.status === 'EM_ANDAMENTO').length} Em Execução
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {safeProjects.map((p) => {
-            const pDemands = safeDemands.filter(d => d.projectId === p.id);
+            const pDemands = safeDemands.filter(d => d.projectId === p.id || String(d.projectId) === String(p.id));
             const totalCount = pDemands.length;
             const completedCount = pDemands.filter(d => d.status === 'CONCLUIDO').length;
             const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -559,7 +603,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            // Handle due date format (YYYY-MM-DD) safely
             const dateParts = p.dueDate ? p.dueDate.split('-').map(Number) : [today.getFullYear(), today.getMonth() + 1, today.getDate()];
             const [year, month, day] = dateParts.length === 3 ? dateParts : [today.getFullYear(), today.getMonth() + 1, today.getDate()];
             const projectDueDate = new Date(year, month - 1, day);
@@ -572,23 +615,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             if (p.status === 'CONCLUIDO') {
               deadlineLabel = 'Concluído';
-              deadlineBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+              deadlineBadgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
             } else if (daysLeft < 0) {
               deadlineLabel = `Atrasado há ${Math.abs(daysLeft)} dia(s)`;
-              deadlineBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse';
+              deadlineBadgeClass = 'bg-rose-500/10 text-rose-400 border-rose-500/20 animate-pulse';
             } else if (daysLeft === 0) {
               deadlineLabel = 'Vence hoje!';
-              deadlineBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
+              deadlineBadgeClass = 'bg-amber-500/20 text-amber-300 border-amber-500/30 font-bold';
             } else if (daysLeft <= 14) {
               deadlineLabel = `Alerta: restam ${daysLeft} dias`;
-              deadlineBadgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+              deadlineBadgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
             } else {
               deadlineLabel = `No prazo: restam ${daysLeft} dias`;
-              deadlineBadgeClass = 'bg-blue-50 text-blue-700 border-blue-200';
+              deadlineBadgeClass = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
             }
 
-            // Find area name
-            const areaName = areas.find(a => a.id === p.areaId)?.name || 'Geral';
+            const areaName = safeAreas.find(a => a.id === p.areaId || String(a.id) === String(p.areaId))?.name || 'Geral';
 
             return (
               <div 
@@ -597,13 +639,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   const newUrl = new URL(window.location.href);
                   newUrl.searchParams.set('projectId', p.id);
                   window.history.pushState({}, '', newUrl);
-                  onNavigate('PROJECTS');
+                  onNavigate?.('PROJECTS');
                 }}
-                className="p-5 rounded-xl border border-slate-300 hover:border-indigo-600 bg-white hover:bg-slate-50 transition-all duration-300 flex flex-col justify-between space-y-3 shadow-xs hover:shadow-md cursor-pointer group text-left relative overflow-hidden"
+                className="p-5 rounded-xl border border-slate-800 hover:border-indigo-500/60 bg-slate-900/60 hover:bg-slate-800/40 transition-all duration-300 flex flex-col justify-between space-y-3 shadow-md cursor-pointer group text-left relative overflow-hidden"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2">
-                    <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 py-0.5 px-2 rounded-md uppercase tracking-wider">
+                  <div className="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-2">
+                    <span className="text-[10px] font-bold text-indigo-300 bg-indigo-950/80 border border-indigo-800/80 py-0.5 px-2 rounded-md uppercase tracking-wider">
                       {areaName}
                     </span>
                     <span className={`text-[10px] font-extrabold py-0.5 px-2 rounded-full border uppercase tracking-wide ${deadlineBadgeClass}`}>
@@ -611,48 +653,48 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </span>
                   </div>
 
-                  <h5 className="text-sm font-extrabold text-slate-950 mt-3 group-hover:text-indigo-700 transition-colors flex items-center justify-between">
+                  <h5 className="text-sm font-extrabold text-slate-100 mt-3 group-hover:text-indigo-400 transition-colors flex items-center justify-between">
                     <span className="truncate">{p.name}</span>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 ml-1.5" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 ml-1.5" />
                   </h5>
-                  <p className="text-xs text-slate-650 mt-1.5 line-clamp-2 leading-relaxed h-[36px]">
+                  <p className="text-xs text-slate-400 mt-1.5 line-clamp-2 leading-relaxed h-[36px]">
                     {p.description}
                   </p>
                 </div>
 
-                <div className="space-y-2 pt-1 border-t border-slate-100">
+                <div className="space-y-2 pt-1 border-t border-slate-800/80">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-semibold">Prazo final:</span>
-                    <span className="font-extrabold text-slate-900 flex items-center gap-1 font-mono">
-                      <Calendar className="w-3.5 h-3.5 text-indigo-600" /> {p.dueDate.split('-').reverse().join('/')}
+                    <span className="text-slate-400 font-semibold">Prazo final:</span>
+                    <span className="font-extrabold text-slate-200 flex items-center gap-1 font-mono">
+                      <Calendar className="w-3.5 h-3.5 text-indigo-400" /> {p.dueDate ? p.dueDate.split('-').reverse().join('/') : '--'}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-semibold">Atividades vinculadas:</span>
-                    <span className="font-extrabold text-slate-900">
+                    <span className="text-slate-400 font-semibold">Atividades vinculadas:</span>
+                    <span className="font-extrabold text-slate-200">
                       {completedCount}/{totalCount} ({progressPercent}%)
                     </span>
                   </div>
 
-                  {/* Elegant dynamic progress bar */}
+                  {/* Dynamic progress bar */}
                   <div className="flex items-center gap-2 pt-1">
-                    <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-300/30">
+                    <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
                       <div 
                         style={{ width: `${progressPercent}%` }} 
                         className={`h-full rounded-full transition-all duration-500 ${
                           progressPercent === 100 
-                            ? 'bg-emerald-600' 
+                            ? 'bg-emerald-500' 
                             : p.status === 'ATRASADO' || daysLeft < 0 
-                            ? 'bg-rose-600' 
-                            : 'bg-indigo-600'
+                            ? 'bg-rose-500' 
+                            : 'bg-indigo-500'
                         }`}
                       />
                     </div>
                   </div>
 
-                  <div className="text-[10px] text-slate-400 italic text-right group-hover:text-indigo-600 transition-colors pt-1">
-                    Clique para abrir a modal de detalhes (Jira) →
+                  <div className="text-[10px] text-slate-500 italic text-right group-hover:text-indigo-400 transition-colors pt-1">
+                    Clique para ver detalhes do projeto →
                   </div>
                 </div>
               </div>
@@ -661,24 +703,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* SLA Risk Hotlist / Warnings */}
+      {/* 6. SLA Risk Hotlist / Warnings & Operator Workloads */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Column 1 & 2: SLA Warning alert logs */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-6 rounded-xl shadow-xl shadow-black/20 lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div>
-              <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500" /> Alerta de SLAs & Riscos de Operação
+              <h4 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400" /> Alerta de SLAs & Riscos de Operação
               </h4>
-              <p className="text-xs text-slate-500">Demandas críticas pendentes ou fora do limite legal de SLA</p>
+              <p className="text-xs text-slate-400">Demandas críticas pendentes ou fora do limite legal de SLA</p>
             </div>
-            <span className="text-[10px] font-mono bg-rose-50 text-rose-700 py-0.5 px-2 rounded-full border border-rose-200">
+            <span className="text-[10px] font-mono bg-rose-950 text-rose-300 py-0.5 px-2 rounded-full border border-rose-800">
               {urgentDemands.length} Críticas
             </span>
           </div>
 
-          <div className="divide-y divide-slate-100 max-h-[300px] overflow-y-auto pr-1">
+          <div className="divide-y divide-slate-800 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
             {urgentDemands.length > 0 ? (
               urgentDemands.map((demand) => {
                 const isOverdue = demand.slaSpentHours > demand.slaLimitHours;
@@ -688,29 +730,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <div 
                     key={demand.id} 
                     onClick={() => onSelectDemand?.(demand.id)}
-                    className="py-3 flex items-center justify-between hover:bg-slate-50 px-2 rounded-lg transition cursor-pointer"
+                    className="py-3 flex items-center justify-between hover:bg-slate-800/50 px-2 rounded-lg transition cursor-pointer"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold text-slate-500">{demand.id}</span>
-                        <span className="text-xs font-semibold text-slate-900 line-clamp-1">{demand.title}</span>
+                        <span className="text-xs font-mono font-bold text-slate-400">{demand.id}</span>
+                        <span className="text-xs font-semibold text-slate-100 line-clamp-1">{demand.title}</span>
                       </div>
                       <div className="flex items-center gap-2.5 text-[11px] text-slate-400">
-                        <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium text-[10px]">
+                        <span className="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-medium text-[10px]">
                           {demand.type}
                         </span>
-                        <span>Prioridade: <strong className="text-slate-600 font-semibold">{demand.priority}</strong></span>
-                        <span>Centro de Custo: <strong className="text-slate-600 font-mono text-[10px]">{demand.costCenterId}</strong></span>
+                        <span>Prioridade: <strong className="text-slate-200 font-semibold">{demand.priority}</strong></span>
+                        <span>Centro de Custo: <strong className="text-slate-200 font-mono text-[10px]">{demand.costCenterId}</strong></span>
                       </div>
                     </div>
 
                     <div className="text-right">
                       {isOverdue ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-400 bg-rose-950/80 border border-rose-800 px-2.5 py-1 rounded-full">
                           Atrasado por {demand.slaSpentHours - demand.slaLimitHours}h
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400 bg-amber-950/80 border border-amber-800 px-2.5 py-1 rounded-full">
                           Restam {hoursLeft}h (SLA)
                         </span>
                       )}
@@ -720,70 +762,72 @@ export const Dashboard: React.FC<DashboardProps> = ({
               })
             ) : (
               <div className="py-8 text-center text-xs text-slate-400">
-                🎉 Nenhum alerta crítico de SLA no momento. Parabéns, equipe qualificada!
+                🎉 Nenhum alerta crítico de SLA no momento. Toda a equipe está dentro do prazo!
               </div>
             )}
           </div>
         </div>
 
-        {/* Column 3: Operator Workloads / Productivity scorecard & Recharts chart */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
+        {/* Column 3: Operator Workloads / Productivity scorecard */}
+        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xs p-6 rounded-xl shadow-xl shadow-black/20 flex flex-col justify-between space-y-4">
           <div>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-              <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Users className="w-4 h-4 text-indigo-505" /> Produtividade e Equipe
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+              <h4 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                <Users className="w-4 h-4 text-indigo-400" /> Produtividade e Equipe
               </h4>
-              <span className="text-[10px] font-mono bg-indigo-50 text-indigo-700 py-0.5 px-2.5 rounded-full border border-indigo-200 uppercase tracking-wider font-extrabold">
+              <span className="text-[10px] font-mono bg-indigo-950 text-indigo-300 py-0.5 px-2.5 rounded-full border border-indigo-800 uppercase tracking-wider font-extrabold">
                 Performance
               </span>
             </div>
 
-            {/* Premium Grouped Bar Chart of team members' active/completed demands */}
+            {/* Recharts chart of team members */}
             <div className="h-44 w-full mb-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={teamMetrics} margin={{ top: 10, right: 10, left: -25, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="firstName" stroke="#64748b" fontSize={10} tickLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} tickCount={4} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                  <XAxis dataKey="firstName" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} />
+                  <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} tickCount={4} allowDecimals={false} />
                   <Tooltip 
-                    contentStyle={{ borderRadius: '8px', fontSize: '10px', borderColor: '#f1f5f9' }}
-                    labelClassName="font-extrabold text-slate-800"
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc', fontSize: '10px' }}
+                    labelClassName="font-extrabold text-slate-100"
                   />
-                  <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '9px', paddingTop: '4px' }} />
+                  <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: '9px', paddingTop: '4px', color: '#94a3b8' }} />
                   <Bar dataKey="completed" name="Concluídas" fill="#10b981" radius={[2, 2, 0, 0]} barSize={10} />
                   <Bar dataKey="active" name="Ativas" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={10} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Dynamic performance list with micro-bars */}
+            {/* Dynamic performance list with generic user avatars */}
             <div className="space-y-3.5">
               {teamMetrics.map((op) => (
-                <div key={op.id} className="flex flex-col border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                <div key={op.id} className="flex flex-col border-b border-slate-800 pb-3 last:border-0 last:pb-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <img src={op.avatar} alt={op.name} className="w-7 h-7 rounded-full border border-slate-100 object-cover shrink-0" />
+                      <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-indigo-400 shrink-0">
+                        <UserIcon className="w-4 h-4" />
+                      </div>
                       <div className="min-w-0">
-                        <h5 className="text-xs font-bold text-slate-800 truncate">{op.name}</h5>
+                        <h5 className="text-xs font-bold text-slate-200 truncate">{op.name}</h5>
                         <p className="text-[9.5px] text-slate-400 font-medium leading-none mt-1">{op.position}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[11.5px] font-extrabold text-indigo-600 font-mono">{op.rate}%</span>
-                      <p className="text-[9px] text-slate-400 font-medium leading-none mt-0.5">Conclusão</p>
+                      <span className="text-[11.5px] font-extrabold text-indigo-400 font-mono">{op.rate}%</span>
+                      <p className="text-[9px] text-slate-500 font-medium leading-none mt-0.5">Conclusão</p>
                     </div>
                   </div>
 
                   <div className="mt-2 flex items-center gap-2">
-                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                       <div 
                         style={{ width: `${op.rate}%` }} 
                         className={`h-full rounded-full transition-all duration-500 ${
-                          op.rate >= 75 ? 'bg-emerald-500' : op.rate >= 40 ? 'bg-indigo-500' : 'bg-slate-400'
+                          op.rate >= 75 ? 'bg-emerald-500' : op.rate >= 40 ? 'bg-indigo-500' : 'bg-slate-500'
                         }`}
                       />
                     </div>
-                    <span className="text-[9px] font-bold text-slate-500 min-w-[28px] text-right font-mono leading-none">
+                    <span className="text-[9px] font-bold text-slate-400 min-w-[28px] text-right font-mono leading-none">
                       {op.completed}/{op.total} d.
                     </span>
                   </div>
@@ -792,31 +836,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-lg text-[11px] text-slate-500 leading-relaxed border border-slate-200/50">
-            <strong>💡 Insight de produtividade:</strong> Atividades de centro de custo <strong>CC-102 (Logística)</strong> exibem o menor lead-time médio (8h). Focar revisões de automações no <strong>CC-103</strong> que possui 1 gargalo de reembolso em aprovação.
+          <div className="p-3 bg-slate-950/60 rounded-lg text-[11px] text-slate-400 leading-relaxed border border-slate-800">
+            <strong className="text-indigo-300">💡 Insight de produtividade:</strong> {dynamicInsight}
           </div>
         </div>
 
       </div>
 
-      {/* Elegant Application Footer */}
-      <footer className="mt-8 pt-6 border-t border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      {/* 7. Application Footer */}
+      <footer className="mt-8 pt-6 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 bg-indigo-600 rounded-md flex items-center justify-center text-white font-bold text-[10px]">F</div>
-          <span className="font-bold text-slate-800 font-display transition-colors duration-200 hover:text-indigo-600">Flowta Governance</span>
-          <span className="text-slate-300">|</span>
-          <span>© 2026 Flowta Inc. Todos os direitos reservados.</span>
+          <span className="font-bold text-slate-300 font-display transition-colors duration-200 hover:text-indigo-400">Solutis TaskView</span>
+          <span className="text-slate-700">|</span>
+          <span>© 2026 Solutis Tecnologia. Todos os direitos reservados.</span>
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-medium text-slate-600">Sistemas Operacionais Ativos</span>
+            <span className="text-[11px] font-medium text-slate-400">Sistemas Conectados e Ativos</span>
           </div>
-          <span className="text-slate-300">|</span>
+          <span className="text-slate-700">|</span>
           <div className="flex gap-4">
-            <button className="hover:text-indigo-600 transition-colors font-medium cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-1">Políticas de SLA</button>
-            <button className="hover:text-indigo-600 transition-colors font-medium cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-1">Termos de Uso</button>
-            <span className="text-slate-400 font-mono">v2.4.0</span>
+            <button className="hover:text-indigo-400 transition-colors font-medium cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-1">Políticas de Governança</button>
+            <button className="hover:text-indigo-400 transition-colors font-medium cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-1">Prazos de SLA</button>
+            <span className="text-slate-600 font-mono">v0.1.9</span>
           </div>
         </div>
       </footer>

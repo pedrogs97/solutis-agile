@@ -1,5 +1,44 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-12] - Dashboard Dinâmico com Banco de Dados e Tema Escuro (TaskView v0.1.9 e Flow Back v0.1.2)
+- **Descrição**: Dinamização integral do Solutis TaskView (`solutis-flow`), garantindo que toda a aplicação consuma as informações de demandas, métricas, centros de custo, áreas, projetos e usuários diretamente dos serviços backend (`solutis_flow_back` / PostgreSQL `flow_db`), sem dados estáticos mockados. Adequação visual completa do Dashboard ao tema escuro oficial da aplicação (Dark Theme), com cards `bg-slate-900/80`, bordas `border-slate-800`, textos `text-slate-100`/`text-slate-400` e gráficos Recharts com grids, eixos e tooltips escuros.
+- **Arquivos afetados**:
+  - `solutis-flow/src/components/Dashboard.tsx`
+  - `solutis-flow/src/context/FlowContext.tsx`
+  - `solutis-flow/src/App.tsx`
+  - `solutis-flow/src/hooks/useDemands.ts`
+  - `solutis-flow/src/hooks/useProjects.ts`
+  - `solutis-flow/src/hooks/useUsers.ts`
+  - `solutis-flow/src/hooks/useOrganizationData.ts`
+  - `solutis-flow/src/services/api.ts`
+  - `solutis-flow/package.json`
+  - `solutis_flow_back/src/seed.py`
+  - `solutis_flow_back/src/main.py`
+  - `solutis_flow_back/src/api/v1/__init__.py`
+  - `solutis_flow_back/src/api/v1/demands.py`
+  - `solutis_flow_back/src/api/v1/users.py`
+  - `solutis_flow_back/src/tests/test_users_and_seed.py`
+  - `solutis_flow_back/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Dashboard & UI**:
+    - Fundo e containers convertidos de `bg-white` para `bg-slate-900/80 backdrop-blur-xs border-slate-800`.
+    - Todos os gráficos Recharts adaptados para dark mode (`CartesianGrid stroke="#1e293b"`, `XAxis`/`YAxis stroke="#64748b"`, `Tooltip` dark `#0f172a`).
+    - Todos os indicadores (Top KPIs, Volume por Área, Carga por Centro de Custo, Status, Esforço Real vs Estimado, Hotlist de SLA, Produtividade da Equipe) calculados 100% dinamicamente a partir dos dados do banco.
+    - Avatares da equipe substituídos pelo componente vetorial genérico `UserIcon` (`lucide-react`).
+    - Insights de produtividade computados dinamicamente com base nas estatísticas das demandas do banco.
+  - **Frontend Flow Architecture**:
+    - `useDemands.ts` e `useProjects.ts`: Ajustados para aceitar respostas de array do backend diretamente no estado, sem ficar preso em dados simulados do `mockData`.
+    - Criados hooks `useUsers` e `useOrganizationData` para carregar dinamicamente usuários, áreas e centros de custo do backend.
+    - `FlowContext.tsx` e `App.tsx`: Propagação global de dados dinâmicos para todas as abas (`Portal`, `Dashboard`, `DemandList`, `KanbanBoard`, `ProjectsView`, `ManagerApprovals`, `CalendarView`, `ContinuousImprovement`, `ReportsView` e modais).
+    - Incremento de versão do `solutis-flow` para `0.1.9`.
+  - **Backend Flow Architecture**:
+    - Implementado seed inicial idempotente (`src/seed.py`) no `lifespan` do `solutis_flow_back` para garantir que o banco PostgreSQL `flow_db` possua áreas, centros de custo, projetos e demandas operacionais reais persistidas.
+    - Criado endpoint `GET /api/v1/users` retornando os colaboradores operacionais e perfis de governança.
+    - `list_demands`: Ajustado para fornecer visão corporativa irrestrita de demandas a gestores e administradores.
+    - Criados testes automatizados em `test_users_and_seed.py` com 100% de sucesso.
+    - Incremento de versão do `solutis_flow_back` para `0.1.2`.
+
 ## [2026-09-12] - Ícone Genérico de Usuário no Avatar do TaskView (v0.1.8)
 - **Descrição**: Substituição das fotos de avatar de terceiros (Unsplash) por um ícone genérico vetorial de usuário (`UserIcon` do `lucide-react`) em todo o frontend do Solutis TaskView (`solutis-flow`), abrangendo a barra de status do usuário no cabeçalho (`RoleSwitcher`), o rodapé da sidebar de navegação (`App.tsx`) e a higienização de avatares salvos no `localStorage` e dados simulados.
 - **Arquivos afetados**:

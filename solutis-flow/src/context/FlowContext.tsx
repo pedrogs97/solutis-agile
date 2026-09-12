@@ -1,9 +1,11 @@
 import React, { createContext, useContext, ReactNode, useCallback } from 'react';
-import { User, Demand, Project, DashboardMetrics, DemandStatus } from '../types';
+import { User, Demand, Project, DashboardMetrics, DemandStatus, Area, CostCenter } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useDemands } from '../hooks/useDemands';
 import { useProjects } from '../hooks/useProjects';
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics';
+import { useUsers } from '../hooks/useUsers';
+import { useOrganizationData } from '../hooks/useOrganizationData';
 import { useSSE, SSEDomainEvent } from '../hooks/useSSE';
 
 export interface FlowState {
@@ -12,6 +14,9 @@ export interface FlowState {
   demands: Demand[];
   projects: Project[];
   metrics: DashboardMetrics | null;
+  users: User[];
+  areas: Area[];
+  costCenters: CostCenter[];
   isLoadingDemands: boolean;
 }
 
@@ -30,6 +35,8 @@ export interface FlowDispatch {
   sendFeedback: (demandId: string, rating: number, comment: string, isNegative: boolean) => Promise<void>;
   addProject: (project: Project) => void;
   refreshDemands: () => Promise<void>;
+  refreshOrganization: () => Promise<void>;
+  refreshUsers: () => Promise<void>;
 }
 
 const FlowStateContext = createContext<FlowState | undefined>(undefined);
@@ -37,9 +44,11 @@ const FlowDispatchContext = createContext<FlowDispatch | undefined>(undefined);
 
 export function FlowProvider({ children, onNotification }: { children: ReactNode; onNotification?: (msg: string) => void }) {
   const auth = useAuth();
-  const demandsHook = useDemands();
-  const projectsHook = useProjects();
-  const metricsHook = useDashboardMetrics();
+  const demandsHook = useDemands(auth.token);
+  const projectsHook = useProjects(auth.token);
+  const metricsHook = useDashboardMetrics(auth.token);
+  const usersHook = useUsers(auth.token);
+  const orgHook = useOrganizationData(auth.token);
 
   // Listen to SSE real-time events
   const handleSSEEvent = useCallback(
@@ -63,6 +72,9 @@ export function FlowProvider({ children, onNotification }: { children: ReactNode
     demands: demandsHook.demands,
     projects: projectsHook.projects,
     metrics: metricsHook.metrics,
+    users: usersHook.users,
+    areas: orgHook.areas,
+    costCenters: orgHook.costCenters,
     isLoadingDemands: demandsHook.isLoading,
   };
 
@@ -76,6 +88,8 @@ export function FlowProvider({ children, onNotification }: { children: ReactNode
     sendFeedback: demandsHook.sendFeedback,
     addProject: projectsHook.addProject,
     refreshDemands: demandsHook.refreshDemands,
+    refreshOrganization: orgHook.refreshOrganization,
+    refreshUsers: usersHook.refreshUsers,
   };
 
   return (

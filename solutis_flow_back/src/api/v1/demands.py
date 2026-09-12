@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import Session, select, col
 from src.database import get_db_session
 from src.models import (
     Demand,
@@ -11,6 +11,7 @@ from src.models import (
     TransferStatus,
     Feedback,
 )
+from src.models.acl import FlowRole
 from src.schemas.demand import (
     DemandCreate,
     DemandResponse,
@@ -100,21 +101,30 @@ def list_demands(
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
     """List all demands visible to the current authenticated user."""
-    # Find demands where user is solicitor, assignee, manager, or observer
-    observer_demand_ids = db.exec(
-        select(DemandObserver.demand_id).where(
-            DemandObserver.observer_user_id == current_user.id
-        )
-    ).all()
+    is_admin_or_manager = (
+        FlowRole.ADMIN in current_user.flow_roles
+        or FlowRole.GESTOR in current_user.flow_roles
+        or current_user.group_name.lower() in ("admin", "gestor", "diretoria")
+    )
 
-    demands = db.exec(
-        select(Demand).where(
-            (Demand.solicitor_user_id == current_user.id)
-            | (Demand.assignee_user_id == current_user.id)
-            | (Demand.manager_user_id == current_user.id)
-            | (Demand.id.in_(observer_demand_ids))
-        )
-    ).all()
+    if is_admin_or_manager:
+        demands = db.exec(select(Demand).order_by(col(Demand.id).desc())).all()
+    else:
+        # Find demands where user is solicitor, assignee, manager, or observer
+        observer_demand_ids = db.exec(
+            select(DemandObserver.demand_id).where(
+                DemandObserver.observer_user_id == current_user.id
+            )
+        ).all()
+
+        demands = db.exec(
+            select(Demand).where(
+                (Demand.solicitor_user_id == current_user.id)
+                | (Demand.assignee_user_id == current_user.id)
+                | (Demand.manager_user_id == current_user.id)
+                | (col(Demand.id).in_(observer_demand_ids))
+            ).order_by(col(Demand.id).desc())
+        ).all()
 
     results = []
     for d in demands:
@@ -122,7 +132,7 @@ def list_demands(
             select(DemandObserver.observer_user_id).where(DemandObserver.demand_id == d.id)
         ).all()
         resp = DemandResponse.model_validate(d)
-        resp.observer_user_ids = obs
+        resp.observer_user_ids = list(obs)
         results.append(resp)
 
     return results

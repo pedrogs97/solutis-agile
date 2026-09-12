@@ -34,12 +34,12 @@ export function useDemands(token?: string) {
     setError(null);
     try {
       const backendDemands = await apiFetchDemands(token);
-      if (backendDemands && backendDemands.length > 0) {
+      if (Array.isArray(backendDemands)) {
         setDemands(backendDemands);
       }
     } catch (err: any) {
-      // Graceful fallback to local state if backend service is unreachable
-      console.info('Backend unreachable, keeping local demands state:', err.message);
+      // Keep state if offline
+      console.info('Backend unreachable, keeping current demands state:', err.message);
     } finally {
       setIsLoading(false);
     }
