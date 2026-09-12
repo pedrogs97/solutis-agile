@@ -1,6 +1,6 @@
 [project]
 name = "solutis-flow-back"
-version = "0.1.2"
+version = "0.1.3"
 description = "Backend de governança operacional e orquestração de processos (Solutis Flow)"
 readme = "README.md"
 requires-python = ">=3.13"

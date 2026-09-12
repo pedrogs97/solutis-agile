@@ -5,19 +5,16 @@ from loguru import logger
 
 from src.api.v1 import api_v1_router
 from src.config import settings
-from src.database import init_db, engine
-from src.seed import seed_database
-from sqlmodel import Session
+from src.database import init_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up Solutis Flow Backend...")
     init_db()
-    with Session(engine) as session:
-        seed_database(session)
     yield
     logger.info("Shutting down Solutis Flow Backend...")
+
 
 
 app = FastAPI(

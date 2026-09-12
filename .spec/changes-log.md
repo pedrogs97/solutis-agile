@@ -1,5 +1,17 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-12] - Remoção do Seed Inicial do TaskView (Flow Backend v0.1.3)
+- **Descrição**: Remoção da rotina de seed prévio no startup do backend (`lifespan`). O sistema agora opera sem dados pré-carregados, permitindo que todas as entidades sejam criadas dinamicamente pelos fluxos operacionais da aplicação.
+- **Arquivos afetados**:
+  - `solutis_flow_back/src/main.py`
+  - `solutis_flow_back/src/tests/test_users_and_seed.py`
+  - `solutis_flow_back/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - `main.py`: Removido o import e a chamada de `seed_database(session)` no ciclo de vida `lifespan`.
+  - `test_users_and_seed.py`: Adaptado para validar endpoints vazios/dinâmicos sem dependência do arquivo excluído `seed.py`.
+  - Incremento de versão do `solutis-flow-back` para `0.1.3`.
+
 ## [2026-09-12] - Liberação da Rota Proxy de Usuários do TaskView (Manager Backend v1.26.13)
 - **Descrição**: Resolução do erro HTTP 403 Forbidden ("Acesso não configurado ou rota inválida para este microsserviço") ao consultar a rota `/api/v1/proxy/flow/v1/users`. Incluída a rota `users` no regex de rotas autorizadas para o microsserviço `flow` no Proxy Gateway do `solutis_manager_back`, permitindo o carregamento dinâmico dos colaboradores no frontend do TaskView.
 - **Arquivos afetados**:
