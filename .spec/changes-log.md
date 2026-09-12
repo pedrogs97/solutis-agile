@@ -1,6 +1,34 @@
 # Histórico de Alterações do Projeto
 
-## [2026-09-12] - Remoção do Seed Inicial do TaskView (Flow Backend v0.1.3)
+## [2026-09-12] - Entrada Dinâmica via CSV na Sincronização de Fornecedores (Procurement v2.18.5)
+- **Descrição**: Parametrização da sincronização de fornecedores do TOTVS no microsserviço `solutis_procurement` para aceitar a entrada de dados (nome, cnpj e grau de risco) a partir de arquivo CSV, eliminando a dependência de CNPJs e graus de risco estáticos no código (`_risk_mapping`). Criados os arquivos CSV contendo os dados reais correspondentes aos registros antes fixados em hard code, adicionado suporte a argumento de linha de comando (`--csv-file`) no comando de gerenciamento do Django (`sync_suppliers`), suporte a path customizado via API e implementada suíte de testes unitários.
+- **Arquivos afetados**:
+  - `solutis_procurement/data/fornecedores.csv` [NOVO]
+  - `solutis_procurement/fornecedores.csv` [NOVO]
+  - `solutis_procurement/src/sync/services/supplier_sync.py`
+  - `solutis_procurement/src/sync/management/commands/sync_suppliers.py`
+  - `solutis_procurement/src/sync/views.py`
+  - `solutis_procurement/src/sync/tests/__init__.py` [NOVO]
+  - `solutis_procurement/src/sync/tests/test_supplier_sync.py` [NOVO]
+  - `solutis_procurement/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Arquivo CSV de Entrada (`fornecedores.csv`)**:
+    - Criado e atualizado com as colunas `nome,cnpj,grau_de_risco` contendo os 43 fornecedores da lista operacional (Antonio Jorge Palma, 99 Tecnologia, Advocacia Tavares Novis, Alelo, Allya, Bahia Solar, Clicksign, Max Confiável, Scansource, Serasa, Uber, Swile, OLIVA com risco BAIXO, ALGAR com risco MÉDIO e Telefônica Brasil S.A com risco MÉDIO, etc.).
+  - **Serviço de Sincronização (`SupplierSyncService`)**:
+    - Construtor aceita `csv_path` opcional com resolução automática em `settings.BASE_DIR / "data" / "fornecedores.csv"`, `fornecedores.csv` ou caminho customizado.
+    - Leitura resiliente suportando delimitadores vírgula `,` e ponto e vírgula `;`, normalização de cabeçalhos (`nome`, `razao_social`, `cnpj`, `tax_id`, `grau_de_risco`, `risk_level`) e acentuação de grau de risco (`MÉDIO` / `MEDIO`).
+    - Query do TOTVS `WHERE ATIVO = 1 AND CGCCFO IN (...)` agora recebe dinamicamente a lista de CNPJs carregados do CSV, prevenindo execuções com listas vazias.
+    - `_create_supplier` e `_update_supplier` aplicam o grau de risco mapeado no `DomRiskLevel` e usam o nome do CSV como fallback para `trade_name` e `legal_name`.
+  - **Django Management Command (`manage.py sync_suppliers`)**:
+    - Adicionado suporte ao argumento `--csv-file` (ou `--csv`) para permitir apontar qualquer arquivo CSV durante a execução manual.
+  - **API View (`SupplierSyncView`)**:
+    - Aceita parâmetro opcional `csv_path` no corpo da requisição POST.
+  - **Testes Unitários**:
+    - Implementado `test_supplier_sync.py` validando o carregamento do CSV padrão, CSV customizado com vírgula e ponto-e-vírgula, montagem da query TOTVS e persistência de risco/nome.
+  - **Versão**:
+    - Incrementada para `2.18.5` no `pyproject.toml`.
+
 - **Descrição**: Remoção da rotina de seed prévio no startup do backend (`lifespan`). O sistema agora opera sem dados pré-carregados, permitindo que todas as entidades sejam criadas dinamicamente pelos fluxos operacionais da aplicação.
 - **Arquivos afetados**:
   - `solutis_flow_back/src/main.py`

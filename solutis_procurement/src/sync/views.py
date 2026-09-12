@@ -21,8 +21,12 @@ class SupplierSyncView(APIView):
             Response: JSON response with synchronization results
         """
         try:
+            csv_path = None
+            if isinstance(request.data, dict):
+                csv_path = request.data.get("csv_path") or request.data.get("csv_file")
+
             db_service = DatabaseConnectionService()
-            sync_service = SupplierSyncService(db_service)
+            sync_service = SupplierSyncService(db_service, csv_path=csv_path)
 
             count = sync_service.sync_suppliers()
 
@@ -34,7 +38,7 @@ class SupplierSyncView(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
             return Response(
                 {
                     "error": "Failed to synchronize suppliers",

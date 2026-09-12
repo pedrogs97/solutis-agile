@@ -3,12 +3,16 @@ Supplier synchronization service.
 This module handles the synchronization of supplier data from TOTVS to local database.
 """
 
-from typing import Dict, List, Optional
+import csv
+from pathlib import Path
 
+from django.conf import settings
 from django.db import transaction
 from loguru import logger
 from src.shared.models import Address, Contact
 from src.supplier.models.domain import (
+    DomCategory,
+    DomClassification,
     DomPaymentMethod,
     DomPixType,
     DomRiskLevel,
@@ -38,26 +42,153 @@ class SupplierSyncService:
     Follows Single Responsibility Principle.
     """
 
-    def __init__(self, db_service: DatabaseConnectionService):
+    def __init__(
+        self,
+        db_service: DatabaseConnectionService,
+        csv_path: str | Path | None = None,
+    ):
         """
         Initialize the sync service.
 
         Args:
             db_service: Database connection service instance
+            csv_path: Optional path to CSV file with suppliers (name, cnpj, risk level)
         """
         self.db_service = db_service
-        self._risk_mapping: Dict[str, str] = {
-            "04.699.639/0001-68": "BAIXO",
-            "05.607.657/0008-01": "ALTO",
-            "07.976.147/0001-60": "MÉDIO",
-            "12.499.520/0001-70": "BAIXO",
-            "12.639.870/0001-94": "MÉDIO",
-            "31.433.149/0001-98": "BAIXO",
-            "53.113.791/0001-22": "ALTO",
-            "43.649.570/0001-10": "BAIXO",
-            "33.571.622/0001-29": "BAIXO",
-            "60.143.657/0001-30": "BAIXO",
-        }
+        self.csv_path = csv_path
+        self._suppliers_data: dict[str, dict[str, str]] = {}
+        self._name_mapping: dict[str, str] = {}
+        self._risk_mapping: dict[str, str] = {}
+
+        self._load_suppliers_from_csv(csv_path)
+
+    def _resolve_csv_path(self, csv_path: str | Path | None) -> Path | None:
+        """
+        Resolve CSV file path from explicit path or default project locations.
+
+        Args:
+            csv_path: Provided CSV path or None
+
+        Returns:
+            Optional[Path]: Resolved path to existing CSV or candidate path
+        """
+        if csv_path:
+            provided = Path(csv_path)
+            if provided.is_absolute() and provided.exists():
+                return provided
+            if hasattr(settings, "BASE_DIR"):
+                candidate = settings.BASE_DIR / provided
+                if candidate.exists():
+                    return candidate
+            if provided.exists():
+                return provided.resolve()
+            return provided
+
+        # Check standard default locations
+        base_dir = getattr(settings, "BASE_DIR", Path.cwd())
+        candidates = [
+            base_dir / "data" / "fornecedores.csv",
+            base_dir / "fornecedores.csv",
+            Path.cwd() / "data" / "fornecedores.csv",
+            Path.cwd() / "fornecedores.csv",
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate.resolve()
+
+        return base_dir / "data" / "fornecedores.csv"
+
+    def _load_suppliers_from_csv(self, csv_path: str | Path | None = None) -> None:
+        """
+        Load suppliers (name, tax_id/cnpj, risk_level) from a CSV file.
+
+        Args:
+            csv_path: Optional CSV path
+        """
+        resolved_path = self._resolve_csv_path(csv_path)
+        if not resolved_path or not resolved_path.exists():
+            logger.warning(
+                "Suppliers CSV not found at %s. Falling back to default list if needed.",
+                resolved_path,
+            )
+            # Fallback seguro para retrocompatibilidade
+            self._risk_mapping = {
+                "04.699.639/0001-68": "BAIXO",
+                "05.607.657/0008-01": "ALTO",
+                "07.976.147/0001-60": "MÉDIO",
+                "12.499.520/0001-70": "BAIXO",
+                "12.639.870/0001-94": "MÉDIO",
+                "31.433.149/0001-98": "BAIXO",
+                "53.113.791/0001-22": "ALTO",
+                "43.649.570/0001-10": "BAIXO",
+                "33.571.622/0001-29": "BAIXO",
+                "60.143.657/0001-30": "BAIXO",
+            }
+            return
+
+        try:
+            with open(resolved_path, mode="r", encoding="utf-8-sig") as f:
+                sample = f.read(2048)
+                f.seek(0)
+                delimiter = (
+                    ";" if ";" in sample and "," not in sample.splitlines()[0] else ","
+                )
+                reader = csv.DictReader(f, delimiter=delimiter)
+
+                count = 0
+                for row in reader:
+                    clean_row = {
+                        k.strip().lower().replace(" ", "_"): v.strip()
+                        for k, v in row.items()
+                        if k is not None and v is not None
+                    }
+
+                    name = (
+                        clean_row.get("nome")
+                        or clean_row.get("razao_social")
+                        or clean_row.get("name")
+                        or ""
+                    )
+                    cnpj = (
+                        clean_row.get("cnpj")
+                        or clean_row.get("tax_id")
+                        or clean_row.get("cpf_cnpj")
+                        or ""
+                    )
+                    raw_risk = (
+                        (
+                            clean_row.get("grau_de_risco")
+                            or clean_row.get("grau_risco")
+                            or clean_row.get("risk_level")
+                            or clean_row.get("risco")
+                            or "BAIXO"
+                        )
+                        .upper()
+                        .strip()
+                    )
+
+                    risk = (
+                        "MÉDIO"
+                        if raw_risk in ("MEDIO", "MÉDIO")
+                        else ("ALTO" if raw_risk == "ALTO" else "BAIXO")
+                    )
+
+                    if cnpj:
+                        self._risk_mapping[cnpj] = risk
+                        self._name_mapping[cnpj] = name
+                        self._suppliers_data[cnpj] = {
+                            "name": name,
+                            "cnpj": cnpj,
+                            "risk_level": risk,
+                        }
+                        count += 1
+
+            logger.info(
+                "Successfully loaded %s suppliers from CSV: %s", count, resolved_path
+            )
+        except Exception as error:
+            logger.error("Failed to read suppliers CSV (%s): %s", resolved_path, error)
+            raise
 
     def sync_suppliers(self) -> int:
         """
@@ -87,7 +218,7 @@ class SupplierSyncService:
         finally:
             self.db_service.close()
 
-    def _fetch_suppliers_from_totvs(self) -> List[SupplierTotvsDTO]:
+    def _fetch_suppliers_from_totvs(self) -> list[SupplierTotvsDTO]:
         """
         Fetch supplier data from TOTVS database.
 
@@ -97,6 +228,10 @@ class SupplierSyncService:
         cursor = self.db_service.get_cursor()
 
         tax_ids = list(self._risk_mapping.keys())
+        if not tax_ids:
+            logger.warning("No suppliers to fetch from TOTVS: tax_ids list is empty")
+            return []
+
         params_list = ",".join(f"'{tax_id}'" for tax_id in tax_ids)
 
         query = GET_SUPPLIERS_BY_TAX_IDS.format(tax_ids_list=params_list)
@@ -108,7 +243,7 @@ class SupplierSyncService:
 
         return [self._convert_row_to_supplier_dto(dict(row)) for row in rows]
 
-    def _convert_row_to_supplier_dto(self, row: Dict) -> SupplierTotvsDTO:
+    def _convert_row_to_supplier_dto(self, row: dict) -> SupplierTotvsDTO:
         """
         Convert database row to SupplierTotvsDTO.
 
@@ -140,7 +275,7 @@ class SupplierSyncService:
             contact_name=row["CONTATO"] or "",
         )
 
-    def _parse_number(self, value) -> Optional[int]:
+    def _parse_number(self, value) -> int | None:
         """
         Parse number field, returning None if value is a string.
 
@@ -179,7 +314,7 @@ class SupplierSyncService:
         )
 
     @transaction.atomic
-    def _save_suppliers(self, suppliers_dto: List[SupplierTotvsDTO]) -> int:
+    def _save_suppliers(self, suppliers_dto: list[SupplierTotvsDTO]) -> int:
         """
         Save or update suppliers in local database.
 
@@ -210,7 +345,7 @@ class SupplierSyncService:
 
                 saved_count += 1
 
-            except Exception as error:
+            except Exception as error:  # noqa: BLE001
                 logger.error(
                     "Error processing supplier %s: %s",
                     supplier_dto.legal_name,
@@ -255,20 +390,36 @@ class SupplierSyncService:
             name=supplier_type_dto.description
         )
 
-        risk_level = DomRiskLevel.objects.get(
-            name=self._risk_mapping[supplier_dto.tax_id]
+        risk_name = self._risk_mapping.get(supplier_dto.tax_id, "BAIXO")
+        risk_level = DomRiskLevel.objects.filter(name__iexact=risk_name).first()
+        if not risk_level:
+            risk_level, _ = DomRiskLevel.objects.get_or_create(name=risk_name)
+
+        csv_name = self._name_mapping.get(supplier_dto.tax_id, "")
+        trade_name = supplier_dto.trade_name or csv_name or supplier_dto.legal_name
+        legal_name = supplier_dto.legal_name or csv_name or trade_name
+
+        cat_id = 1 if supplier_dto.category.upper() == "J" else 2
+        category, _ = DomCategory.objects.get_or_create(
+            id=cat_id,
+            defaults={"name": "PESSOA JURÍDICA" if cat_id == 1 else "PESSOA FÍSICA"},
         )
+        classification, _ = DomClassification.objects.get_or_create(
+            id=1,
+            defaults={"name": "PADRÃO"},
+        )
+
         payment_details = self._create_supplier_payment_data(supplier_dto.code)
         return Supplier.objects.create(
-            trade_name=supplier_dto.trade_name,
-            legal_name=supplier_dto.legal_name,
+            trade_name=trade_name,
+            legal_name=legal_name,
             tax_id=supplier_dto.tax_id,
             state_business_registration=supplier_dto.state_registration,
             municipal_business_registration=supplier_dto.municipal_registration,
             address=address,
             contact=contact,
-            classification_id=1,
-            category_id=1 if supplier_dto.category.upper() == "J" else 2,
+            classification=classification,
+            category=category,
             risk_level=risk_level,
             type=supplier_type,
             payment_details=payment_details,
@@ -284,11 +435,20 @@ class SupplierSyncService:
             supplier: Existing supplier instance
             supplier_dto: Supplier DTO with updated data
         """
-        supplier.trade_name = supplier_dto.trade_name
-        supplier.legal_name = supplier_dto.legal_name
+        csv_name = self._name_mapping.get(supplier_dto.tax_id, "")
+        supplier.trade_name = supplier_dto.trade_name or csv_name or supplier.trade_name
+        supplier.legal_name = supplier_dto.legal_name or csv_name or supplier.legal_name
         supplier.state_business_registration = supplier_dto.state_registration
         supplier.municipal_business_registration = supplier_dto.municipal_registration
         supplier.category_id = 1 if supplier_dto.category.upper() == "J" else 2
+
+        # Update risk level from CSV
+        risk_name = self._risk_mapping.get(supplier_dto.tax_id)
+        if risk_name:
+            risk_level = DomRiskLevel.objects.filter(name__iexact=risk_name).first()
+            if not risk_level:
+                risk_level, _ = DomRiskLevel.objects.get_or_create(name=risk_name)
+            supplier.risk_level = risk_level
 
         # Update supplier type
         supplier_type_dto = self._fetch_supplier_type(supplier_dto.type_supplier_code)
@@ -399,7 +559,7 @@ class SupplierSyncService:
         contact.save()
 
     def _convert_row_to_supplier_payment_data_dto(
-        self, row: Dict
+        self, row: dict
     ) -> SupplierPaymentDataDTO:
         """
         Convert database row to SupplierPaymentDataDTO.
@@ -426,9 +586,7 @@ class SupplierSyncService:
             pix_key_type=row["TIPOPIX"],
         )
 
-    def _fetch_supplier_payment_data(
-        self, code: str
-    ) -> Optional[SupplierPaymentDataDTO]:
+    def _fetch_supplier_payment_data(self, code: str) -> SupplierPaymentDataDTO | None:
         """
         Fetch supplier payment data from TOTVS database.
 
@@ -448,7 +606,7 @@ class SupplierSyncService:
         row_data = dict(rows[0])
         return self._convert_row_to_supplier_payment_data_dto(row_data)
 
-    def _create_supplier_payment_data(self, code: str) -> Optional[PaymentDetails]:
+    def _create_supplier_payment_data(self, code: str) -> PaymentDetails | None:
         """
         Create supplier payment data to local database.
 
@@ -492,7 +650,7 @@ class SupplierSyncService:
                 "Saved supplier payment data: %s", supplier_payment_data_dto.payment_id
             )
             return payment_details
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
             logger.error(
                 "Error saving supplier payment data %s: %s",
                 supplier_payment_data_dto.payment_id,
@@ -502,7 +660,7 @@ class SupplierSyncService:
 
     def _update_supplier_payment_data(
         self, supplier: Supplier, code: str
-    ) -> Optional[PaymentDetails]:
+    ) -> PaymentDetails | None:
         """
         Update existing supplier payment data with data from TOTVS.
 
@@ -552,7 +710,7 @@ class SupplierSyncService:
                 supplier_payment_data_dto.payment_id,
             )
             return payment_details
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
             logger.error(
                 "Error updating supplier payment data %s: %s",
                 supplier_payment_data_dto.payment_id,

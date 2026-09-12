@@ -16,7 +16,7 @@ class DatabaseConnectionService:
     """
 
     _instance: Optional["DatabaseConnectionService"] = None
-    _connection: Optional[pymssql.Connection] = None
+    _connection: pymssql.Connection | None = None
 
     def __new__(cls):
         """Implement Singleton pattern"""

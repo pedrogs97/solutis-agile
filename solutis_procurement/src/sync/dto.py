@@ -5,7 +5,6 @@ This module contains DTOs used for transferring data from external databases.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -22,7 +21,7 @@ class SupplierTotvsDTO:
     city: str
     state: str
     neighborhood: str
-    number: Optional[int]
+    number: int | None
     postal_code: str
     complement: str
     type_supplier_code: str
@@ -54,7 +53,7 @@ class AddressDTO:
     city: str
     state: str
     neighbourhood: str
-    number: Optional[int]
+    number: int | None
     postal_code: str
     complement: str
 

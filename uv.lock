@@ -1781,7 +1781,7 @@ dev = [
 
 [[package]]
 name = "solutis-procurement"
-version = "2.18.4"
+version = "2.18.5"
 source = { virtual = "solutis_procurement" }
 dependencies = [
     { name = "aiohappyeyeballs" },
