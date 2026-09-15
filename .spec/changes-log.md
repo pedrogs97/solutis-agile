@@ -1,5 +1,12 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-15] - Deploy Remoto em Produção: Manager Backend v1.26.15 (Host Solutis - 172.21.3.225)
+- **Descrição**: Execução com sucesso do deploy remoto automatizado no servidor de produção Solutis (`172.21.3.225`) via SSH com `remote_deploy.py`. Sincronizada a branch `main` via `git checkout main && git pull origin main` e executado o pipeline `./deploy.sh`, realizando o build da imagem Docker do `solutis_manager_back` (v1.26.15) e a recriação do container `solutis-manager-back-prod`.
+- **Serviços Atualizados e Implantados**:
+  - `solutis-manager-back` (v1.26.15): Imagem Docker reconstruída com as validações defensivas do Clicksign e documentos deletados; contêiner `solutis-manager-back-prod` recriado e em execução saudável.
+  - Demais serviços (`solutis-procurement`, `solutis-report`, `solutis-flow-back`, `solutis-sync`, `solutis-agile-frontend`, `solutis-taskview`): Sem alterações pendentes de versão (mantidos operacionais e estáveis).
+- **Status da Execução**: Sucesso (Exit code 0).
+
 ## [2026-09-15] - Validação Defensiva no Envio para Clicksign e Documentos Excluídos (Manager Backend v1.26.15)
 - **Descrição**: Resolução de erro HTTP 500 (`AttributeError: 'NoneType' object has no attribute 'employee'`) no endpoint `POST /api/v1/documents/send/clicksign/`. Foram implementadas verificações defensivas no método `sign_document` para validar a existência do comodato (`lending`) ou termo (`term`) antes de acessar seus atributos e colaboradores, validação de número mínimo de testemunhas, além de filtrar documentos excluídos (`deleted == 0`) no método `__get_document_or_404`. Também foi blindado o bloco de captura de exceções para evitar `UnboundLocalError` ao logar variáveis não instanciadas.
 - **Arquivos afetados**:
