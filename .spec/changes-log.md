@@ -1,5 +1,35 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-15] - Correção no Envio de Termo de Responsabilidade para o Clicksign (Backend v1.26.16 e Frontend v2.7.16)
+- **Descrição**: Resolução de falha ao enviar Termo de Responsabilidade para assinatura no Clicksign a partir da tela de edição do Termo (`/terms/edit/:id`). A requisição falhava com `404: {'field': 'documentId', 'error': 'Contrato não encontrado'}` porque o frontend enviava o ID do Termo (`id`) em vez do ID do documento associado (`lendingTermData.document`). Além disso, no backend, foi adicionado suporte defensivo com fallbacks automáticos para os signatários de termos (`signer_email` e `principal_email_signer`) que estavam nulos no banco de dados.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/routes/_dashboard/terms/edit/$id.tsx`
+  - `solutis-agile-frontend/package.json`
+  - `solutis_manager_back/src/document/service.py`
+  - `solutis_manager_back/src/term/service.py`
+  - `solutis_manager_back/src/term/schemas.py`
+  - `solutis_manager_back/src/tests/test_document_sign.py`
+  - `solutis_manager_back/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Frontend (`terms/edit/$id.tsx`)**:
+    - Corrigido `handleSendToClicksign` para enviar o `documentId` correto: `lendingTermData.documentRevoke` na aba de distrato (`activeTab === 'revoke'`) e `lendingTermData.document` nas demais abas.
+    - Exibição de notificação amigável e segura caso o documento não esteja disponível, sem expor dados técnicos.
+    - Atualizado o método `isEnableSendToClicksign()` e a propriedade `disabled` do botão `[Enviar via Clicksign]` para respeitar o estado do documento da aba ativa e a data de assinatura.
+    - Invalidação automática da query de cache `fetchLendingTerm` após sucesso no envio.
+  - **Backend (`document/service.py`)**:
+    - Adicionado fallback para `signer_email = term.signer_email or employee.email` e `principal_signer = term.principal_email_signer or "carla.anunciacao@solutis.com.br"`.
+    - Validação com erro 400 amigável caso o colaborador não possua e-mail para assinatura.
+    - Validação de retorno com erro 502 caso o Clicksign falhe na criação do envelope ou documento quando `DISABLE_CLICKSIGN=False`.
+  - **Backend (`term/service.py` e `term/schemas.py`)**:
+    - Descomentada e ativada a persistência de `signer_email` e `principal_email_signer` em `create_term` e `update_term`.
+    - Adicionado `default=None` aos campos de `UpdateTermSchema` para garantir compatibilidade retroativa com payloads parciais.
+  - **Testes (TDD)**:
+    - Adicionados novos testes unitários em `solutis_manager_back/src/tests/test_document_sign.py`: envio de Termo válido, fallback seguro de e-mails para termos existentes e validação de 400 para colaborador sem e-mail.
+  - **Versões**:
+    - `solutis-agile-frontend`: incrementado de `2.7.15` para `2.7.16`.
+    - `solutis-manager-back`: incrementado de `1.26.15` para `1.26.16`.
+
 ## [2026-09-15] - Deploy Remoto em Produção: Manager Backend v1.26.15 (Host Solutis - 172.21.3.225)
 - **Descrição**: Execução com sucesso do deploy remoto automatizado no servidor de produção Solutis (`172.21.3.225`) via SSH com `remote_deploy.py`. Sincronizada a branch `main` via `git checkout main && git pull origin main` e executado o pipeline `./deploy.sh`, realizando o build da imagem Docker do `solutis_manager_back` (v1.26.15) e a recriação do container `solutis-manager-back-prod`.
 - **Serviços Atualizados e Implantados**:

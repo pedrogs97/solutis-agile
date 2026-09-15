@@ -18,7 +18,13 @@ from src.asset.models import AssetModel, AssetStatusModel
 from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.clicksign_api.service import ClickSignService
-from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
+from src.config import (
+    BASE_DIR,
+    CONTRACT_UPLOAD_DIR,
+    DEBUG,
+    DEFAULT_DATE_FORMAT,
+    DISABLE_CLICKSIGN,
+)
 from src.document.enums import DocumentTypeEnum
 from src.document.filters import DocumentFilter
 from src.document.models import DocumentModel, DocumentTypeModel
@@ -2477,14 +2483,30 @@ class DocumentService:
                         },
                     )
 
+                signer_email = term.signer_email or (
+                    employee.email if employee else None
+                )
+                if not signer_email:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            "field": "signerEmail",
+                            "error": "Colaborador associado ao termo não possui e-mail para assinatura",
+                        },
+                    )
+
+                principal_signer = (
+                    term.principal_email_signer or "carla.anunciacao@solutis.com.br"
+                )
+
                 (
                     envelope_id,
                     signed_doc_id,
                 ) = self.clicksign_service.send_document_to_sign(
                     document.file_name,
                     document.path,
-                    term.signer_email,
-                    term.principal_email_signer,
+                    signer_email,
+                    principal_signer,
                     employee.full_name,
                     employee.taxpayer_identification,
                     employee.birthday.isoformat(),
@@ -2496,6 +2518,15 @@ class DocumentService:
                     detail={
                         "field": "documentId",
                         "error": "Tipo de documento inválido para assinatura",
+                    },
+                )
+
+            if not DISABLE_CLICKSIGN and not (envelope_id and signed_doc_id):
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail={
+                        "field": "clicksign",
+                        "error": "Falha na comunicação com o serviço de assinatura Clicksign",
                     },
                 )
 

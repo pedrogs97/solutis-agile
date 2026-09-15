@@ -3,6 +3,7 @@
 import { Button, Card, Flex, Grid, Tabs, Text } from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { showNotification } from '@mantine/notifications'
+import { useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
 import { useState } from 'react'
@@ -32,6 +33,7 @@ export const Route = createFileRoute('/_dashboard/terms/edit/$id')({
 function EditTermPage() {
   const { id } = useParams({ from: '/_dashboard/terms/edit/$id' })
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [isSendingClicksign, setIsSendingClicksign] = useState(false)
   const {
     getContentBackgroundColor,
@@ -96,21 +98,47 @@ function EditTermPage() {
   }
 
   const isTermSigned = Boolean(lendingTermData?.signedDate)
+  const isRevokeSigned = Boolean(lendingTermData?.revokeSignedDate)
   const isGeneralTab = activeTab === 'general-data'
   const isContractTabWithSigned = activeTab === 'contract' && isTermSigned
   const shouldShowOnlySave = !isGeneralTab && !isContractTabWithSigned
 
+  const isEnableSendToClicksign = () => {
+    if (!lendingTermData || !canEdit) return false
+    if (activeTab === 'revoke') {
+      return Boolean(lendingTermData.documentRevoke && !isRevokeSigned)
+    }
+    return Boolean(lendingTermData.document && !isTermSigned)
+  }
+
   const handleSendToClicksign = async () => {
-    if (!id || isSendingClicksign || isTermSigned || !lendingTermData) return
+    if (!id || isSendingClicksign || !isEnableSendToClicksign() || !lendingTermData) return
+
+    const targetDocumentId =
+      activeTab === 'revoke'
+        ? lendingTermData.documentRevoke
+        : lendingTermData.document
+
+    if (!targetDocumentId) {
+      showNotification({
+        title: 'Documento não encontrado',
+        message: 'Não há documento disponível para envio ao Clicksign.',
+        color: 'red',
+      })
+      return
+    }
 
     try {
       setIsSendingClicksign(true)
-      await axios.post('/documents/send/clicksign/', { documentId: id })
+      await axios.post('/documents/send/clicksign/', {
+        documentId: targetDocumentId,
+      })
       showNotification({
         title: 'Documento enviado',
         message: 'Termo encaminhado para assinatura via Clicksign.',
         color: 'teal',
       })
+      queryClient.invalidateQueries({ queryKey: ['fetchLendingTerm', id] })
     } catch {
       showNotification({
         title: 'Falha ao enviar',
@@ -124,7 +152,7 @@ function EditTermPage() {
   }
 
   const openConfirmSendToClicksignModal = () => {
-    if (!lendingTermData || isTermSigned) return
+    if (!isEnableSendToClicksign()) return
     modals.openConfirmModal({
       title: 'Enviar via Clicksign',
       centered: true,
@@ -349,7 +377,7 @@ function EditTermPage() {
                 radius="md"
                 loading={isSendingClicksign}
                 onClick={openConfirmSendToClicksignModal}
-                disabled={!lendingTermData || isTermSigned}
+                disabled={!isEnableSendToClicksign()}
                 leftSection={
                   <img
                     src={ClickSignIcon}

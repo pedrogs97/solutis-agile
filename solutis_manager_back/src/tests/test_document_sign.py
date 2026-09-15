@@ -12,6 +12,7 @@ from src.document.models import DocumentModel, DocumentTypeModel
 from src.document.service import DocumentService
 from src.lending.models import LendingModel, LendingStatusModel, WitnessModel
 from src.people.models import EmployeeModel
+from src.term.models import TermItemModel, TermItemTypeModel, TermModel, TermStatusModel
 from src.tests.base import TestBase
 
 
@@ -97,6 +98,11 @@ class TestDocumentSign(TestBase):
         db.add(asset)
         db.commit()
 
+        term_type = TermItemTypeModel(name="Kit Ferramenta")
+        term_status = TermStatusModel(name="Ativo")
+        db.add_all([term_type, term_status])
+        db.commit()
+
         return {
             "employee_id": base_emp.id,
             "witness1_emp_id": witness1_emp.id,
@@ -104,6 +110,8 @@ class TestDocumentSign(TestBase):
             "asset_id": asset.id,
             "cost_center_id": cost_center.id,
             "status_active_id": status_active.id,
+            "term_type_id": term_type.id,
+            "term_status_id": term_status.id,
         }
 
     def test_sign_document_raises_404_when_document_not_found(self, setup):
@@ -229,3 +237,155 @@ class TestDocumentSign(TestBase):
         assert contract_doc.sign_envelope_id == "env-12345"
         assert contract_doc.sign_doc_id == "sign-67890"
         mock_clicksign.send_document_to_sign.assert_called_once()
+
+    def test_sign_document_success_when_term_valid(self, setup_data):
+        """Should successfully send Term document to Clicksign and update document."""
+        db = self.testing_session_local()
+        service = DocumentService()
+
+        mock_clicksign = MagicMock()
+        mock_clicksign.send_document_to_sign.return_value = (
+            "env-term-123",
+            "sign-term-456",
+        )
+        service.clicksign_service = mock_clicksign
+
+        term_doc = DocumentModel(
+            path="/storage/valid_term.pdf",
+            file_name="valid_term.pdf",
+            doc_type_id=DocumentTypeEnum.TERM,
+            deleted=False,
+        )
+        db.add(term_doc)
+        db.commit()
+
+        term_item = TermItemModel(description="Kit de ferramentas padrão")
+        db.add(term_item)
+        db.commit()
+
+        term = TermModel(
+            employee_id=setup_data["employee_id"],
+            cost_center_id=setup_data["cost_center_id"],
+            type_id=setup_data["term_type_id"],
+            term_item_id=term_item.id,
+            document_id=term_doc.id,
+            status_id=setup_data["term_status_id"],
+            manager="Gestor TI",
+            number="TERM-1234",
+            signer_email="colaborador@solutis.com.br",
+            principal_email_signer="thomas.lichtenberger@solutis.com.br",
+        )
+        db.add(term)
+        db.commit()
+
+        service.sign_document(int(term_doc.id), db)
+
+        db.refresh(term_doc)
+        assert term_doc.sign_envelope_id == "env-term-123"
+        assert term_doc.sign_doc_id == "sign-term-456"
+        mock_clicksign.send_document_to_sign.assert_called_once()
+        call_args = mock_clicksign.send_document_to_sign.call_args[0]
+        assert call_args[2] == "colaborador@solutis.com.br"
+        assert call_args[3] == "thomas.lichtenberger@solutis.com.br"
+
+    def test_sign_document_term_fallback_to_employee_email_and_default_principal(
+        self, setup_data
+    ):
+        """Should fall back to employee.email and default principal signer when not set on term."""
+        db = self.testing_session_local()
+        service = DocumentService()
+
+        mock_clicksign = MagicMock()
+        mock_clicksign.send_document_to_sign.return_value = (
+            "env-term-fallback",
+            "sign-term-fallback",
+        )
+        service.clicksign_service = mock_clicksign
+
+        term_doc = DocumentModel(
+            path="/storage/term_fallback.pdf",
+            file_name="term_fallback.pdf",
+            doc_type_id=DocumentTypeEnum.TERM,
+            deleted=False,
+        )
+        db.add(term_doc)
+        db.commit()
+
+        term_item = TermItemModel(description="Kit Ferramentas")
+        db.add(term_item)
+        db.commit()
+
+        # Term with None emails (exactly as in production bug report)
+        term = TermModel(
+            employee_id=setup_data["employee_id"],
+            cost_center_id=setup_data["cost_center_id"],
+            type_id=setup_data["term_type_id"],
+            term_item_id=term_item.id,
+            document_id=term_doc.id,
+            status_id=setup_data["term_status_id"],
+            manager="Gestor",
+            number="TERM-FALLBACK",
+            signer_email=None,
+            principal_email_signer=None,
+        )
+        db.add(term)
+        db.commit()
+
+        service.sign_document(int(term_doc.id), db)
+
+        db.refresh(term_doc)
+        assert term_doc.sign_envelope_id == "env-term-fallback"
+        assert term_doc.sign_doc_id == "sign-term-fallback"
+        call_args = mock_clicksign.send_document_to_sign.call_args[0]
+        # Verified fallback to base_emp.email and default carla.anunciacao@solutis.com.br
+        employee = (
+            db.query(EmployeeModel).filter_by(id=setup_data["employee_id"]).first()
+        )
+        assert call_args[2] == employee.email
+        assert call_args[3] == "carla.anunciacao@solutis.com.br"
+
+    def test_sign_document_term_raises_400_when_employee_has_no_email(self, setup_data):
+        """Should raise 400 when term employee has no email and term has no signer_email."""
+        db = self.testing_session_local()
+        service = DocumentService()
+
+        # Remove email from employee
+        employee = (
+            db.query(EmployeeModel).filter_by(id=setup_data["employee_id"]).first()
+        )
+        employee.email = ""
+        db.add(employee)
+        db.commit()
+
+        term_doc = DocumentModel(
+            path="/storage/term_no_email.pdf",
+            file_name="term_no_email.pdf",
+            doc_type_id=DocumentTypeEnum.TERM,
+            deleted=False,
+        )
+        db.add(term_doc)
+        db.commit()
+
+        term_item = TermItemModel(description="Kit")
+        db.add(term_item)
+        db.commit()
+
+        term = TermModel(
+            employee_id=employee.id,
+            cost_center_id=setup_data["cost_center_id"],
+            type_id=setup_data["term_type_id"],
+            term_item_id=term_item.id,
+            document_id=term_doc.id,
+            status_id=setup_data["term_status_id"],
+            manager="Gestor",
+            signer_email=None,
+            principal_email_signer=None,
+        )
+        db.add(term)
+        db.commit()
+
+        with pytest.raises(HTTPException) as exc_info:
+            service.sign_document(int(term_doc.id), db)
+
+        assert exc_info.value.status_code == 400
+        assert "e-mail" in str(exc_info.value.detail).lower()

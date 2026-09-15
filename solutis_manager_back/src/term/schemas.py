@@ -58,9 +58,9 @@ class TermSerializerSchema(BaseSchema):
 class UpdateTermSchema(BaseSchema):
     """Update term"""
 
-    observations: Optional[str]
-    principal_signer: Optional[str] = Field(alias="principalSigner")
-    employee_signer: Optional[str] = Field(alias="employeeSigner")
+    observations: Optional[str] = None
+    principal_signer: Optional[str] = Field(alias="principalSigner", default=None)
+    employee_signer: Optional[str] = Field(alias="employeeSigner", default=None)
 
 
 class NewTermSchema(BaseSchema):
