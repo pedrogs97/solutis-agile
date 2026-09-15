@@ -1,5 +1,25 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-15] - Validação Defensiva no Envio para Clicksign e Documentos Excluídos (Manager Backend v1.26.15)
+- **Descrição**: Resolução de erro HTTP 500 (`AttributeError: 'NoneType' object has no attribute 'employee'`) no endpoint `POST /api/v1/documents/send/clicksign/`. Foram implementadas verificações defensivas no método `sign_document` para validar a existência do comodato (`lending`) ou termo (`term`) antes de acessar seus atributos e colaboradores, validação de número mínimo de testemunhas, além de filtrar documentos excluídos (`deleted == 0`) no método `__get_document_or_404`. Também foi blindado o bloco de captura de exceções para evitar `UnboundLocalError` ao logar variáveis não instanciadas.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/document/service.py`
+  - `solutis_manager_back/src/tests/test_document_sign.py` [NOVO]
+  - `solutis_manager_back/pyproject.toml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Filtro de Documentos Ativos (`__get_document_or_404`)**:
+    - Agora filtra explicitamente `(DocumentModel.deleted.is_(False)) | (DocumentModel.deleted.is_(None))`, retornando HTTP 404 limpo caso o documento tenha sido marcado como deletado.
+  - **Validações Defensivas em `sign_document`**:
+    - Verificação explícita de nulidade para `lending` e `term` antes de acessar `.employee`, retornando HTTP 404 amigável com mensagem explicativa em vez de disparar erro 500.
+    - Validação de colaborador existente (`employee`) retornando HTTP 400 amigável caso não encontrado.
+    - Validação de pelo menos 2 testemunhas cadastradas no comodato antes do envio para o Clicksign, prevenindo `IndexError` no array de testemunhas.
+    - Inicialização preventiva de `document`, `lending`, `term`, `employee`, `signed_doc_id` e `envelope_id` como `None` no topo da função, eliminando o risco de `UnboundLocalError` durante a formatação dos logs de erro no bloco `except Exception`.
+  - **Testes Automatizados (TDD)**:
+    - Criado arquivo de testes unitários `src/tests/test_document_sign.py` cobrindo 100% dos cenários de documento inexistente (404), documento deletado (404), comodato órfão/não encontrado (404), termo órfão/não encontrado (404) e fluxo de sucesso com mocks da API do Clicksign.
+  - **Versão**:
+    - `solutis-manager-back`: incrementado para `1.26.15`.
+
 ## [2026-09-14] - Correção na Atualização de Usuários e Mudança de Perfil (Manager Backend v1.26.14 e Frontend v2.7.15)
 - **Descrição**: Correção de erros que impediam a atualização de usuários e a alteração de seus perfis (ex: MASTER) na interface do sistema. Foram corrigidos null checks na camada de serviço (`user.group` e `user.employee` nulos), redirecionamentos HTTP 307 causados por ausência de trailing slashes nas rotas do frontend e tratadas entradas vazias de seleção nos schemas Pydantic.
 - **Arquivos afetados**:

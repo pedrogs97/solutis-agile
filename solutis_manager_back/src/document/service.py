@@ -72,7 +72,10 @@ class DocumentService:
         """Get document or 404"""
         document = (
             db_session.query(DocumentModel)
-            .filter(DocumentModel.id == document_id)
+            .filter(
+                DocumentModel.id == document_id,
+                (DocumentModel.deleted.is_(False)) | (DocumentModel.deleted.is_(None)),
+            )
             .first()
         )
         if not document:
@@ -2353,10 +2356,12 @@ class DocumentService:
         """Sign document"""
         signed_doc_id = None
         envelope_id = None
+        document = None
+        lending = None
+        term = None
+        employee = None
         try:
             document = self.__get_document_or_404(document_id, db_session)
-            lending = None
-            term = None
 
             if document.doc_type_id == DocumentTypeEnum.LENDING:
                 lending = (
@@ -2395,7 +2400,31 @@ class DocumentService:
                 DocumentTypeEnum.LENDING,
                 DocumentTypeEnum.REVOKE_LENDING,
             ]:
+                if not lending:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail={
+                            "field": "lendingId",
+                            "error": "Comodato associado ao documento não foi encontrado",
+                        },
+                    )
                 employee = lending.employee
+                if not employee:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            "field": "employeeId",
+                            "error": "Colaborador associado ao comodato não foi encontrado",
+                        },
+                    )
+                if not lending.witnesses or len(lending.witnesses) < 2:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            "field": "witnesses",
+                            "error": "O comodato deve possuir ao menos duas testemunhas cadastradas para assinatura",
+                        },
+                    )
                 lending.witnesses.reverse()
                 witness1 = lending.witnesses[0]
                 witness2 = lending.witnesses[1]
@@ -2430,7 +2459,23 @@ class DocumentService:
                 DocumentTypeEnum.TERM,
                 DocumentTypeEnum.REVOKE_TERM,
             ]:
+                if not term:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail={
+                            "field": "termId",
+                            "error": "Termo associado ao documento não foi encontrado",
+                        },
+                    )
                 employee = term.employee
+                if not employee:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            "field": "employeeId",
+                            "error": "Colaborador associado ao termo não foi encontrado",
+                        },
+                    )
 
                 (
                     envelope_id,
@@ -2466,10 +2511,12 @@ class DocumentService:
             db_session.rollback()
             logger.error("Error sign document {}", error)
             logger.error("Signed Document ID {}", signed_doc_id)
-            logger.error("Document ID {}", document.id)
+            logger.error("Document ID {}", document.id if document else document_id)
             logger.error("Envelope ID {}", envelope_id)
             logger.error("document {}", str(document))
-            logger.error("document type {}", str(document.doc_type))
+            logger.error(
+                "document type {}", str(document.doc_type) if document else None
+            )
             logger.error("lending {}", str(lending))
             logger.error("employee {}", str(employee))
             raise HTTPException(
