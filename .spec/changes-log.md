@@ -1,5 +1,37 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-14] - Correção na Atualização de Usuários e Mudança de Perfil (Manager Backend v1.26.14 e Frontend v2.7.15)
+- **Descrição**: Correção de erros que impediam a atualização de usuários e a alteração de seus perfis (ex: MASTER) na interface do sistema. Foram corrigidos null checks na camada de serviço (`user.group` e `user.employee` nulos), redirecionamentos HTTP 307 causados por ausência de trailing slashes nas rotas do frontend e tratadas entradas vazias de seleção nos schemas Pydantic.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/auth/service.py`
+  - `solutis_manager_back/src/auth/schemas.py`
+  - `solutis_manager_back/src/auth/router.py`
+  - `solutis_manager_back/src/backends.py`
+  - `solutis_manager_back/src/tests/test_auth.py`
+  - `solutis_manager_back/pyproject.toml`
+  - `solutis-agile-frontend/src/services/api/user.ts`
+  - `solutis-agile-frontend/src/components/users/table.tsx`
+  - `solutis-agile-frontend/package.json`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Tratamento de Referências Nulas (`service.py`)**:
+    - `update_user` agora valida defensivamente se `user.group` e `user.employee` não são `None` antes de acessar `user.group.id` ou `user.employee.id`, evitando `AttributeError: 'NoneType' object has no attribute 'id'` que causava erro 500 ao atualizar usuários vindos do Azure SSO ou sem perfil prévio.
+    - Sincronização explícita em memória das instâncias `user.group = group` e `user.employee = employee` ao alterar o `group_id` / `employee_id`, assegurando retorno com o perfil atualizado em `serialize_user`.
+    - `serialize_user` e `serialize_group` agora tratam `user.group` ou `group.permissions` nulos de forma segura sem lançar exceções.
+  - **Validação de Schemas Pydantic (`schemas.py`)**:
+    - Adicionado `@field_validator("group_id", "employee_id", mode="before")` em `UserUpdateSchema` convertendo strings vazias `""` (enviadas por selects desmarcados no Mantine) em `None`.
+    - `UserSerializerSchema.group` tornado `Optional[GroupSerializerSchema] = None` para compatibilidade total com usuários sem grupo.
+  - **Resolução de Redirecionamento 307 e Trailing Slashes**:
+    - Frontend (`api/user.ts` e `components/users/table.tsx`): Atualizado para incluir a barra final (`/auth/users/${id}/`), evitando redirecionamento `307 Temporary Redirect` que provocava falha no CORS ou perda de cabeçalhos de autorização no navegador.
+    - Backend (`router.py`): Registrados aliases sem barra final (`/users/{user_id}`) para `PATCH` e `GET`, garantindo atendimento direto a clientes HTTP legados ou sem barra.
+  - **Segurança e Verificação de Permissões (`backends.py`)**:
+    - `PermissionChecker.has_permissions` protegido contra `user.group` sendo `None`.
+  - **Testes Automatizados (`test_auth.py`)**:
+    - Implementados novos testes de atualização com perfil inicialmente nulo, atualização sem barra final e envio de IDs como string vazia, atingindo 100% de aprovação (20 testes passando).
+  - **Versões**:
+    - `solutis-manager-back`: incrementado para `1.26.14`.
+    - `solutis-agile-frontend`: incrementado para `2.7.15`.
+
 ## [2026-09-12] - Sincronização de Fornecedores em Produção e Persistência do CSV (Procurement v2.18.5)
 - **Descrição**: Execução com sucesso do comando de sincronização de fornecedores (`python manage.py sync_suppliers`) diretamente no contêiner `solutis-procurement-prod` do servidor de produção Solutis (`172.21.3.225`). Foram processados e sincronizados 39 fornecedores ativos com integração ao banco TOTVS (totalizando 44 fornecedores no banco com seus dados bancários, de pagamento e classificação de risco). Adicionada a inclusão explícita de `COPY ./data /app/data` e `COPY ./fornecedores.csv /app/fornecedores.csv` no `solutis_procurement/Dockerfile` e o mapeamento de volumes correspondente no `docker-compose.prod.yml` para garantir que o arquivo CSV esteja disponível em todos os futuros builds e deploys.
 - **Arquivos afetados**:

@@ -236,6 +236,8 @@ class TestAuthModule(TestBase):
             "employeeId",
             "department",
             "manager",
+            "products",
+            "azureOid",
         ]
         authenticated_data = authenticated
         token = authenticated_data["access_token"]
@@ -252,6 +254,99 @@ class TestAuthModule(TestBase):
         assert len(data.keys()) == len(expected_keys)
         assert all(a == b for a, b in zip(data.keys(), expected_keys))
         assert data["email"] == payload["email"]
+
+    def test_auth_update_user_change_group_success(self, authenticated):
+        """Test updating user group/profile with and without trailing slash"""
+        authenticated_data = authenticated
+        token = authenticated_data["access_token"]
+        token_type = authenticated_data["token_type"]
+        db_session = self.testing_session_local()
+
+        # Create a second group
+        from src.auth.models import GroupModel
+
+        second_group = GroupModel(name="OPERACIONAL")
+        db_session.add(second_group)
+        db_session.commit()
+        db_session.refresh(second_group)
+
+        # Test patch with trailing slash
+        payload = {"groupId": second_group.id}
+        response = self.client.patch(
+            f"{BASE_API}/auth/users/{1}/",
+            headers={"Authorization": f"{token_type} {token}"},
+            json=payload,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["group"]["id"] == second_group.id
+        assert data["group"]["name"] == "OPERACIONAL"
+
+        # Test patch WITHOUT trailing slash (directly handled without 307 redirect)
+        payload_back = {"groupId": 1}
+        response_no_slash = self.client.patch(
+            f"{BASE_API}/auth/users/{1}",
+            headers={"Authorization": f"{token_type} {token}"},
+            json=payload_back,
+            follow_redirects=False,
+        )
+        assert response_no_slash.status_code == 200
+        data_back = response_no_slash.json()
+        assert data_back["group"]["id"] == 1
+
+    def test_auth_update_user_initially_null_group_and_employee(
+        self, setup, create_initial_data, authenticated
+    ):
+        """Test updating a user who initially has group_id=None and employee_id=None"""
+        authenticated_data = authenticated
+        token = authenticated_data["access_token"]
+        token_type = authenticated_data["token_type"]
+        db_session = self.testing_session_local()
+
+        from src.auth.models import UserModel
+        from src.people.models import EmployeeModel
+
+        # Create user with group_id=None and employee_id=None
+        user = UserModel(
+            username="user_null_profile",
+            email="null_profile@solutis.com.br",
+            password=PASSWORD_SUPER_USER,
+            group_id=None,
+            employee_id=None,
+            products="agile,flow",
+        )
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
+
+        employee = db_session.query(EmployeeModel).first()
+
+        # Update user to assign a group and employee
+        payload = {"groupId": 1, "employeeId": employee.id}
+        response = self.client.patch(
+            f"{BASE_API}/auth/users/{user.id}/",
+            headers={"Authorization": f"{token_type} {token}"},
+            json=payload,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["group"]["id"] == 1
+        assert data["employeeId"] == employee.id
+
+    def test_auth_update_user_empty_string_ids(self, authenticated):
+        """Test sending empty strings for groupId/employeeId is converted to None gracefully"""
+        authenticated_data = authenticated
+        token = authenticated_data["access_token"]
+        token_type = authenticated_data["token_type"]
+        payload = {"groupId": "", "employeeId": "", "department": "NOVO DEPTO"}
+        response = self.client.patch(
+            f"{BASE_API}/auth/users/{1}/",
+            headers={"Authorization": f"{token_type} {token}"},
+            json=payload,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["department"] == "NOVO DEPTO"
 
     def test_auth_update_user_invalid(self, authenticated):
         """Teste update user API invalid case"""
@@ -283,6 +378,8 @@ class TestAuthModule(TestBase):
             "employeeId",
             "department",
             "manager",
+            "products",
+            "azureOid",
         ]
         authenticated_data = authenticated
         token = authenticated_data["access_token"]
@@ -405,7 +502,7 @@ class TestAuthModule(TestBase):
             .filter(UserModel.username == "agile_admin")
             .first()
         )
-        user.products = None
+        user.products = ""
         db_session.commit()
 
         # Test login returns both products

@@ -2,7 +2,7 @@
 
 import random
 import string
-from typing import List, Union
+from typing import List, Optional, Union
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -323,8 +323,12 @@ class UserSerivce:
         if is_list:
             return UserListSerializerSchema(
                 id=user.id,
-                group_id=user.group.id,
-                group=user.group.name,
+                group_id=(
+                    user.group_id
+                    if user.group_id is not None
+                    else (user.group.id if user.group else None)
+                ),
+                group=user.group.name if user.group else None,
                 username=user.username,
                 full_name=full_name,
                 taxpayer_identification=taxpayer_identification,
@@ -343,7 +347,7 @@ class UserSerivce:
             )
         return UserSerializerSchema(
             id=user.id,
-            group=GroupService().serialize_group(user.group),
+            group=GroupService().serialize_group(user.group) if user.group else None,
             username=user.username,
             full_name=full_name,
             taxpayer_identification=taxpayer_identification,
@@ -388,34 +392,51 @@ class UserSerivce:
             errors = []
             is_updated = False
 
-            if data.group_id and user.group.id != data.group_id:
-                group = (
-                    db_session.query(GroupModel)
-                    .filter(GroupModel.id == data.group_id)
-                    .first()
+            if data.group_id is not None:
+                current_group_id = (
+                    user.group_id
+                    if user.group_id is not None
+                    else (user.group.id if user.group else None)
                 )
-
-                if not group:
-                    errors.append(
-                        {"field": "group", "error": "Perfil de usuário não encontrado"}
+                if current_group_id != data.group_id:
+                    group = (
+                        db_session.query(GroupModel)
+                        .filter(GroupModel.id == data.group_id)
+                        .first()
                     )
-                else:
-                    is_updated = True
-                    user.group_id = group.id
 
-            if data.employee_id and user.employee.id != data.employee_id:
-                employee = (
-                    db_session.query(EmployeeModel)
-                    .filter(EmployeeModel.id == data.employee_id)
-                    .first()
+                    if not group:
+                        errors.append(
+                            {
+                                "field": "group",
+                                "error": "Perfil de usuário não encontrado",
+                            }
+                        )
+                    else:
+                        is_updated = True
+                        user.group = group
+                        user.group_id = group.id
+
+            if data.employee_id is not None:
+                current_employee_id = (
+                    user.employee_id
+                    if user.employee_id is not None
+                    else (user.employee.id if user.employee else None)
                 )
-                if not employee:
-                    errors.append(
-                        {"field": "employee", "error": "Colaborador não encontrado"}
+                if current_employee_id != data.employee_id:
+                    employee = (
+                        db_session.query(EmployeeModel)
+                        .filter(EmployeeModel.id == data.employee_id)
+                        .first()
                     )
-                else:
-                    is_updated = True
-                    user.employee = employee
+                    if not employee:
+                        errors.append(
+                            {"field": "employee", "error": "Colaborador não encontrado"}
+                        )
+                    else:
+                        is_updated = True
+                        user.employee = employee
+                        user.employee_id = employee.id
 
             if data.username and user.username != data.username:
                 user_find = (
@@ -910,11 +931,15 @@ class GroupService:
 
         return self.serialize_group(new_group_db)
 
-    def serialize_group(self, group: GroupModel) -> GroupSerializerSchema:
+    def serialize_group(
+        self, group: Optional[GroupModel]
+    ) -> Optional[GroupSerializerSchema]:
         """Serialize group"""
-        dict_group = group.__dict__
+        if not group:
+            return None
+        dict_group = group.__dict__.copy()
         serializer_permissions = []
-        for perm in group.permissions:
+        for perm in group.permissions or []:
             serializer_permissions.append(PermissionSerializerSchema(**perm.__dict__))
         dict_group.update({"permissions": serializer_permissions})
         return GroupSerializerSchema(**dict_group)

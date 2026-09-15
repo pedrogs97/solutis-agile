@@ -35,7 +35,7 @@ export const addUser = async (data: any) => {
 }
 
 export const editUser = async (id: string, data: any) => {
-  const { data: response } = await axios.patch(`/auth/users/${id}`, data)
+  const { data: response } = await axios.patch(`/auth/users/${id}/`, data)
   return response
 }
 

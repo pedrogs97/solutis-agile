@@ -220,6 +220,11 @@ def get_list_user_route(
     response_model=UserSerializerSchema,
     description="Updates an existing user",
 )
+@auth_router.patch(
+    "/users/{user_id}",
+    response_model=UserSerializerSchema,
+    include_in_schema=False,
+)
 def update_user_route(
     data: UserUpdateSchema,
     user_id: int,
@@ -275,6 +280,11 @@ def put_update_user_route():
     "/users/{user_id}/",
     response_model=UserSerializerSchema,
     description="Retrives an existing user",
+)
+@auth_router.get(
+    "/users/{user_id}",
+    response_model=UserSerializerSchema,
+    include_in_schema=False,
 )
 def get_user_route(
     user_id: int,

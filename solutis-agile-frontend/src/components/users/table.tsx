@@ -31,7 +31,7 @@ export function UsersTable({ data, canEdit }: any) {
   const { mutate: mutateUpdateActiveUser } = useMutation({
     mutationKey: ['updateActiveUser'],
     mutationFn: async (data: any) => {
-      const { data: response } = await axios.patch(`/auth/users/${data.id}`, {
+      const { data: response } = await axios.patch(`/auth/users/${data.id}/`, {
         isActive: data.isActive,
       })
       return response

@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import EmailStr, Field, constr
+from pydantic import EmailStr, Field, constr, field_validator
 from src.schemas import BaseSchema
 
 
@@ -72,6 +72,16 @@ class UserUpdateSchema(BaseSchema):
     manager: Optional[str] = None
     products: Optional[List[str]] = Field(default=None)
 
+    @field_validator("group_id", "employee_id", mode="before")
+    @classmethod
+    def parse_optional_int(cls, v):
+        if v is None or v == "" or (isinstance(v, str) and not v.strip()):
+            return None
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            return None
+
 
 class UserChangePasswordSchema(BaseSchema):
     """
@@ -92,7 +102,7 @@ class UserSerializerSchema(BaseSchema):
     """
 
     id: int
-    group: GroupSerializerSchema
+    group: Optional[GroupSerializerSchema] = None
     full_name: str = Field(serialization_alias="fullName")
     username: str
     email: str
@@ -114,8 +124,8 @@ class UserListSerializerSchema(BaseSchema):
     """
 
     id: int
-    group: str
-    group_id: int = Field(serialization_alias="groupId")
+    group: Optional[str] = None
+    group_id: Optional[int] = Field(serialization_alias="groupId", default=None)
     full_name: str = Field(serialization_alias="fullName")
     username: str
     email: str
