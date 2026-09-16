@@ -1,8 +1,9 @@
 # Histórico de Alterações do Projeto
 
-## [2026-09-16] - Regeneração de Rotas do TanStack Router e Correção de Linter (Frontend v2.7.17)
-- **Descrição**: Regeneração da árvore de rotas tipadas do TanStack Router (`src/routeTree.gen.ts`) para incluir a rota de callback SSO `/auth/callback/azure`, resolvendo erros de tipagem TypeScript e de compilação. Correção e ordenação automática de imports com `simple-import-sort` via ESLint nos componentes de avaliações e processos de compra.
+## [2026-09-16] - Ativação do SSO Azure Entra ID e Correções de Rotas/Linter (Backend v1.26.17 e Frontend v2.7.17)
+- **Descrição**: Ativação e configuração da integração de Single Sign-On (SSO) corporativo com Microsoft Entra ID (Azure AD) em produção. Regeneração da árvore de rotas tipadas do TanStack Router (`src/routeTree.gen.ts`) para incluir a rota de callback SSO `/auth/callback/azure`, resolvendo erros de tipagem TypeScript e de compilação. Correção e ordenação automática de imports com `simple-import-sort` via ESLint nos componentes de avaliações e processos de compra.
 - **Arquivos afetados**:
+  - `solutis_manager_back/pyproject.toml`
   - `solutis-agile-frontend/package.json`
   - `solutis-agile-frontend/package-lock.json`
   - `solutis-agile-frontend/src/routeTree.gen.ts`
