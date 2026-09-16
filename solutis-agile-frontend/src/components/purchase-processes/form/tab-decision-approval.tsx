@@ -12,14 +12,12 @@ import {
   Stack,
   Table,
   Text,
-  TextInput,
   Textarea,
+  TextInput,
   Title,
 } from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react'
-
-import { getProfile } from '@/store/persisted/useProfileStore'
 
 import {
   formatDateTime,
@@ -27,6 +25,7 @@ import {
   maskCnpj,
   usePurchaseProcessCalculations,
 } from '@/hooks/purchase-process/usePurchaseProcessCalculations'
+import { getProfile } from '@/store/persisted/useProfileStore'
 import type { PurchaseProcess } from '@/types/PurchaseProcess'
 import { MOTIVOS_COTACAO } from '@/types/PurchaseProcess'
 

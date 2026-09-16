@@ -1,5 +1,30 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-16] - Regeneração de Rotas do TanStack Router e Correção de Linter (Frontend v2.7.17)
+- **Descrição**: Regeneração da árvore de rotas tipadas do TanStack Router (`src/routeTree.gen.ts`) para incluir a rota de callback SSO `/auth/callback/azure`, resolvendo erros de tipagem TypeScript e de compilação. Correção e ordenação automática de imports com `simple-import-sort` via ESLint nos componentes de avaliações e processos de compra.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/package.json`
+  - `solutis-agile-frontend/package-lock.json`
+  - `solutis-agile-frontend/src/routeTree.gen.ts`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/approvals-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/asset-management-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/financial-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/technical-evaluation-section.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-decision-approval.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-identification.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-items-detail.tsx`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessCalculations.test.ts`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Rotas e Tipagem**:
+    - Inclusão da rota `AuthCallbackAzureRoute` (`/auth/callback/azure`) no `routeTree.gen.ts`.
+    - Resolução dos erros de tipagem em `Route.useSearch()`, garantindo o reconhecimento de `code`, `state` e `error`.
+  - **Qualidade de Código**:
+    - Autofix de importações via `npm run lint:fix`.
+    - Validação total de tipos com `npm run typecheck` (`tsc -b`) passando com 0 erros e 0 warnings.
+  - **Versão**:
+    - `solutis-agile-frontend`: incrementado de `2.7.16` para `2.7.17`.
+
 ## [2026-09-15] - Correção no Envio de Termo de Responsabilidade para o Clicksign (Backend v1.26.16 e Frontend v2.7.16)
 - **Descrição**: Resolução de falha ao enviar Termo de Responsabilidade para assinatura no Clicksign a partir da tela de edição do Termo (`/terms/edit/:id`). A requisição falhava com `404: {'field': 'documentId', 'error': 'Contrato não encontrado'}` porque o frontend enviava o ID do Termo (`id`) em vez do ID do documento associado (`lendingTermData.document`). Além disso, no backend, foi adicionado suporte defensivo com fallbacks automáticos para os signatários de termos (`signer_email` e `principal_email_signer`) que estavam nulos no banco de dados.
 - **Arquivos afetados**:

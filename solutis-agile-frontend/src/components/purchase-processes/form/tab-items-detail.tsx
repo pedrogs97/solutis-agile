@@ -1,7 +1,5 @@
 'use client'
 
-import { Fragment } from 'react'
-
 import {
   ActionIcon,
   Button,
@@ -17,6 +15,7 @@ import {
   Tooltip,
 } from '@mantine/core'
 import { Plus, Trash2 } from 'lucide-react'
+import { Fragment } from 'react'
 
 import {
   calcItemTotal,

@@ -7,8 +7,8 @@ import {
   NumberInput,
   Stack,
   Text,
-  TextInput,
   Textarea,
+  TextInput,
   Title,
 } from '@mantine/core'
 import {

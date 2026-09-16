@@ -23,6 +23,7 @@ import { Route as DashboardUsersIndexRouteImport } from './routes/_dashboard/use
 import { Route as DashboardTermsIndexRouteImport } from './routes/_dashboard/terms/index'
 import { Route as DashboardSuppliersIndexRouteImport } from './routes/_dashboard/suppliers/index'
 import { Route as DashboardReportsIndexRouteImport } from './routes/_dashboard/reports/index'
+import { Route as DashboardPurchaseProcessesIndexRouteImport } from './routes/_dashboard/purchase-processes/index'
 import { Route as DashboardLendingsIndexRouteImport } from './routes/_dashboard/lendings/index'
 import { Route as DashboardInvoicesIndexRouteImport } from './routes/_dashboard/invoices/index'
 import { Route as DashboardInventoryIndexRouteImport } from './routes/_dashboard/inventory/index'
@@ -30,10 +31,15 @@ import { Route as DashboardGroupsAndPermissionsIndexRouteImport } from './routes
 import { Route as DashboardEmployeesIndexRouteImport } from './routes/_dashboard/employees/index'
 import { Route as DashboardDashboardIndexRouteImport } from './routes/_dashboard/dashboard/index'
 import { Route as DashboardAssetsIndexRouteImport } from './routes/_dashboard/assets/index'
+import { Route as DashboardAssetEvaluationsIndexRouteImport } from './routes/_dashboard/asset-evaluations/index'
 import { Route as AuthLoginIndexRouteImport } from './routes/_auth/login/index'
+import { Route as AuthCallbackAzureRouteImport } from './routes/auth/callback/azure'
+import { Route as DashboardPurchaseProcessesIdRouteImport } from './routes/_dashboard/purchase-processes/$id'
+import { Route as DashboardAssetEvaluationsIdRouteImport } from './routes/_dashboard/asset-evaluations/$id'
 import { Route as DashboardUsersAddIndexRouteImport } from './routes/_dashboard/users/add/index'
 import { Route as DashboardTermsAddIndexRouteImport } from './routes/_dashboard/terms/add/index'
 import { Route as DashboardSuppliersAddIndexRouteImport } from './routes/_dashboard/suppliers/add/index'
+import { Route as DashboardPurchaseProcessesNewIndexRouteImport } from './routes/_dashboard/purchase-processes/new/index'
 import { Route as DashboardLendingsAddIndexRouteImport } from './routes/_dashboard/lendings/add/index'
 import { Route as DashboardInvoicesImportIndexRouteImport } from './routes/_dashboard/invoices/import/index'
 import { Route as DashboardInventoryViewIndexRouteImport } from './routes/_dashboard/inventory/view/index'
@@ -41,6 +47,7 @@ import { Route as DashboardGroupsAndPermissionsAddIndexRouteImport } from './rou
 import { Route as DashboardEmployeesAddIndexRouteImport } from './routes/_dashboard/employees/add/index'
 import { Route as DashboardAssetsImportIndexRouteImport } from './routes/_dashboard/assets/import/index'
 import { Route as DashboardAssetsAddIndexRouteImport } from './routes/_dashboard/assets/add/index'
+import { Route as DashboardAssetEvaluationsNewIndexRouteImport } from './routes/_dashboard/asset-evaluations/new/index'
 import { Route as DashboardUsersEditIdRouteImport } from './routes/_dashboard/users/edit/$id'
 import { Route as DashboardTermsEditIdRouteImport } from './routes/_dashboard/terms/edit/$id'
 import { Route as DashboardLendingsEditIdRouteImport } from './routes/_dashboard/lendings/edit/$id'
@@ -48,12 +55,6 @@ import { Route as DashboardGroupsAndPermissionsEditIdRouteImport } from './route
 import { Route as DashboardEmployeesEditIdRouteImport } from './routes/_dashboard/employees/edit/$id'
 import { Route as DashboardAssetsEditIdRouteImport } from './routes/_dashboard/assets/edit/$id'
 import { Route as DashboardSuppliersEditIdIndexRouteImport } from './routes/_dashboard/suppliers/edit/$id/index'
-import { Route as DashboardAssetEvaluationsIndexRouteImport } from './routes/_dashboard/asset-evaluations/index'
-import { Route as DashboardAssetEvaluationsNewIndexRouteImport } from './routes/_dashboard/asset-evaluations/new/index'
-import { Route as DashboardAssetEvaluationsIdRouteImport } from './routes/_dashboard/asset-evaluations/$id'
-import { Route as DashboardPurchaseProcessesIndexRouteImport } from './routes/_dashboard/purchase-processes/index'
-import { Route as DashboardPurchaseProcessesNewIndexRouteImport } from './routes/_dashboard/purchase-processes/new/index'
-import { Route as DashboardPurchaseProcessesIdRouteImport } from './routes/_dashboard/purchase-processes/$id'
 
 const ErrorRoute = ErrorRouteImport.update({
   id: '/error',
@@ -126,6 +127,12 @@ const DashboardReportsIndexRoute = DashboardReportsIndexRouteImport.update({
   path: '/reports/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardPurchaseProcessesIndexRoute =
+  DashboardPurchaseProcessesIndexRouteImport.update({
+    id: '/purchase-processes/',
+    path: '/purchase-processes/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardLendingsIndexRoute = DashboardLendingsIndexRouteImport.update({
   id: '/lendings/',
   path: '/lendings/',
@@ -162,11 +169,34 @@ const DashboardAssetsIndexRoute = DashboardAssetsIndexRouteImport.update({
   path: '/assets/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardAssetEvaluationsIndexRoute =
+  DashboardAssetEvaluationsIndexRouteImport.update({
+    id: '/asset-evaluations/',
+    path: '/asset-evaluations/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const AuthLoginIndexRoute = AuthLoginIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthLoginRouteRoute,
 } as any)
+const AuthCallbackAzureRoute = AuthCallbackAzureRouteImport.update({
+  id: '/auth/callback/azure',
+  path: '/auth/callback/azure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardPurchaseProcessesIdRoute =
+  DashboardPurchaseProcessesIdRouteImport.update({
+    id: '/purchase-processes/$id',
+    path: '/purchase-processes/$id',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardAssetEvaluationsIdRoute =
+  DashboardAssetEvaluationsIdRouteImport.update({
+    id: '/asset-evaluations/$id',
+    path: '/asset-evaluations/$id',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardUsersAddIndexRoute = DashboardUsersAddIndexRouteImport.update({
   id: '/users/add/',
   path: '/users/add/',
@@ -181,6 +211,12 @@ const DashboardSuppliersAddIndexRoute =
   DashboardSuppliersAddIndexRouteImport.update({
     id: '/suppliers/add/',
     path: '/suppliers/add/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardPurchaseProcessesNewIndexRoute =
+  DashboardPurchaseProcessesNewIndexRouteImport.update({
+    id: '/purchase-processes/new/',
+    path: '/purchase-processes/new/',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
 const DashboardLendingsAddIndexRoute =
@@ -224,6 +260,12 @@ const DashboardAssetsAddIndexRoute = DashboardAssetsAddIndexRouteImport.update({
   path: '/assets/add/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardAssetEvaluationsNewIndexRoute =
+  DashboardAssetEvaluationsNewIndexRouteImport.update({
+    id: '/asset-evaluations/new/',
+    path: '/asset-evaluations/new/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardUsersEditIdRoute = DashboardUsersEditIdRouteImport.update({
   id: '/users/edit/$id',
   path: '/users/edit/$id',
@@ -262,42 +304,6 @@ const DashboardSuppliersEditIdIndexRoute =
     path: '/suppliers/edit/$id/',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
-const DashboardAssetEvaluationsIndexRoute =
-  DashboardAssetEvaluationsIndexRouteImport.update({
-    id: '/asset-evaluations/',
-    path: '/asset-evaluations/',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
-const DashboardAssetEvaluationsNewIndexRoute =
-  DashboardAssetEvaluationsNewIndexRouteImport.update({
-    id: '/asset-evaluations/new/',
-    path: '/asset-evaluations/new/',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
-const DashboardAssetEvaluationsIdRoute =
-  DashboardAssetEvaluationsIdRouteImport.update({
-    id: '/asset-evaluations/$id',
-    path: '/asset-evaluations/$id',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
-const DashboardPurchaseProcessesIndexRoute =
-  DashboardPurchaseProcessesIndexRouteImport.update({
-    id: '/purchase-processes/',
-    path: '/purchase-processes/',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
-const DashboardPurchaseProcessesNewIndexRoute =
-  DashboardPurchaseProcessesNewIndexRouteImport.update({
-    id: '/purchase-processes/new/',
-    path: '/purchase-processes/new/',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
-const DashboardPurchaseProcessesIdRoute =
-  DashboardPurchaseProcessesIdRouteImport.update({
-    id: '/purchase-processes/$id',
-    path: '/purchase-processes/$id',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -305,7 +311,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRouteRouteWithChildren
   '/inventory-form': typeof InventoryInventoryFormRouteRouteWithChildren
   '/approval': typeof SuppliersApprovalRouteRouteWithChildren
+  '/asset-evaluations/$id': typeof DashboardAssetEvaluationsIdRoute
+  '/purchase-processes/$id': typeof DashboardPurchaseProcessesIdRoute
+  '/auth/callback/azure': typeof AuthCallbackAzureRoute
   '/login/': typeof AuthLoginIndexRoute
+  '/asset-evaluations': typeof DashboardAssetEvaluationsIndexRoute
   '/assets': typeof DashboardAssetsIndexRoute
   '/dashboard': typeof DashboardDashboardIndexRoute
   '/employees': typeof DashboardEmployeesIndexRoute
@@ -313,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/inventory': typeof DashboardInventoryIndexRoute
   '/invoices': typeof DashboardInvoicesIndexRoute
   '/lendings': typeof DashboardLendingsIndexRoute
+  '/purchase-processes': typeof DashboardPurchaseProcessesIndexRoute
   '/reports': typeof DashboardReportsIndexRoute
   '/suppliers': typeof DashboardSuppliersIndexRoute
   '/terms': typeof DashboardTermsIndexRoute
@@ -326,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/lendings/edit/$id': typeof DashboardLendingsEditIdRoute
   '/terms/edit/$id': typeof DashboardTermsEditIdRoute
   '/users/edit/$id': typeof DashboardUsersEditIdRoute
+  '/asset-evaluations/new': typeof DashboardAssetEvaluationsNewIndexRoute
   '/assets/add': typeof DashboardAssetsAddIndexRoute
   '/assets/import': typeof DashboardAssetsImportIndexRoute
   '/employees/add': typeof DashboardEmployeesAddIndexRoute
@@ -333,21 +345,20 @@ export interface FileRoutesByFullPath {
   '/inventory/view': typeof DashboardInventoryViewIndexRoute
   '/invoices/import': typeof DashboardInvoicesImportIndexRoute
   '/lendings/add': typeof DashboardLendingsAddIndexRoute
+  '/purchase-processes/new': typeof DashboardPurchaseProcessesNewIndexRoute
   '/suppliers/add': typeof DashboardSuppliersAddIndexRoute
   '/terms/add': typeof DashboardTermsAddIndexRoute
   '/users/add': typeof DashboardUsersAddIndexRoute
   '/suppliers/edit/$id': typeof DashboardSuppliersEditIdIndexRoute
-  '/asset-evaluations': typeof DashboardAssetEvaluationsIndexRoute
-  '/asset-evaluations/new': typeof DashboardAssetEvaluationsNewIndexRoute
-  '/asset-evaluations/$id': typeof DashboardAssetEvaluationsIdRoute
-  '/purchase-processes': typeof DashboardPurchaseProcessesIndexRoute
-  '/purchase-processes/new': typeof DashboardPurchaseProcessesNewIndexRoute
-  '/purchase-processes/$id': typeof DashboardPurchaseProcessesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/error': typeof ErrorRoute
+  '/asset-evaluations/$id': typeof DashboardAssetEvaluationsIdRoute
+  '/purchase-processes/$id': typeof DashboardPurchaseProcessesIdRoute
+  '/auth/callback/azure': typeof AuthCallbackAzureRoute
   '/login': typeof AuthLoginIndexRoute
+  '/asset-evaluations': typeof DashboardAssetEvaluationsIndexRoute
   '/assets': typeof DashboardAssetsIndexRoute
   '/dashboard': typeof DashboardDashboardIndexRoute
   '/employees': typeof DashboardEmployeesIndexRoute
@@ -355,6 +366,7 @@ export interface FileRoutesByTo {
   '/inventory': typeof DashboardInventoryIndexRoute
   '/invoices': typeof DashboardInvoicesIndexRoute
   '/lendings': typeof DashboardLendingsIndexRoute
+  '/purchase-processes': typeof DashboardPurchaseProcessesIndexRoute
   '/reports': typeof DashboardReportsIndexRoute
   '/suppliers': typeof DashboardSuppliersIndexRoute
   '/terms': typeof DashboardTermsIndexRoute
@@ -368,6 +380,7 @@ export interface FileRoutesByTo {
   '/lendings/edit/$id': typeof DashboardLendingsEditIdRoute
   '/terms/edit/$id': typeof DashboardTermsEditIdRoute
   '/users/edit/$id': typeof DashboardUsersEditIdRoute
+  '/asset-evaluations/new': typeof DashboardAssetEvaluationsNewIndexRoute
   '/assets/add': typeof DashboardAssetsAddIndexRoute
   '/assets/import': typeof DashboardAssetsImportIndexRoute
   '/employees/add': typeof DashboardEmployeesAddIndexRoute
@@ -375,16 +388,11 @@ export interface FileRoutesByTo {
   '/inventory/view': typeof DashboardInventoryViewIndexRoute
   '/invoices/import': typeof DashboardInvoicesImportIndexRoute
   '/lendings/add': typeof DashboardLendingsAddIndexRoute
+  '/purchase-processes/new': typeof DashboardPurchaseProcessesNewIndexRoute
   '/suppliers/add': typeof DashboardSuppliersAddIndexRoute
   '/terms/add': typeof DashboardTermsAddIndexRoute
   '/users/add': typeof DashboardUsersAddIndexRoute
   '/suppliers/edit/$id': typeof DashboardSuppliersEditIdIndexRoute
-  '/asset-evaluations': typeof DashboardAssetEvaluationsIndexRoute
-  '/asset-evaluations/new': typeof DashboardAssetEvaluationsNewIndexRoute
-  '/asset-evaluations/$id': typeof DashboardAssetEvaluationsIdRoute
-  '/purchase-processes': typeof DashboardPurchaseProcessesIndexRoute
-  '/purchase-processes/new': typeof DashboardPurchaseProcessesNewIndexRoute
-  '/purchase-processes/$id': typeof DashboardPurchaseProcessesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -395,7 +403,11 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRouteRouteWithChildren
   '/_inventory/inventory-form': typeof InventoryInventoryFormRouteRouteWithChildren
   '/_suppliers/approval': typeof SuppliersApprovalRouteRouteWithChildren
+  '/_dashboard/asset-evaluations/$id': typeof DashboardAssetEvaluationsIdRoute
+  '/_dashboard/purchase-processes/$id': typeof DashboardPurchaseProcessesIdRoute
+  '/auth/callback/azure': typeof AuthCallbackAzureRoute
   '/_auth/login/': typeof AuthLoginIndexRoute
+  '/_dashboard/asset-evaluations/': typeof DashboardAssetEvaluationsIndexRoute
   '/_dashboard/assets/': typeof DashboardAssetsIndexRoute
   '/_dashboard/dashboard/': typeof DashboardDashboardIndexRoute
   '/_dashboard/employees/': typeof DashboardEmployeesIndexRoute
@@ -403,6 +415,7 @@ export interface FileRoutesById {
   '/_dashboard/inventory/': typeof DashboardInventoryIndexRoute
   '/_dashboard/invoices/': typeof DashboardInvoicesIndexRoute
   '/_dashboard/lendings/': typeof DashboardLendingsIndexRoute
+  '/_dashboard/purchase-processes/': typeof DashboardPurchaseProcessesIndexRoute
   '/_dashboard/reports/': typeof DashboardReportsIndexRoute
   '/_dashboard/suppliers/': typeof DashboardSuppliersIndexRoute
   '/_dashboard/terms/': typeof DashboardTermsIndexRoute
@@ -416,6 +429,7 @@ export interface FileRoutesById {
   '/_dashboard/lendings/edit/$id': typeof DashboardLendingsEditIdRoute
   '/_dashboard/terms/edit/$id': typeof DashboardTermsEditIdRoute
   '/_dashboard/users/edit/$id': typeof DashboardUsersEditIdRoute
+  '/_dashboard/asset-evaluations/new/': typeof DashboardAssetEvaluationsNewIndexRoute
   '/_dashboard/assets/add/': typeof DashboardAssetsAddIndexRoute
   '/_dashboard/assets/import/': typeof DashboardAssetsImportIndexRoute
   '/_dashboard/employees/add/': typeof DashboardEmployeesAddIndexRoute
@@ -423,16 +437,11 @@ export interface FileRoutesById {
   '/_dashboard/inventory/view/': typeof DashboardInventoryViewIndexRoute
   '/_dashboard/invoices/import/': typeof DashboardInvoicesImportIndexRoute
   '/_dashboard/lendings/add/': typeof DashboardLendingsAddIndexRoute
+  '/_dashboard/purchase-processes/new/': typeof DashboardPurchaseProcessesNewIndexRoute
   '/_dashboard/suppliers/add/': typeof DashboardSuppliersAddIndexRoute
   '/_dashboard/terms/add/': typeof DashboardTermsAddIndexRoute
   '/_dashboard/users/add/': typeof DashboardUsersAddIndexRoute
   '/_dashboard/suppliers/edit/$id/': typeof DashboardSuppliersEditIdIndexRoute
-  '/_dashboard/asset-evaluations/': typeof DashboardAssetEvaluationsIndexRoute
-  '/_dashboard/asset-evaluations/new/': typeof DashboardAssetEvaluationsNewIndexRoute
-  '/_dashboard/asset-evaluations/$id': typeof DashboardAssetEvaluationsIdRoute
-  '/_dashboard/purchase-processes/': typeof DashboardPurchaseProcessesIndexRoute
-  '/_dashboard/purchase-processes/new/': typeof DashboardPurchaseProcessesNewIndexRoute
-  '/_dashboard/purchase-processes/$id': typeof DashboardPurchaseProcessesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -442,7 +451,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/inventory-form'
     | '/approval'
+    | '/asset-evaluations/$id'
+    | '/purchase-processes/$id'
+    | '/auth/callback/azure'
     | '/login/'
+    | '/asset-evaluations'
     | '/assets'
     | '/dashboard'
     | '/employees'
@@ -450,6 +463,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/invoices'
     | '/lendings'
+    | '/purchase-processes'
     | '/reports'
     | '/suppliers'
     | '/terms'
@@ -463,6 +477,7 @@ export interface FileRouteTypes {
     | '/lendings/edit/$id'
     | '/terms/edit/$id'
     | '/users/edit/$id'
+    | '/asset-evaluations/new'
     | '/assets/add'
     | '/assets/import'
     | '/employees/add'
@@ -470,21 +485,20 @@ export interface FileRouteTypes {
     | '/inventory/view'
     | '/invoices/import'
     | '/lendings/add'
+    | '/purchase-processes/new'
     | '/suppliers/add'
     | '/terms/add'
     | '/users/add'
     | '/suppliers/edit/$id'
-    | '/asset-evaluations'
-    | '/asset-evaluations/new'
-    | '/asset-evaluations/$id'
-    | '/purchase-processes'
-    | '/purchase-processes/new'
-    | '/purchase-processes/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/error'
+    | '/asset-evaluations/$id'
+    | '/purchase-processes/$id'
+    | '/auth/callback/azure'
     | '/login'
+    | '/asset-evaluations'
     | '/assets'
     | '/dashboard'
     | '/employees'
@@ -492,6 +506,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/invoices'
     | '/lendings'
+    | '/purchase-processes'
     | '/reports'
     | '/suppliers'
     | '/terms'
@@ -505,6 +520,7 @@ export interface FileRouteTypes {
     | '/lendings/edit/$id'
     | '/terms/edit/$id'
     | '/users/edit/$id'
+    | '/asset-evaluations/new'
     | '/assets/add'
     | '/assets/import'
     | '/employees/add'
@@ -512,16 +528,11 @@ export interface FileRouteTypes {
     | '/inventory/view'
     | '/invoices/import'
     | '/lendings/add'
+    | '/purchase-processes/new'
     | '/suppliers/add'
     | '/terms/add'
     | '/users/add'
     | '/suppliers/edit/$id'
-    | '/asset-evaluations'
-    | '/asset-evaluations/new'
-    | '/asset-evaluations/$id'
-    | '/purchase-processes'
-    | '/purchase-processes/new'
-    | '/purchase-processes/$id'
   id:
     | '__root__'
     | '/'
@@ -531,7 +542,11 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_inventory/inventory-form'
     | '/_suppliers/approval'
+    | '/_dashboard/asset-evaluations/$id'
+    | '/_dashboard/purchase-processes/$id'
+    | '/auth/callback/azure'
     | '/_auth/login/'
+    | '/_dashboard/asset-evaluations/'
     | '/_dashboard/assets/'
     | '/_dashboard/dashboard/'
     | '/_dashboard/employees/'
@@ -539,6 +554,7 @@ export interface FileRouteTypes {
     | '/_dashboard/inventory/'
     | '/_dashboard/invoices/'
     | '/_dashboard/lendings/'
+    | '/_dashboard/purchase-processes/'
     | '/_dashboard/reports/'
     | '/_dashboard/suppliers/'
     | '/_dashboard/terms/'
@@ -552,6 +568,7 @@ export interface FileRouteTypes {
     | '/_dashboard/lendings/edit/$id'
     | '/_dashboard/terms/edit/$id'
     | '/_dashboard/users/edit/$id'
+    | '/_dashboard/asset-evaluations/new/'
     | '/_dashboard/assets/add/'
     | '/_dashboard/assets/import/'
     | '/_dashboard/employees/add/'
@@ -559,16 +576,11 @@ export interface FileRouteTypes {
     | '/_dashboard/inventory/view/'
     | '/_dashboard/invoices/import/'
     | '/_dashboard/lendings/add/'
+    | '/_dashboard/purchase-processes/new/'
     | '/_dashboard/suppliers/add/'
     | '/_dashboard/terms/add/'
     | '/_dashboard/users/add/'
     | '/_dashboard/suppliers/edit/$id/'
-    | '/_dashboard/asset-evaluations/'
-    | '/_dashboard/asset-evaluations/new/'
-    | '/_dashboard/asset-evaluations/$id'
-    | '/_dashboard/purchase-processes/'
-    | '/_dashboard/purchase-processes/new/'
-    | '/_dashboard/purchase-processes/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -578,6 +590,7 @@ export interface RootRouteChildren {
   ErrorRoute: typeof ErrorRoute
   AuthLoginRouteRoute: typeof AuthLoginRouteRouteWithChildren
   SuppliersApprovalRouteRoute: typeof SuppliersApprovalRouteRouteWithChildren
+  AuthCallbackAzureRoute: typeof AuthCallbackAzureRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -680,6 +693,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardReportsIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/_dashboard/purchase-processes/': {
+      id: '/_dashboard/purchase-processes/'
+      path: '/purchase-processes'
+      fullPath: '/purchase-processes'
+      preLoaderRoute: typeof DashboardPurchaseProcessesIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/_dashboard/lendings/': {
       id: '/_dashboard/lendings/'
       path: '/lendings'
@@ -729,12 +749,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAssetsIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/_dashboard/asset-evaluations/': {
+      id: '/_dashboard/asset-evaluations/'
+      path: '/asset-evaluations'
+      fullPath: '/asset-evaluations'
+      preLoaderRoute: typeof DashboardAssetEvaluationsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/_auth/login/': {
       id: '/_auth/login/'
       path: '/'
       fullPath: '/login/'
       preLoaderRoute: typeof AuthLoginIndexRouteImport
       parentRoute: typeof AuthLoginRouteRoute
+    }
+    '/auth/callback/azure': {
+      id: '/auth/callback/azure'
+      path: '/auth/callback/azure'
+      fullPath: '/auth/callback/azure'
+      preLoaderRoute: typeof AuthCallbackAzureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/purchase-processes/$id': {
+      id: '/_dashboard/purchase-processes/$id'
+      path: '/purchase-processes/$id'
+      fullPath: '/purchase-processes/$id'
+      preLoaderRoute: typeof DashboardPurchaseProcessesIdRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/asset-evaluations/$id': {
+      id: '/_dashboard/asset-evaluations/$id'
+      path: '/asset-evaluations/$id'
+      fullPath: '/asset-evaluations/$id'
+      preLoaderRoute: typeof DashboardAssetEvaluationsIdRouteImport
+      parentRoute: typeof DashboardRouteRoute
     }
     '/_dashboard/users/add/': {
       id: '/_dashboard/users/add/'
@@ -755,6 +803,13 @@ declare module '@tanstack/react-router' {
       path: '/suppliers/add'
       fullPath: '/suppliers/add'
       preLoaderRoute: typeof DashboardSuppliersAddIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/purchase-processes/new/': {
+      id: '/_dashboard/purchase-processes/new/'
+      path: '/purchase-processes/new'
+      fullPath: '/purchase-processes/new'
+      preLoaderRoute: typeof DashboardPurchaseProcessesNewIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/_dashboard/lendings/add/': {
@@ -806,6 +861,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAssetsAddIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/_dashboard/asset-evaluations/new/': {
+      id: '/_dashboard/asset-evaluations/new/'
+      path: '/asset-evaluations/new'
+      fullPath: '/asset-evaluations/new'
+      preLoaderRoute: typeof DashboardAssetEvaluationsNewIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/_dashboard/users/edit/$id': {
       id: '/_dashboard/users/edit/$id'
       path: '/users/edit/$id'
@@ -855,52 +917,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSuppliersEditIdIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
-    '/_dashboard/asset-evaluations/': {
-      id: '/_dashboard/asset-evaluations/'
-      path: '/asset-evaluations'
-      fullPath: '/asset-evaluations'
-      preLoaderRoute: typeof DashboardAssetEvaluationsIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/_dashboard/asset-evaluations/new/': {
-      id: '/_dashboard/asset-evaluations/new/'
-      path: '/asset-evaluations/new'
-      fullPath: '/asset-evaluations/new'
-      preLoaderRoute: typeof DashboardAssetEvaluationsNewIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/_dashboard/asset-evaluations/$id': {
-      id: '/_dashboard/asset-evaluations/$id'
-      path: '/asset-evaluations/$id'
-      fullPath: '/asset-evaluations/$id'
-      preLoaderRoute: typeof DashboardAssetEvaluationsIdRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/_dashboard/purchase-processes/': {
-      id: '/_dashboard/purchase-processes/'
-      path: '/purchase-processes'
-      fullPath: '/purchase-processes'
-      preLoaderRoute: typeof DashboardPurchaseProcessesIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/_dashboard/purchase-processes/new/': {
-      id: '/_dashboard/purchase-processes/new/'
-      path: '/purchase-processes/new'
-      fullPath: '/purchase-processes/new'
-      preLoaderRoute: typeof DashboardPurchaseProcessesNewIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/_dashboard/purchase-processes/$id': {
-      id: '/_dashboard/purchase-processes/$id'
-      path: '/purchase-processes/$id'
-      fullPath: '/purchase-processes/$id'
-      preLoaderRoute: typeof DashboardPurchaseProcessesIdRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
   }
 }
 
 interface DashboardRouteRouteChildren {
+  DashboardAssetEvaluationsIdRoute: typeof DashboardAssetEvaluationsIdRoute
+  DashboardPurchaseProcessesIdRoute: typeof DashboardPurchaseProcessesIdRoute
+  DashboardAssetEvaluationsIndexRoute: typeof DashboardAssetEvaluationsIndexRoute
   DashboardAssetsIndexRoute: typeof DashboardAssetsIndexRoute
   DashboardDashboardIndexRoute: typeof DashboardDashboardIndexRoute
   DashboardEmployeesIndexRoute: typeof DashboardEmployeesIndexRoute
@@ -908,6 +931,7 @@ interface DashboardRouteRouteChildren {
   DashboardInventoryIndexRoute: typeof DashboardInventoryIndexRoute
   DashboardInvoicesIndexRoute: typeof DashboardInvoicesIndexRoute
   DashboardLendingsIndexRoute: typeof DashboardLendingsIndexRoute
+  DashboardPurchaseProcessesIndexRoute: typeof DashboardPurchaseProcessesIndexRoute
   DashboardReportsIndexRoute: typeof DashboardReportsIndexRoute
   DashboardSuppliersIndexRoute: typeof DashboardSuppliersIndexRoute
   DashboardTermsIndexRoute: typeof DashboardTermsIndexRoute
@@ -918,6 +942,7 @@ interface DashboardRouteRouteChildren {
   DashboardLendingsEditIdRoute: typeof DashboardLendingsEditIdRoute
   DashboardTermsEditIdRoute: typeof DashboardTermsEditIdRoute
   DashboardUsersEditIdRoute: typeof DashboardUsersEditIdRoute
+  DashboardAssetEvaluationsNewIndexRoute: typeof DashboardAssetEvaluationsNewIndexRoute
   DashboardAssetsAddIndexRoute: typeof DashboardAssetsAddIndexRoute
   DashboardAssetsImportIndexRoute: typeof DashboardAssetsImportIndexRoute
   DashboardEmployeesAddIndexRoute: typeof DashboardEmployeesAddIndexRoute
@@ -925,19 +950,17 @@ interface DashboardRouteRouteChildren {
   DashboardInventoryViewIndexRoute: typeof DashboardInventoryViewIndexRoute
   DashboardInvoicesImportIndexRoute: typeof DashboardInvoicesImportIndexRoute
   DashboardLendingsAddIndexRoute: typeof DashboardLendingsAddIndexRoute
+  DashboardPurchaseProcessesNewIndexRoute: typeof DashboardPurchaseProcessesNewIndexRoute
   DashboardSuppliersAddIndexRoute: typeof DashboardSuppliersAddIndexRoute
   DashboardTermsAddIndexRoute: typeof DashboardTermsAddIndexRoute
   DashboardUsersAddIndexRoute: typeof DashboardUsersAddIndexRoute
   DashboardSuppliersEditIdIndexRoute: typeof DashboardSuppliersEditIdIndexRoute
-  DashboardAssetEvaluationsIndexRoute: typeof DashboardAssetEvaluationsIndexRoute
-  DashboardAssetEvaluationsNewIndexRoute: typeof DashboardAssetEvaluationsNewIndexRoute
-  DashboardAssetEvaluationsIdRoute: typeof DashboardAssetEvaluationsIdRoute
-  DashboardPurchaseProcessesIndexRoute: typeof DashboardPurchaseProcessesIndexRoute
-  DashboardPurchaseProcessesNewIndexRoute: typeof DashboardPurchaseProcessesNewIndexRoute
-  DashboardPurchaseProcessesIdRoute: typeof DashboardPurchaseProcessesIdRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardAssetEvaluationsIdRoute: DashboardAssetEvaluationsIdRoute,
+  DashboardPurchaseProcessesIdRoute: DashboardPurchaseProcessesIdRoute,
+  DashboardAssetEvaluationsIndexRoute: DashboardAssetEvaluationsIndexRoute,
   DashboardAssetsIndexRoute: DashboardAssetsIndexRoute,
   DashboardDashboardIndexRoute: DashboardDashboardIndexRoute,
   DashboardEmployeesIndexRoute: DashboardEmployeesIndexRoute,
@@ -946,6 +969,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardInventoryIndexRoute: DashboardInventoryIndexRoute,
   DashboardInvoicesIndexRoute: DashboardInvoicesIndexRoute,
   DashboardLendingsIndexRoute: DashboardLendingsIndexRoute,
+  DashboardPurchaseProcessesIndexRoute: DashboardPurchaseProcessesIndexRoute,
   DashboardReportsIndexRoute: DashboardReportsIndexRoute,
   DashboardSuppliersIndexRoute: DashboardSuppliersIndexRoute,
   DashboardTermsIndexRoute: DashboardTermsIndexRoute,
@@ -957,6 +981,8 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardLendingsEditIdRoute: DashboardLendingsEditIdRoute,
   DashboardTermsEditIdRoute: DashboardTermsEditIdRoute,
   DashboardUsersEditIdRoute: DashboardUsersEditIdRoute,
+  DashboardAssetEvaluationsNewIndexRoute:
+    DashboardAssetEvaluationsNewIndexRoute,
   DashboardAssetsAddIndexRoute: DashboardAssetsAddIndexRoute,
   DashboardAssetsImportIndexRoute: DashboardAssetsImportIndexRoute,
   DashboardEmployeesAddIndexRoute: DashboardEmployeesAddIndexRoute,
@@ -965,17 +991,12 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardInventoryViewIndexRoute: DashboardInventoryViewIndexRoute,
   DashboardInvoicesImportIndexRoute: DashboardInvoicesImportIndexRoute,
   DashboardLendingsAddIndexRoute: DashboardLendingsAddIndexRoute,
+  DashboardPurchaseProcessesNewIndexRoute:
+    DashboardPurchaseProcessesNewIndexRoute,
   DashboardSuppliersAddIndexRoute: DashboardSuppliersAddIndexRoute,
   DashboardTermsAddIndexRoute: DashboardTermsAddIndexRoute,
   DashboardUsersAddIndexRoute: DashboardUsersAddIndexRoute,
   DashboardSuppliersEditIdIndexRoute: DashboardSuppliersEditIdIndexRoute,
-  DashboardAssetEvaluationsIndexRoute: DashboardAssetEvaluationsIndexRoute,
-  DashboardAssetEvaluationsNewIndexRoute: DashboardAssetEvaluationsNewIndexRoute,
-  DashboardAssetEvaluationsIdRoute: DashboardAssetEvaluationsIdRoute,
-  DashboardPurchaseProcessesIndexRoute: DashboardPurchaseProcessesIndexRoute,
-  DashboardPurchaseProcessesNewIndexRoute:
-    DashboardPurchaseProcessesNewIndexRoute,
-  DashboardPurchaseProcessesIdRoute: DashboardPurchaseProcessesIdRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
@@ -1044,6 +1065,7 @@ const rootRouteChildren: RootRouteChildren = {
   ErrorRoute: ErrorRoute,
   AuthLoginRouteRoute: AuthLoginRouteRouteWithChildren,
   SuppliersApprovalRouteRoute: SuppliersApprovalRouteRouteWithChildren,
+  AuthCallbackAzureRoute: AuthCallbackAzureRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

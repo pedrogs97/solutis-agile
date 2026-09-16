@@ -6,8 +6,8 @@ import {
   Grid,
   Group,
   Text,
-  TextInput,
   Textarea,
+  TextInput,
   Title,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'

@@ -10,6 +10,7 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
+
 import type { PurchaseProcess } from '@/types/PurchaseProcess'
 import {
   CATEGORIAS,

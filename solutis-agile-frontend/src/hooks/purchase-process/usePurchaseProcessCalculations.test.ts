@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { PurchaseProcess } from '@/types/PurchaseProcess'
+
 import {
   calcAutoGrossValue,
   calcCTA,
