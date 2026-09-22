@@ -1,6 +1,6 @@
 """Supplier schemas and mappers for Ninja v1."""
 
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import AliasChoices, Field
 from src.api.v1.schemas.common import CamelSchema, DomainRefOut
@@ -13,97 +13,97 @@ class TimestampedOut(CamelSchema):
     """Common timestamp fields returned by persisted nested supplier objects."""
 
     id: int
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class AddressOut(TimestampedOut):
     """Supplier address response."""
 
-    postal_code: Optional[str] = None
-    number: Optional[int] = None
-    complement: Optional[str] = None
-    street: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    neighbourhood: Optional[str] = None
+    postal_code: str | None = None
+    number: int | None = None
+    complement: str | None = None
+    street: str | None = None
+    city: str | None = None
+    state: str | None = None
+    neighbourhood: str | None = None
 
 
 class ContactOut(TimestampedOut):
     """Supplier contact response."""
 
-    name: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    name: str | None = None
+    email: str | None = None
+    phone: str | None = None
 
 
 class ContractOut(TimestampedOut):
     """Supplier contract response."""
 
-    object_contract: Optional[str] = None
-    executed_activities: Optional[str] = None
-    contract_start_date: Optional[str] = None
-    contract_end_date: Optional[str] = None
-    contract_type: Optional[str] = None
-    contract_period: Optional[str] = None
-    has_contract_renewal: Optional[bool] = None
-    warning_contract_renewal: Optional[bool] = None
-    warning_contract_period: Optional[str] = None
-    warning_on_termination: Optional[bool] = None
-    warning_on_renewal: Optional[bool] = None
-    warning_on_period: Optional[bool] = None
+    object_contract: str | None = None
+    executed_activities: str | None = None
+    contract_start_date: str | None = None
+    contract_end_date: str | None = None
+    contract_type: str | None = None
+    contract_period: str | None = None
+    has_contract_renewal: bool | None = None
+    warning_contract_renewal: bool | None = None
+    warning_contract_period: str | None = None
+    warning_on_termination: bool | None = None
+    warning_on_renewal: bool | None = None
+    warning_on_period: bool | None = None
 
 
 class PaymentDetailsOut(TimestampedOut):
     """Supplier payment details response."""
 
-    payment_frequency: Optional[str] = None
-    payment_date: Optional[str] = None
-    contract_total_value: Optional[float] = None
-    contract_monthly_value: Optional[float] = None
-    checking_account: Optional[str] = None
-    bank: Optional[str] = None
-    bank_code: Optional[str] = None
-    agency: Optional[str] = None
-    payment_method: Optional[int] = None
-    pix_key_type: Optional[int] = None
-    pix_key: Optional[str] = None
+    payment_frequency: str | None = None
+    payment_date: str | None = None
+    contract_total_value: float | None = None
+    contract_monthly_value: float | None = None
+    checking_account: str | None = None
+    bank: str | None = None
+    bank_code: str | None = None
+    agency: str | None = None
+    payment_method: int | None = None
+    pix_key_type: int | None = None
+    pix_key: str | None = None
 
 
 class OrganizationalDetailsOut(TimestampedOut):
     """Supplier organizational details response."""
 
-    cost_center: Optional[str] = None
-    business_unit: Optional[str] = None
-    responsible_executive: Optional[str] = None
-    responsible_manager: Optional[str] = None
-    payer_type: Optional[int] = None
-    business_sector: Optional[int] = None
-    taxpayer_classification: Optional[int] = None
-    public_entity: Optional[int] = None
+    cost_center: str | None = None
+    business_unit: str | None = None
+    responsible_executive: str | None = None
+    responsible_manager: str | None = None
+    payer_type: int | None = None
+    business_sector: int | None = None
+    taxpayer_classification: int | None = None
+    public_entity: int | None = None
 
 
 class FiscalDetailsOut(TimestampedOut):
     """Supplier fiscal details response."""
 
-    iss_withholding: Optional[int] = None
-    iss_regime: Optional[int] = None
-    iss_taxpayer: Optional[bool] = None
-    simples_nacional_participant: Optional[bool] = None
-    cooperative_member: Optional[bool] = None
-    withholding_tax_nature: Optional[int] = None
+    iss_withholding: int | None = None
+    iss_regime: int | None = None
+    iss_taxpayer: bool | None = None
+    simples_nacional_participant: bool | None = None
+    cooperative_member: bool | None = None
+    withholding_tax_nature: int | None = None
 
 
 class CompanyInformationOut(TimestampedOut):
     """Supplier company information response."""
 
-    company_size: Optional[int] = None
-    icms_taxpayer: Optional[int] = None
-    taxation_regime: Optional[int] = None
-    income_type: Optional[int] = None
-    taxation_method: Optional[int] = None
-    customer_type: Optional[int] = None
-    nit: Optional[str] = None
+    company_size: int | None = None
+    icms_taxpayer: int | None = None
+    taxation_regime: int | None = None
+    income_type: int | None = None
+    taxation_method: int | None = None
+    customer_type: int | None = None
+    nit: str | None = None
 
 
 class SupplierSituationOut(CamelSchema):
@@ -111,42 +111,42 @@ class SupplierSituationOut(CamelSchema):
 
     id: int
     supplier: int
-    status: Optional[DomainRefOut] = None
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    status: DomainRefOut | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class SupplierOut(CamelSchema):
     """Supplier detail response."""
 
     id: int
-    name: Optional[str] = None
-    trade_name: Optional[str] = None
+    name: str | None = None
+    trade_name: str | None = None
     legal_name: str
     tax_id: str
-    state_business_registration: Optional[str] = None
-    municipal_business_registration: Optional[str] = None
-    address: Optional[AddressOut] = None
-    contact: Optional[ContactOut] = None
-    payment_details: Optional[PaymentDetailsOut] = None
-    organizational_details: Optional[OrganizationalDetailsOut] = None
-    fiscal_details: Optional[FiscalDetailsOut] = None
-    company_information: Optional[CompanyInformationOut] = None
-    contract: Optional[ContractOut] = None
-    classification: Optional[DomainRefOut] = None
-    category: Optional[DomainRefOut] = None
-    risk_level: Optional[DomainRefOut] = None
-    type: Optional[DomainRefOut] = None
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
-    situation: Optional[SupplierSituationOut] = None
-    responsibility_matrix: Optional[dict[str, Any]] = None
+    state_business_registration: str | None = None
+    municipal_business_registration: str | None = None
+    address: AddressOut | None = None
+    contact: ContactOut | None = None
+    payment_details: PaymentDetailsOut | None = None
+    organizational_details: OrganizationalDetailsOut | None = None
+    fiscal_details: FiscalDetailsOut | None = None
+    company_information: CompanyInformationOut | None = None
+    contract: ContractOut | None = None
+    classification: DomainRefOut | None = None
+    category: DomainRefOut | None = None
+    risk_level: DomainRefOut | None = None
+    type: DomainRefOut | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+    situation: SupplierSituationOut | None = None
+    responsibility_matrix: dict[str, Any] | None = None
 
 
 class SupplierStatusSummaryOut(CamelSchema):
     """Supplier status summary used in list responses."""
 
-    name: Optional[str] = None
+    name: str | None = None
 
 
 class SupplierSituationSummaryOut(CamelSchema):
@@ -158,14 +158,14 @@ class SupplierSituationSummaryOut(CamelSchema):
 class SupplierRiskLevelSummaryOut(CamelSchema):
     """Supplier risk level summary used in list responses."""
 
-    name: Optional[str] = None
+    name: str | None = None
 
 
 class SupplierContractSummaryOut(CamelSchema):
     """Supplier contract dates used in list responses."""
 
-    contract_start_date: Optional[str] = None
-    contract_end_date: Optional[str] = None
+    contract_start_date: str | None = None
+    contract_end_date: str | None = None
 
 
 class SupplierListItemOut(CamelSchema):
@@ -183,90 +183,90 @@ class PaginatedSupplierListOut(CamelSchema):
     """Paginated supplier list response."""
 
     count: int
-    next: Optional[str] = None
-    previous: Optional[str] = None
+    next: str | None = None
+    previous: str | None = None
     results: list[SupplierListItemOut]
 
 
 class AddressPayload(CamelSchema):
     """Address payload used in supplier create/update."""
 
-    postal_code: Optional[str] = None
-    number: Optional[int] = None
-    complement: Optional[str] = None
-    street: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    neighbourhood: Optional[str] = None
+    postal_code: str | None = None
+    number: int | None = None
+    complement: str | None = None
+    street: str | None = None
+    city: str | None = None
+    state: str | None = None
+    neighbourhood: str | None = None
 
 
 class ContactPayload(CamelSchema):
     """Contact payload used in supplier create/update."""
 
-    name: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    name: str | None = None
+    email: str | None = None
+    phone: str | None = None
 
 
 class ContractPayload(CamelSchema):
     """Contract payload used in supplier create/update."""
 
-    object_contract: Optional[str] = None
-    executed_activities: Optional[str] = None
-    contract_start_date: Optional[str] = None
-    contract_end_date: Optional[str] = None
-    contract_type: Optional[str] = None
-    contract_period: Optional[str] = None
-    has_contract_renewal: Optional[bool] = None
-    warning_contract_renewal: Optional[bool] = None
-    warning_contract_period: Optional[str] = None
-    warning_on_termination: Optional[bool] = None
-    warning_on_renewal: Optional[bool] = None
-    warning_on_period: Optional[bool] = None
+    object_contract: str | None = None
+    executed_activities: str | None = None
+    contract_start_date: str | None = None
+    contract_end_date: str | None = None
+    contract_type: str | None = None
+    contract_period: str | None = None
+    has_contract_renewal: bool | None = None
+    warning_contract_renewal: bool | None = None
+    warning_contract_period: str | None = None
+    warning_on_termination: bool | None = None
+    warning_on_renewal: bool | None = None
+    warning_on_period: bool | None = None
 
 
 class PaymentDetailsPayload(CamelSchema):
     """Payment details payload used in supplier create/update."""
 
-    payment_frequency: Optional[str] = None
-    payment_date: Optional[str] = None
-    contract_total_value: Optional[float] = None
-    contract_monthly_value: Optional[float] = None
-    checking_account: Optional[str] = None
-    bank: Optional[str] = None
-    bank_code: Optional[str] = None
-    agency: Optional[str] = None
-    payment_method_id: Optional[int] = Field(
+    payment_frequency: str | None = None
+    payment_date: str | None = None
+    contract_total_value: float | None = None
+    contract_monthly_value: float | None = None
+    checking_account: str | None = None
+    bank: str | None = None
+    bank_code: str | None = None
+    agency: str | None = None
+    payment_method_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "paymentMethod", "payment_method", "payment_method_id"
         ),
     )
-    pix_key_type_id: Optional[int] = Field(
+    pix_key_type_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("pixKeyType", "pix_key_type", "pix_key_type_id"),
     )
-    pix_key: Optional[str] = None
+    pix_key: str | None = None
 
 
 class OrganizationalDetailsPayload(CamelSchema):
     """Organizational details payload used in supplier create/update."""
 
-    cost_center: Optional[str] = None
-    business_unit: Optional[str] = None
-    responsible_executive: Optional[str] = None
-    responsible_manager: Optional[str] = None
-    payer_type_id: Optional[int] = Field(
+    cost_center: str | None = None
+    business_unit: str | None = None
+    responsible_executive: str | None = None
+    responsible_manager: str | None = None
+    payer_type_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("payerType", "payer_type", "payer_type_id"),
     )
-    business_sector_id: Optional[int] = Field(
+    business_sector_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "businessSector", "business_sector", "business_sector_id"
         ),
     )
-    taxpayer_classification_id: Optional[int] = Field(
+    taxpayer_classification_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "taxpayerClassification",
@@ -274,7 +274,7 @@ class OrganizationalDetailsPayload(CamelSchema):
             "taxpayer_classification_id",
         ),
     )
-    public_entity_id: Optional[int] = Field(
+    public_entity_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "publicEntity", "public_entity", "public_entity_id"
@@ -285,20 +285,20 @@ class OrganizationalDetailsPayload(CamelSchema):
 class FiscalDetailsPayload(CamelSchema):
     """Fiscal details payload used in supplier create/update."""
 
-    iss_withholding_id: Optional[int] = Field(
+    iss_withholding_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "issWithholding", "iss_withholding", "iss_withholding_id"
         ),
     )
-    iss_regime_id: Optional[int] = Field(
+    iss_regime_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("issRegime", "iss_regime", "iss_regime_id"),
     )
-    iss_taxpayer: Optional[bool] = None
-    simples_nacional_participant: Optional[bool] = None
-    cooperative_member: Optional[bool] = None
-    withholding_tax_nature_id: Optional[int] = Field(
+    iss_taxpayer: bool | None = None
+    simples_nacional_participant: bool | None = None
+    cooperative_member: bool | None = None
+    withholding_tax_nature_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "withholdingTaxNature",
@@ -311,39 +311,39 @@ class FiscalDetailsPayload(CamelSchema):
 class CompanyInformationPayload(CamelSchema):
     """Company information payload used in supplier create/update."""
 
-    company_size_id: Optional[int] = Field(
+    company_size_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("companySize", "company_size", "company_size_id"),
     )
-    icms_taxpayer_id: Optional[int] = Field(
+    icms_taxpayer_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "icmsTaxpayer", "icms_taxpayer", "icms_taxpayer_id"
         ),
     )
-    taxation_regime_id: Optional[int] = Field(
+    taxation_regime_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "taxationRegime", "taxation_regime", "taxation_regime_id"
         ),
     )
-    income_type_id: Optional[int] = Field(
+    income_type_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("incomeType", "income_type", "income_type_id"),
     )
-    taxation_method_id: Optional[int] = Field(
+    taxation_method_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "taxationMethod", "taxation_method", "taxation_method_id"
         ),
     )
-    customer_type_id: Optional[int] = Field(
+    customer_type_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices(
             "customerType", "customer_type", "customer_type_id"
         ),
     )
-    nit: Optional[str] = None
+    nit: str | None = None
 
 
 class SupplierCreateIn(CamelSchema):
@@ -351,65 +351,65 @@ class SupplierCreateIn(CamelSchema):
 
     legal_name: str
     tax_id: str
-    trade_name: Optional[str] = None
-    state_business_registration: Optional[str] = None
-    municipal_business_registration: Optional[str] = None
-    classification_id: Optional[int] = Field(
+    trade_name: str | None = None
+    state_business_registration: str | None = None
+    municipal_business_registration: str | None = None
+    classification_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("classification", "classification_id"),
     )
-    category_id: Optional[int] = Field(
+    category_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("category", "category_id"),
     )
-    risk_level_id: Optional[int] = Field(
+    risk_level_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("riskLevel", "risk_level", "risk_level_id"),
     )
-    type_id: Optional[int] = Field(
+    type_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("type", "type_id"),
     )
-    address: Optional[AddressPayload] = None
-    contact: Optional[ContactPayload] = None
-    payment_details: Optional[PaymentDetailsPayload] = None
-    organizational_details: Optional[OrganizationalDetailsPayload] = None
-    fiscal_details: Optional[FiscalDetailsPayload] = None
-    company_information: Optional[CompanyInformationPayload] = None
-    contract: Optional[ContractPayload] = None
+    address: AddressPayload | None = None
+    contact: ContactPayload | None = None
+    payment_details: PaymentDetailsPayload | None = None
+    organizational_details: OrganizationalDetailsPayload | None = None
+    fiscal_details: FiscalDetailsPayload | None = None
+    company_information: CompanyInformationPayload | None = None
+    contract: ContractPayload | None = None
 
 
 class SupplierUpdateIn(CamelSchema):
     """Supplier update payload."""
 
-    legal_name: Optional[str] = None
-    tax_id: Optional[str] = None
-    trade_name: Optional[str] = None
-    state_business_registration: Optional[str] = None
-    municipal_business_registration: Optional[str] = None
-    classification_id: Optional[int] = Field(
+    legal_name: str | None = None
+    tax_id: str | None = None
+    trade_name: str | None = None
+    state_business_registration: str | None = None
+    municipal_business_registration: str | None = None
+    classification_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("classification", "classification_id"),
     )
-    category_id: Optional[int] = Field(
+    category_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("category", "category_id"),
     )
-    risk_level_id: Optional[int] = Field(
+    risk_level_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("riskLevel", "risk_level", "risk_level_id"),
     )
-    type_id: Optional[int] = Field(
+    type_id: int | None = Field(
         default=None,
         validation_alias=AliasChoices("type", "type_id"),
     )
-    address: Optional[AddressPayload] = None
-    contact: Optional[ContactPayload] = None
-    payment_details: Optional[PaymentDetailsPayload] = None
-    organizational_details: Optional[OrganizationalDetailsPayload] = None
-    fiscal_details: Optional[FiscalDetailsPayload] = None
-    company_information: Optional[CompanyInformationPayload] = None
-    contract: Optional[ContractPayload] = None
+    address: AddressPayload | None = None
+    contact: ContactPayload | None = None
+    payment_details: PaymentDetailsPayload | None = None
+    organizational_details: OrganizationalDetailsPayload | None = None
+    fiscal_details: FiscalDetailsPayload | None = None
+    company_information: CompanyInformationPayload | None = None
+    contract: ContractPayload | None = None
 
 
 def _domain_ref(instance):

@@ -4,7 +4,6 @@
 
 from datetime import date
 from decimal import Decimal
-from typing import Optional
 
 from django.db.models import Avg, Max, Min
 from src.api.v1.schemas.common import CamelSchema
@@ -17,7 +16,7 @@ from src.supplier.models.evaluation import (
 )
 
 
-def _decimal_to_str(value: Optional[Decimal]) -> Optional[str]:
+def _decimal_to_str(value: Decimal | None) -> str | None:
     if value is None:
         return None
     return f"{value:.2f}"
@@ -43,10 +42,10 @@ class EvaluationCriterionIn(CamelSchema):
 class EvaluationCriterionPatchIn(CamelSchema):
     """Payload for partial evaluation criterion updates."""
 
-    name: Optional[str] = None
-    description: Optional[str] = None
-    weight: Optional[Decimal] = None
-    order: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    weight: Decimal | None = None
+    order: int | None = None
 
 
 class EvaluationCriterionOut(CamelSchema):
@@ -75,22 +74,22 @@ class SupplierEvaluationIn(CamelSchema):
     period_type: str
     period_number: int
     evaluator_name: str
-    evaluation_date: Optional[date] = None
+    evaluation_date: date | None = None
     comments: str = ""
-    criterion_scores: Optional[list[CriterionScoreIn]] = None
+    criterion_scores: list[CriterionScoreIn] | None = None
 
 
 class SupplierEvaluationPatchIn(CamelSchema):
     """Payload for partial supplier evaluation updates."""
 
-    supplier: Optional[int] = None
-    evaluation_year: Optional[int] = None
-    period_type: Optional[str] = None
-    period_number: Optional[int] = None
-    evaluator_name: Optional[str] = None
-    evaluation_date: Optional[date] = None
-    comments: Optional[str] = None
-    criterion_scores: Optional[list[CriterionScoreIn]] = None
+    supplier: int | None = None
+    evaluation_year: int | None = None
+    period_type: str | None = None
+    period_number: int | None = None
+    evaluator_name: str | None = None
+    evaluation_date: date | None = None
+    comments: str | None = None
+    criterion_scores: list[CriterionScoreIn] | None = None
 
 
 def serialize_evaluation_criterion(item: EvaluationCriterion) -> dict:

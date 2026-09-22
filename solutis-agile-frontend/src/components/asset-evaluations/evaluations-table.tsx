@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from '@mantine/core'
 import { useNavigate } from '@tanstack/react-router'
-import { CheckCircle2, Eye, MoreVertical, Pencil } from 'lucide-react'
+import { CheckCircle2, Eye, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 
 import { formatMoneyBRL } from '@/lib/utils'
 import type { AssetTechnicalEvaluation } from '@/types/AssetEvaluation'
@@ -19,11 +19,13 @@ import type { AssetTechnicalEvaluation } from '@/types/AssetEvaluation'
 interface EvaluationsTableProps {
   data: AssetTechnicalEvaluation[]
   onApprove?: (id: number) => void
+  onDelete?: (id: number, protocol: string) => void
 }
 
 export function EvaluationsTable({
   data,
   onApprove,
+  onDelete,
 }: Readonly<EvaluationsTableProps>) {
   const navigate = useNavigate()
 
@@ -159,6 +161,15 @@ export function EvaluationsTable({
                           onClick={() => onApprove(item.id)}
                         >
                           Aprovar e Efetivar Baixa
+                        </Menu.Item>
+                      )}
+                      {onDelete && (
+                        <Menu.Item
+                          leftSection={<Trash2 size={16} />}
+                          color="red"
+                          onClick={() => onDelete(item.id, item.protocol)}
+                        >
+                          Excluir Avaliação
                         </Menu.Item>
                       )}
                     </Menu.Dropdown>

@@ -21,25 +21,7 @@ interface DocumentControlSectionProps {
   readOnly?: boolean
 }
 
-function parseDateValue(value: unknown): Date | null {
-  if (!value) return null
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
-  if (typeof value === 'string') {
-    const d = new Date(value)
-    return Number.isNaN(d.getTime()) ? null : d
-  }
-  return null
-}
-
-function formatDateToISO(val: any): string | null {
-  if (!val) return null
-  if (val instanceof Date) return Number.isNaN(val.getTime()) ? null : val.toISOString()
-  if (typeof val === 'string') {
-    const d = new Date(val)
-    return Number.isNaN(d.getTime()) ? val : d.toISOString()
-  }
-  return null
-}
+import { formatDateToLocalYMD, parseLocalDateValue } from '@/lib/utils'
 
 export function DocumentControlSection({
   form,
@@ -76,8 +58,8 @@ export function DocumentControlSection({
                 rightSection={<Calendar size={16} color="var(--mantine-color-gray-6)" />}
                 clearable
                 disabled={readOnly}
-                value={parseDateValue(field.value)}
-                onChange={(val: any) => field.onChange(formatDateToISO(val))}
+                value={parseLocalDateValue(field.value)}
+                onChange={(val: any) => field.onChange(formatDateToLocalYMD(val))}
               />
             )}
           />
@@ -95,8 +77,8 @@ export function DocumentControlSection({
                 rightSection={<Calendar size={16} color="var(--mantine-color-gray-6)" />}
                 clearable
                 disabled={readOnly}
-                value={parseDateValue(field.value)}
-                onChange={(val: any) => field.onChange(formatDateToISO(val))}
+                value={parseLocalDateValue(field.value)}
+                onChange={(val: any) => field.onChange(formatDateToLocalYMD(val))}
               />
             )}
           />
@@ -144,8 +126,8 @@ export function DocumentControlSection({
                   rightSection={<Calendar size={16} color="var(--mantine-color-gray-6)" />}
                   clearable
                   disabled={readOnly}
-                  value={parseDateValue(field.value)}
-                  onChange={(val: any) => field.onChange(formatDateToISO(val))}
+                  value={parseLocalDateValue(field.value)}
+                  onChange={(val: any) => field.onChange(formatDateToLocalYMD(val))}
                 />
               )}
             />
@@ -172,8 +154,8 @@ export function DocumentControlSection({
                   rightSection={<Calendar size={16} color="var(--mantine-color-gray-6)" />}
                   clearable
                   disabled={readOnly}
-                  value={parseDateValue(field.value)}
-                  onChange={(val: any) => field.onChange(formatDateToISO(val))}
+                  value={parseLocalDateValue(field.value)}
+                  onChange={(val: any) => field.onChange(formatDateToLocalYMD(val))}
                 />
               )}
             />
@@ -200,8 +182,8 @@ export function DocumentControlSection({
                   rightSection={<Calendar size={16} color="var(--mantine-color-gray-6)" />}
                   clearable
                   disabled={readOnly}
-                  value={parseDateValue(field.value)}
-                  onChange={(val: any) => field.onChange(formatDateToISO(val))}
+                  value={parseLocalDateValue(field.value)}
+                  onChange={(val: any) => field.onChange(formatDateToLocalYMD(val))}
                 />
               )}
             />

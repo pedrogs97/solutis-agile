@@ -1,6 +1,6 @@
 """Supplier list filters"""
 
-from typing import Annotated, List, Optional
+from typing import Annotated
 
 from django.db.models import OuterRef, Q, Subquery
 from ninja import FilterLookup
@@ -13,22 +13,22 @@ class SupplierListFilters(BaseFilters):
     """Supplier list query filters for Ninja endpoints."""
 
     name: Annotated[
-        Optional[str],
+        str | None,
         FilterLookup(["legal_name__icontains", "trade_name__icontains"]),
     ] = None
-    cnpj: Annotated[Optional[str], FilterLookup("tax_id__icontains")] = None
-    risk_level_id: Optional[int] = Field(
+    cnpj: Annotated[str | None, FilterLookup("tax_id__icontains")] = None
+    risk_level_id: int | None = Field(
         default=None, ge=0, description="Risk level ID", alias="risk"
     )
-    status: Optional[str] = None
+    status: str | None = None
     search: Annotated[
-        Optional[str],
+        str | None,
         FilterLookup(
             ["trade_name__icontains", "legal_name__icontains", "tax_id__icontains"]
         ),
     ] = None
 
-    def _status_names(self) -> List[str]:
+    def _status_names(self) -> list[str]:
         if not self.status:
             return []
         return [s.strip().upper() for s in self.status.split(",") if s.strip()]

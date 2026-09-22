@@ -6,7 +6,6 @@ Purchase Process router for Ninja API v1 (FO-AD-01).
 
 import math
 from datetime import datetime, timedelta
-from typing import Dict, Optional
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -93,9 +92,9 @@ def serialize_purchase_summary(proc: PurchaseProcess) -> PurchaseProcessSummaryO
 )
 def list_purchase_processes(
     request,
-    search: Optional[str] = None,
-    status: Optional[str] = None,
-    category: Optional[str] = None,
+    search: str | None = None,
+    status: str | None = None,
+    category: str | None = None,
     page: int = 1,
     page_size: int = 20,
     order_by: str = "-updated_at",
@@ -157,8 +156,8 @@ def list_purchase_processes(
 )
 def get_purchase_process_metrics(
     request,
-    periodo: Optional[str] = None,
-    categoria: Optional[str] = None,
+    periodo: str | None = None,
+    categoria: str | None = None,
 ):
     """Retrieve executive metrics and aggregated indicators for purchase processes."""
     qs = PurchaseProcess.objects.all()
@@ -203,17 +202,15 @@ def get_purchase_process_metrics(
             dec_date_str = apr.get("dataDecisao")
             if dec_date_str and p.created_at:
                 try:
-                    dec_date = datetime.fromisoformat(
-                        dec_date_str.replace("Z", "+00:00")
-                    )
+                    dec_date = datetime.fromisoformat(dec_date_str)
                     if dec_date.tzinfo is None:
                         dec_date = timezone.make_aware(dec_date)
                     diff_days = max(
                         0, (dec_date - p.created_at).total_seconds() / 86400.0
                     )
                     tempos.append(diff_days)
-                except Exception:
-                    pass
+                except (ValueError, TypeError):
+                    continue
 
     tempo_medio = (sum(tempos) / len(tempos)) if tempos else None
     taxa_conformidade = (
@@ -261,7 +258,7 @@ def get_purchase_process_metrics(
             )
 
     # Top buyers
-    buyers_map: Dict[str, int] = {}
+    buyers_map: dict[str, int] = {}
     for p in processes:
         buyer = (p.responsible_buyer or "").strip()
         if buyer:
@@ -390,7 +387,7 @@ def get_purchase_process(request, id: str):
 )
 def create_purchase_process(request, payload: PurchaseProcessCreateIn):
     """Create a new purchase process."""
-    data = payload.dict()
+    data = payload.dict(by_alias=True)
     proc = PurchaseProcess(
         schema_version=data.get("schemaVersion", 1),
         identification=data.get("identificacao") or {},
@@ -412,7 +409,7 @@ def create_purchase_process(request, payload: PurchaseProcessCreateIn):
 def update_purchase_process(request, id: str, payload: PurchaseProcessUpdateIn):
     """Update an existing purchase process."""
     proc = get_object_or_404(PurchaseProcess, id=id)
-    data = payload.dict(exclude_unset=True)
+    data = payload.dict(by_alias=True, exclude_unset=True)
 
     if "identificacao" in data and data["identificacao"] is not None:
         proc.identification = data["identificacao"]
@@ -433,7 +430,7 @@ def update_purchase_process(request, id: str, payload: PurchaseProcessUpdateIn):
 
 @router.delete(
     "/purchase-processes/{id}/",
-    response={200: Dict[str, bool], 404: ErrorOut},
+    response={200: dict[str, bool], 404: ErrorOut},
     operation_id="deletePurchaseProcess",
 )
 def delete_purchase_process(request, id: str):

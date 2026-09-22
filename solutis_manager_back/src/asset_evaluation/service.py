@@ -28,6 +28,7 @@ from src.asset_evaluation.schemas import (
 )
 from src.auth.models import UserModel
 from src.config import BASE_DIR, DEBUG
+from src.log.services import LogService
 from src.utils import upload_file
 
 BASE_CATALOG_COMPONENTS = [
@@ -53,6 +54,9 @@ BASE_CATALOG_COMPONENTS = [
 
 class AssetEvaluationService:
     """Regras de negócio para Avaliação Técnica e Baixa Patrimonial (FO-PAT-02)."""
+
+    def __init__(self):
+        self.log_service = LogService()
 
     def generate_protocol(self, db_session: Session) -> str:
         """Gera protocolo sequencial e único no formato FO-PAT-02-YYYYMMDD-XXXX."""
@@ -159,6 +163,11 @@ class AssetEvaluationService:
             "protocol": str(evaluation.protocol),
             "evaluation_date": evaluation.evaluation_date,
             "asset_id": evaluation.asset_id,
+            "is_unregistered": bool(getattr(evaluation, "is_unregistered", False)),
+            "unregistered_description": getattr(
+                evaluation, "unregistered_description", None
+            ),
+            "acquisition_date": getattr(evaluation, "acquisition_date", None),
             "patrimonio": evaluation.patrimonio,
             "asset_type_name": evaluation.asset_type_name,
             "brand_model": evaluation.brand_model,
@@ -307,6 +316,9 @@ class AssetEvaluationService:
             reviewed_by_date=data.reviewed_by_date,
             approved_by_date=data.approved_by_date,
             asset_id=data.asset_id,
+            is_unregistered=bool(data.is_unregistered),
+            unregistered_description=data.unregistered_description,
+            acquisition_date=data.acquisition_date,
             patrimonio=data.patrimonio,
             asset_type_name=data.asset_type_name,
             brand_model=data.brand_model,
@@ -371,6 +383,20 @@ class AssetEvaluationService:
         # Cadastro de componentes novos digitados pelo usuário no catálogo
         if data.new_components_for_catalog:
             self.register_new_components(db_session, data.new_components_for_catalog)
+
+        if authenticated_user:
+            try:
+                self.log_service.set_log(
+                    module="Avaliação Técnica",
+                    model="AssetTechnicalEvaluationModel",
+                    operation="Criação de Avaliação Técnica",
+                    identifier=evaluation.id,
+                    user=authenticated_user,
+                    db_session=db_session,
+                    auto_commit=False,
+                )
+            except Exception:
+                pass
 
         db_session.commit()
         db_session.refresh(evaluation)
@@ -483,6 +509,20 @@ class AssetEvaluationService:
                 or None
             )
 
+        if authenticated_user:
+            try:
+                self.log_service.set_log(
+                    module="Avaliação Técnica",
+                    model="AssetTechnicalEvaluationModel",
+                    operation="Atualização de Avaliação Técnica",
+                    identifier=int(evaluation.id),
+                    user=authenticated_user,
+                    db_session=db_session,
+                    auto_commit=False,
+                )
+            except Exception:
+                pass
+
         db_session.commit()
         db_session.refresh(evaluation)
         return self._serialize_evaluation(evaluation)
@@ -554,11 +594,7 @@ class AssetEvaluationService:
                 func.sum(AssetTechnicalEvaluationModel.estimated_economy),
                 func.avg(AssetTechnicalEvaluationModel.reuse_percentage),
             )
-            .filter(
-                AssetTechnicalEvaluationModel.status.in_(
-                    ["Aprovado", "Baixado", "Em avaliação"]
-                )
-            )
+            .filter(AssetTechnicalEvaluationModel.status != "Cancelado")
             .first()
         )
 
@@ -683,6 +719,16 @@ class AssetEvaluationService:
                 detail="Avaliação técnica não encontrada.",
             )
 
+        # F1-12: Se evaluation_data foi enviado, salva os dados preenchidos na tela antes de efetivar
+        if data.evaluation_data:
+            self.update_evaluation(
+                db_session=db_session,
+                evaluation_id=int(evaluation.id),
+                data=data.evaluation_data,
+                authenticated_user=authenticated_user,
+            )
+            db_session.refresh(evaluation)
+
         new_status = "Baixado" if data.write_off_asset else "Aprovado"
         evaluation.status = new_status
         evaluation.approver_id = authenticated_user.id if authenticated_user else None
@@ -718,6 +764,109 @@ class AssetEvaluationService:
                     asset.status_id = disposal_status.id
                 db_session.add(asset)
 
+        if authenticated_user:
+            op = (
+                "Aprovação e Baixa de Patrimônio"
+                if data.write_off_asset
+                else "Aprovação de Avaliação Técnica"
+            )
+            try:
+                self.log_service.set_log(
+                    module="Avaliação Técnica",
+                    model="AssetTechnicalEvaluationModel",
+                    operation=op,
+                    identifier=int(evaluation.id),
+                    user=authenticated_user,
+                    db_session=db_session,
+                    auto_commit=False,
+                )
+            except Exception:
+                pass
+
         db_session.commit()
         db_session.refresh(evaluation)
         return self._serialize_evaluation(evaluation)
+
+    def delete_evaluation(
+        self,
+        db_session: Session,
+        evaluation_id: int,
+        authenticated_user: UserModel | None = None,
+    ) -> bool:
+        """Exclui uma avaliação técnica FO-PAT-02 com componentes e anexos em cascata (AL-01)."""
+        evaluation = (
+            db_session.query(AssetTechnicalEvaluationModel)
+            .filter(AssetTechnicalEvaluationModel.id == evaluation_id)
+            .first()
+        )
+        if not evaluation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Avaliação técnica não encontrada.",
+            )
+
+        # Remove componentes e anexos
+        db_session.query(AssetEvaluationComponentModel).filter(
+            AssetEvaluationComponentModel.evaluation_id == evaluation.id
+        ).delete()
+        db_session.query(AssetEvaluationAttachmentModel).filter(
+            AssetEvaluationAttachmentModel.evaluation_id == evaluation.id
+        ).delete()
+
+        if authenticated_user:
+            try:
+                self.log_service.set_log(
+                    module="Avaliação Técnica",
+                    model="AssetTechnicalEvaluationModel",
+                    operation="Exclusão de Avaliação Técnica",
+                    identifier=int(evaluation.id),
+                    user=authenticated_user,
+                    db_session=db_session,
+                    auto_commit=False,
+                )
+            except Exception:
+                pass
+
+        db_session.delete(evaluation)
+        db_session.commit()
+        return True
+
+    def find_asset_by_identifier(
+        self, db_session: Session, query: str
+    ) -> dict[str, Any] | None:
+        """Busca ativo por número de patrimônio (tombo), código ou número de série (F1-06, F1-18)."""
+        q = query.strip()
+        if not q:
+            return None
+
+        asset = (
+            db_session.query(AssetModel)
+            .filter(
+                (AssetModel.register_number.ilike(q))
+                | (AssetModel.code.ilike(q))
+                | (AssetModel.serial_number.ilike(q))
+            )
+            .first()
+        )
+        if not asset:
+            return None
+
+        acquisition_date = None
+        if getattr(asset, "created_at", None):
+            acquisition_date = asset.created_at
+
+        return {
+            "id": asset.id,
+            "patrimonio": asset.register_number or asset.code,
+            "description": asset.description or "",
+            "brand": asset.brand or "",
+            "model": asset.model or "",
+            "serial_number": asset.serial_number or "",
+            "asset_type_name": asset.type.name if asset.type else "",
+            "value": float(asset.value or 0.0),
+            "acquisition_date": (
+                acquisition_date.isoformat() if acquisition_date else None
+            ),
+            "cost_center": getattr(asset, "cost_center", None) or "",
+            "unity": getattr(asset, "unity", None) or "",
+        }

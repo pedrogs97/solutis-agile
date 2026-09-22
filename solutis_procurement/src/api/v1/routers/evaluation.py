@@ -4,7 +4,6 @@
 
 import json
 from datetime import date
-from typing import Optional
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.paginator import EmptyPage, Paginator
@@ -144,7 +143,7 @@ def _check_duplicate_evaluation(
     evaluation_year: int,
     period_type: str,
     period_number: int,
-    exclude_pk: Optional[int] = None,
+    exclude_pk: int | None = None,
 ) -> None:
     """Raise HttpError 400 if an evaluation already exists for this supplier/year/period."""
     qs = SupplierEvaluation.objects.filter(
@@ -259,12 +258,12 @@ def list_evaluations(
     request,
     page: int = Query(1, ge=1),
     size: int = Query(12, ge=1, le=100),
-    supplier: Optional[int] = None,
-    evaluation_year: Optional[int] = Query(None, alias="evaluationYear"),
-    period_type: Optional[str] = Query(None, alias="periodType"),
-    period_number: Optional[int] = Query(None, alias="periodNumber"),
-    start_period: Optional[date] = Query(None, alias="startPeriod"),
-    end_period: Optional[date] = Query(None, alias="endPeriod"),
+    supplier: int | None = None,
+    evaluation_year: int | None = Query(None, alias="evaluationYear"),
+    period_type: str | None = Query(None, alias="periodType"),
+    period_number: int | None = Query(None, alias="periodNumber"),
+    start_period: date | None = Query(None, alias="startPeriod"),
+    end_period: date | None = Query(None, alias="endPeriod"),
 ):
     """List supplier evaluations with filters and pagination."""
     queryset = SupplierEvaluation.objects.select_related("supplier").all()
@@ -431,7 +430,7 @@ def evaluation_summary(request):
 
 
 @router.get("/supplier-history/", url_name="evaluation-supplier-history-v1")
-def supplier_history(request, supplier: Optional[int] = None):
+def supplier_history(request, supplier: int | None = None):
     """Return evaluation history for a supplier."""
     if not supplier:
         raise HttpError(400, "É necessário fornecer um ID de fornecedor.")

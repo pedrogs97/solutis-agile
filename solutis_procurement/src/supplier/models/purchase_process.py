@@ -5,7 +5,7 @@ Purchase Process Model (FO-AD-01) - Solutis Agile Procurement
 # pylint: disable=unsupported-membership-test,not-an-iterable,unnecessary-lambda
 
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from django.db import models
 
@@ -119,7 +119,7 @@ class PurchaseProcess(models.Model):
                 return True
         return False
 
-    def get_item_total(self, item: Dict[str, Any], supplier_id: str) -> float:
+    def get_item_total(self, item: dict[str, Any], supplier_id: str) -> float:
         """Calculate total value for a single item for a given supplier."""
         prices = item.get("precos") or {}
         price = prices.get(supplier_id) or 0
@@ -137,7 +137,7 @@ class PurchaseProcess(models.Model):
             total += self.get_item_total(item, supplier_id)
         return round(total, 2)
 
-    def get_gross_value(self, supplier: Dict[str, Any]) -> float:
+    def get_gross_value(self, supplier: dict[str, Any]) -> float:
         """Get gross value from items breakdown or manual fallback."""
         if self.has_items():
             return self.get_auto_gross_value(str(supplier.get("id")))
@@ -147,7 +147,7 @@ class PurchaseProcess(models.Model):
         except (ValueError, TypeError):
             return 0.0
 
-    def calculate_cta(self, supplier: Dict[str, Any]) -> float:
+    def calculate_cta(self, supplier: dict[str, Any]) -> float:
         """Calculate Total Cost of Acquisition (CTA) = Gross - Discount + Taxes + Freight + Other."""
         gross = self.get_gross_value(supplier)
         discount = float(supplier.get("desconto") or 0.0)
@@ -157,25 +157,25 @@ class PurchaseProcess(models.Model):
         cta = gross - discount + taxes + freight + other
         return round(cta, 2)
 
-    def get_filled_suppliers(self) -> List[Dict[str, Any]]:
+    def get_filled_suppliers(self) -> list[dict[str, Any]]:
         """Return suppliers with a non-empty name."""
         return [f for f in (self.suppliers or []) if str(f.get("nome") or "").strip()]
 
-    def get_lowest_cta_supplier(self) -> Optional[Dict[str, Any]]:
+    def get_lowest_cta_supplier(self) -> dict[str, Any] | None:
         """Find the supplier with the lowest CTA."""
         filled = self.get_filled_suppliers()
         if not filled:
             return None
         return min(filled, key=lambda f: self.calculate_cta(f))
 
-    def get_highest_cta_supplier(self) -> Optional[Dict[str, Any]]:
+    def get_highest_cta_supplier(self) -> dict[str, Any] | None:
         """Find the supplier with the highest CTA."""
         filled = self.get_filled_suppliers()
         if not filled:
             return None
         return max(filled, key=lambda f: self.calculate_cta(f))
 
-    def get_selected_supplier(self) -> Optional[Dict[str, Any]]:
+    def get_selected_supplier(self) -> dict[str, Any] | None:
         """Get the recommended supplier or fallback to lowest CTA."""
         dec = self.decision or {}
         rec_id = str(dec.get("fornecedorRecomendadoId") or "")
@@ -198,7 +198,7 @@ class PurchaseProcess(models.Model):
             return round(max(0.0, diff), 2)
         return 0.0
 
-    def get_evaluation_index(self) -> Optional[float]:
+    def get_evaluation_index(self) -> float | None:
         """Compute average satisfaction score (0.0 to 1.0) over the 6 criteria."""
         eval_data = self.evaluation or {}
         if not eval_data.get("preenchida"):
@@ -229,7 +229,7 @@ class PurchaseProcess(models.Model):
         # Average over the 6 criteria (unanswered count as 0 in denominator)
         return round(sum(scores) / 6.0, 4)
 
-    def get_performance_classification(self) -> Optional[str]:
+    def get_performance_classification(self) -> str | None:
         """Classify supplier performance into Excelente, Satisfatório, Atenção, Insatisfatório."""
         idx = self.get_evaluation_index()
         if idx is None:

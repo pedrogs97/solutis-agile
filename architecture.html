@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arquitetura dos Serviços - Solutis Agile</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-card: #111827;
+      --border-color: #1f2937;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      width: 100%;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .diagram-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .mermaid {
+      width: 100%;
+      text-align: center;
+    }
+
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .badge-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+
+    .badge-card h3 {
+      font-size: 1.1rem;
+      color: #e0e7ff;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge-card p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🗺️ Arquitetura dos Serviços - Solutis Agile Monorepo</h1>
+      <p class="subtitle">
+        Visualização de containers Docker, provimento dos frontends com Nginx, roteamento em destaque para o <strong>TaskView</strong> e ferramentas do ecossistema (bancos de dados, broker Redis, filas Dramatiq e eventos SSE).
+      </p>
+    </header>
+
+    <div class="diagram-wrapper">
+      <div class="mermaid">
+flowchart TB
+    %% CLIENTES & INGRESS / PROVIMENTO WEB (NGINX)
+    CLIENT["👤 Usuário / Navegador Web"]
+
+    subgraph INGRESS_LAYER ["🌐 Camada Web & Roteamento (Nginx)"]
+        NGINX_ROUTER{"Nginx (Host / Borda)<br/>Porta 80 / 443"}
+        AGILE_FRONT["🐳 Container: solutis-agile-frontend-prod<br/>Frontend Principal (Agile)<br/>Nginx Alpine + React 19 / Mantine<br/>Porta Host: 3000 | Container: 80"]
+        TASKVIEW_FRONT["🐳 Container: solutis-taskview-prod<br/>TaskView Frontend (Solutis Flow)<br/>Nginx Alpine + React / Vite (base: /taskview/)<br/>Porta Host: 3001 | Container: 80"]
+    end
+
+    %% CORE BACKEND & API GATEWAY
+    subgraph BACKEND_SERVICES ["⚙️ Microsserviços Backend (Containers Docker)"]
+        MANAGER_BACK["🐳 Container: solutis-manager-back-prod<br/>Manager Backend & Auth Gateway<br/>FastAPI + Python 3.13<br/>Porta: 8080"]
+        PROCUREMENT_BACK["🐳 Container: solutis-procurement-prod<br/>Procurement Service<br/>Django + NinjaAPI + Uvicorn<br/>Porta: 8001"]
+        REPORT_BACK["🐳 Container: solutis-report-prod<br/>Report Service v2<br/>FastAPI + SQLModel + OpenPyXL<br/>Porta: 8002"]
+        SYNC_BACK["🐳 Container: solutis-sync-prod<br/>Sync Service<br/>FastAPI + APScheduler<br/>Porta: 8003"]
+        FLOW_BACK["🐳 Container: solutis-flow-back-prod<br/>Solutis Flow Backend<br/>FastAPI + SQLModel + SSE Engine<br/>Porta: 8004"]
+    end
+
+    %% FILAS, WORKERS & CACHE / BROKER
+    subgraph ASYNC_LAYER ["📨 Filas, Background Jobs & Cache (Containers Docker)"]
+        FLOW_REDIS[("🐳 Container: solutis-flow-redis-prod<br/>Redis 7 Alpine<br/>Message Broker & Cache<br/>Porta: 6379")]
+        FLOW_WORKER["🐳 Container: solutis-flow-worker-prod<br/>Dramatiq Worker<br/>Processamento Assíncrono de Eventos"]
+    end
+
+    %% BANCOS DE DADOS
+    subgraph DATABASE_LAYER ["🛢️ Persistência de Dados"]
+        MYSQL_DB[("🛢️ MySQL 8.0<br/>Banco Principal da Aplicação<br/>Ativos, Comodatos, Usuários, Fornecedores")]
+        FLOW_DB[("🐳 Container: solutis-flow-db-prod<br/>PostgreSQL 16 Alpine<br/>Banco Isolado do Solutis Flow<br/>Porta: 5432")]
+        PROC_SQLITE[("📁 SQLite / Arquivos<br/>db.sqlite3 / Volumes")]
+    end
+
+    %% INTEGRAÇÕES EXTERNAS
+    subgraph EXTERNAL_SERVICES ["☁️ Serviços & Sistemas Externos"]
+        TOTVS_ERP[("🏢 ERP TOTVS (SQL Server)<br/>Base Corporativa")]
+        AZURE_SSO["☁️ Microsoft Entra ID<br/>SSO / Microsoft Graph"]
+        CLICKSIGN["✍️ Clicksign API<br/>Assinatura Digital de Documentos"]
+    end
+
+    %% RELAÇÕES E FLUXOS
+    CLIENT -->|Acesso Web| NGINX_ROUTER
+    NGINX_ROUTER -->|"Requisição padrão '/'"| AGILE_FRONT
+    NGINX_ROUTER ==>|"Roteamento / Redirecionamento '/taskview'"| TASKVIEW_FRONT
+    AGILE_FRONT -.->|"Link / Redirecionamento de UI (Card TaskView)"| TASKVIEW_FRONT
+
+    AGILE_FRONT -->|"Chamadas REST / JWT Auth"| MANAGER_BACK
+    TASKVIEW_FRONT -->|"Autenticação via Gateway / Proxy"| MANAGER_BACK
+    FLOW_BACK ==>|"SSE (Server-Sent Events) Tempo Real"| TASKVIEW_FRONT
+
+    MANAGER_BACK -->|"Auth Proxy: /v1/procurement"| PROCUREMENT_BACK
+    MANAGER_BACK -->|"Auth Proxy: /v1/report"| REPORT_BACK
+    MANAGER_BACK -->|"Auth Proxy: /v1/flow"| FLOW_BACK
+
+    MANAGER_BACK -->|"Leitura / Escrita"| MYSQL_DB
+    REPORT_BACK -->|"Leitura (Read-Only)"| MYSQL_DB
+    PROCUREMENT_BACK -->|"Leitura / Escrita"| MYSQL_DB
+    PROCUREMENT_BACK -.->|"Fallback local"| PROC_SQLITE
+    FLOW_BACK -->|"Leitura / Escrita (Isolado)"| FLOW_DB
+
+    FLOW_BACK -->|"Publica Eventos / Jobs"| FLOW_REDIS
+    FLOW_REDIS -->|"Consome Tarefas"| FLOW_WORKER
+    FLOW_WORKER -->|"Persiste Estado de Processamento"| FLOW_DB
+
+    SYNC_BACK -->|"Extração Agendada (APScheduler)"| TOTVS_ERP
+    SYNC_BACK -->|"Upsert de Registros Atualizados"| MYSQL_DB
+
+    MANAGER_BACK -->|"OAuth2 / Troca de Token SSO"| AZURE_SSO
+    MANAGER_BACK -->|"Criação de Envelopes & Assinaturas"| CLICKSIGN
+      </div>
+    </div>
+
+    <div class="badge-grid">
+      <div class="badge-card">
+        <h3>🔀 Nginx & TaskView</h3>
+        <p>Ambos os frontends usam <code>nginx:alpine</code>. Requisições em <code>/taskview</code> são encaminhadas diretamente para o container <code>solutis-taskview-prod</code>.</p>
+      </div>
+      <div class="badge-card">
+        <h3>⚡ Real-time SSE & Broker</h3>
+        <p>O Flow Backend despacha mensagens para o Redis 7 e consome via Dramatiq Worker, transmitindo atualizações em tempo real ao TaskView via Server-Sent Events.</p>
+      </div>
+      <div class="badge-card">
+        <h3>🛢️ Bancos Isolados & Core</h3>
+        <p>O Manager Backend e serviços correlatos utilizam MySQL 8.0, enquanto o módulo de governança do Flow possui seu banco isolado PostgreSQL 16.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#111827',
+        primaryColor: '#312e81',
+        primaryTextColor: '#f3f4f6',
+        primaryBorderColor: '#6366f1',
+        lineColor: '#818cf8',
+        secondaryColor: '#1e293b',
+        tertiaryColor: '#0f172a'
+      }
+    });
+  </script>
+</body>
+</html>

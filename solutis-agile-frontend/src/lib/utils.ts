@@ -11,6 +11,64 @@ export function formatDateBR(dateStr: string | null | undefined): string {
   return `${day}/${month}/${year}`
 }
 
+/** Converte um Date ou string para YYYY-MM-DD em horário local, evitando recuo de dia por UTC */
+export function formatDateToLocalYMD(val: any): string | null {
+  if (!val) return null
+  const d = val instanceof Date ? val : new Date(val)
+  if (Number.isNaN(d.getTime())) return null
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/** Converte string ISO ou YYYY-MM-DD para objeto Date em horário local sem subtrair horas */
+export function parseLocalDateValue(value: unknown): Date | null {
+  if (!value) return null
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
+  if (typeof value === 'string') {
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (match) {
+      const year = parseInt(match[1], 10)
+      const month = parseInt(match[2], 10) - 1
+      const day = parseInt(match[3], 10)
+      return new Date(year, month, day)
+    }
+    const d = new Date(value)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+  return null
+}
+
+/**
+ * Calcula tempo de utilização formatado a partir da data de aquisição até a data base.
+ * Retorna ex: "3 anos e 4 meses", "5 meses" ou "Menos de 1 mês".
+ */
+export function calculateUsageTime(
+  acquisitionDate: string | Date | null | undefined,
+  baseDate?: string | Date | null
+): string {
+  if (!acquisitionDate) return ''
+  const start = parseLocalDateValue(acquisitionDate)
+  if (!start) return ''
+  const end = baseDate ? parseLocalDateValue(baseDate) || new Date() : new Date()
+
+  let years = end.getFullYear() - start.getFullYear()
+  let months = end.getMonth() - start.getMonth()
+
+  if (months < 0) {
+    years -= 1
+    months += 12
+  }
+
+  if (years < 0) return ''
+
+  if (years === 0 && months === 0) return 'Menos de 1 mês'
+  if (years === 0) return `${months} ${months === 1 ? 'mês' : 'meses'}`
+  if (months === 0) return `${years} ${years === 1 ? 'ano' : 'anos'}`
+  return `${years} ${years === 1 ? 'ano' : 'anos'} e ${months} ${months === 1 ? 'mês' : 'meses'}`
+}
+
 export function formatDate(input: string | number): string {
   const date = new Date(input)
   return date.toLocaleDateString('pt-BR', {

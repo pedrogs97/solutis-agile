@@ -1,6 +1,6 @@
 [project]
 name = "solutis-manager-back"
-version = "1.26.17"
+version = "1.26.18"
 description = ""
 authors = [{ name = "Pedro Gustavo Santana", email = "pedrogustavosantan97@gmail.com" }]
 readme = "README.md"

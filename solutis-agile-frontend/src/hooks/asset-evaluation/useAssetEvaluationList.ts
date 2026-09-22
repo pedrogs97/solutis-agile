@@ -2,13 +2,14 @@
 
 import { useDisclosure } from '@mantine/hooks'
 import { notifications } from '@mantine/notifications'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 
 import { useAbilityGuard } from '@/hooks/useAbilityGuard'
 import usePagination from '@/hooks/usePagination'
 import {
+  deleteAssetEvaluation,
   fetchAssetEvaluationMetrics,
   fetchAssetEvaluations,
 } from '@/services/api/asset-evaluation'
@@ -26,6 +27,27 @@ export function useAssetEvaluationList({
 }: Readonly<IUseAssetEvaluationListProps>) {
   const [filterOpened, { toggle: toggleFilter }] = useDisclosure(false)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteAssetEvaluation(id),
+    onSuccess: () => {
+      notifications.show({
+        color: 'teal',
+        title: 'Avaliação Excluída',
+        message: 'Avaliação técnica excluída com sucesso!',
+      })
+      queryClient.invalidateQueries({ queryKey: ['fetchAssetEvaluations'] })
+      queryClient.invalidateQueries({ queryKey: ['fetchAssetEvaluationMetrics'] })
+    },
+    onError: () => {
+      notifications.show({
+        color: 'red',
+        title: 'Erro ao Excluir',
+        message: 'Não foi possível excluir a avaliação técnica.',
+      })
+    },
+  })
 
   useAbilityGuard(
     (currentAbility) => {
@@ -171,5 +193,7 @@ export function useAssetEvaluationList({
     isPendingMetrics,
     refetchList,
     exportCsv,
+    deleteEvaluation: deleteMutation.mutate,
+    isDeleting: deleteMutation.isPending,
   }
 }

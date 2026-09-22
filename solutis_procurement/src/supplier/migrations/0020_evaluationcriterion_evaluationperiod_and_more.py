@@ -40,8 +40,8 @@ class Migration(migrations.Migration):
                         decimal_places=2,
                         max_digits=5,
                         validators=[
-                            django.core.validators.MinValueValidator(Decimal("0")),
-                            django.core.validators.MaxValueValidator(Decimal("100")),
+                            django.core.validators.MinValueValidator(Decimal(0)),
+                            django.core.validators.MaxValueValidator(Decimal(100)),
                         ],
                         verbose_name="Peso (%)",
                     ),
@@ -191,8 +191,8 @@ class Migration(migrations.Migration):
                         decimal_places=2,
                         max_digits=5,
                         validators=[
-                            django.core.validators.MinValueValidator(Decimal("0")),
-                            django.core.validators.MaxValueValidator(Decimal("100")),
+                            django.core.validators.MinValueValidator(Decimal(0)),
+                            django.core.validators.MaxValueValidator(Decimal(100)),
                         ],
                         verbose_name="Nota (%)",
                     ),

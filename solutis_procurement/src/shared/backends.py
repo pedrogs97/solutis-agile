@@ -3,7 +3,6 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Dict, Tuple
 
 import jinja2
 from django.conf import settings
@@ -13,7 +12,7 @@ class Email365Client:
     """Office 365 email client com suporte a filas"""
 
     def __init__(
-        self, mail_to: str, mail_subject: str, type_message: str, extra: Dict
+        self, mail_to: str, mail_subject: str, type_message: str, extra: dict
     ) -> None:
         self.__extra = extra
         self.__type = type_message
@@ -45,7 +44,7 @@ class Email365Client:
             output_text = self.__prepare_approval_message()
         self.__message.attach(MIMEText(output_text, "html"))
 
-    def send_message(self, fake: bool = False) -> Tuple[bool, str]:
+    def send_message(self, fake: bool = False) -> tuple[bool, str]:
         """Try send message"""
         self.__prepare_message()
         try:

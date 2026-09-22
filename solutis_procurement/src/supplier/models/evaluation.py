@@ -29,7 +29,7 @@ class EvaluationCriterion(TimestampedModel):
         max_digits=5,
         decimal_places=2,
         verbose_name=_("Peso (%)"),
-        validators=[MinValueValidator(Decimal("0")), MaxValueValidator(Decimal("100"))],
+        validators=[MinValueValidator(Decimal(0)), MaxValueValidator(Decimal(100))],
     )
     order = models.PositiveSmallIntegerField(default=0, verbose_name=_("Ordem"))
 
@@ -313,7 +313,7 @@ class CriterionScore(TimestampedModel):
         max_digits=5,
         decimal_places=2,
         verbose_name=_("Nota (%)"),
-        validators=[MinValueValidator(Decimal("0")), MaxValueValidator(Decimal("100"))],
+        validators=[MinValueValidator(Decimal(0)), MaxValueValidator(Decimal(100))],
     )
     comments = models.TextField(blank=True, verbose_name=_("Comentários"))
 

@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
 } from '@mantine/core'
+import { modals } from '@mantine/modals'
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
 import {
   BarChart3,
@@ -76,7 +77,23 @@ function AssetEvaluationsPage() {
     metricsData,
     isPendingMetrics,
     exportCsv,
+    deleteEvaluation,
   } = useAssetEvaluationList({ searchParams })
+
+  const handleDeleteEvaluation = (id: number, protocol: string) => {
+    modals.openConfirmModal({
+      title: 'Excluir Avaliação Técnica',
+      children: (
+        <Text size="sm">
+          Tem certeza de que deseja excluir permanentemente a avaliação técnica <b>{protocol}</b>?
+          Esta ação removerá o registro e os anexos comprobatórios vinculados.
+        </Text>
+      ),
+      labels: { confirm: 'Excluir', cancel: 'Cancelar' },
+      confirmProps: { color: 'red' },
+      onConfirm: () => deleteEvaluation(id),
+    })
+  }
 
   if (isPending && !listData) return <TableSkeleton />
   if (error) return <ServerError />
@@ -190,6 +207,7 @@ function AssetEvaluationsPage() {
             <EvaluationsTable
               data={listData?.items || []}
               onApprove={(id) => navigate({ to: `/asset-evaluations/${id}` })}
+              onDelete={handleDeleteEvaluation}
             />
           </ContentSection>
         </Tabs.Panel>

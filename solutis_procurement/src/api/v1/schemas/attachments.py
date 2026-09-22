@@ -1,6 +1,6 @@
 """Attachment schemas for Ninja v1."""
 
-from typing import Literal, Optional, Union
+from typing import Literal
 
 from src.api.v1.schemas.common import CamelSchema
 from src.supplier.models.attachments import (
@@ -14,7 +14,7 @@ class AttachmentUploadIn(CamelSchema):
 
     supplier: int
     attachment_type: int
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class AttachmentOut(CamelSchema):
@@ -23,8 +23,8 @@ class AttachmentOut(CamelSchema):
     id: int
     attachment_type_id: int
     attachment_type_name: str
-    file_name: Optional[str] = None
-    description: Optional[str] = None
+    file_name: str | None = None
+    description: str | None = None
 
 
 class AttachmentVersionOut(CamelSchema):
@@ -35,8 +35,8 @@ class AttachmentVersionOut(CamelSchema):
     source: Literal["current", "history"]
     attachment_type_id: int
     attachment_type_name: str
-    file_name: Optional[str] = None
-    description: Optional[str] = None
+    file_name: str | None = None
+    description: str | None = None
     is_current: bool
     uploaded_at: str
 
@@ -46,21 +46,21 @@ class AttachmentTypeOut(CamelSchema):
 
     id: int
     name: str
-    risk_level: Optional[int] = None
+    risk_level: int | None = None
 
 
 class AttachmentTypeCreateIn(CamelSchema):
     """Payload to create an attachment type."""
 
     name: str
-    risk_level: Optional[int] = None
+    risk_level: int | None = None
 
 
 class AttachmentTypePatchIn(CamelSchema):
     """Payload to partially update an attachment type."""
 
-    name: Optional[str] = None
-    risk_level: Optional[int] = None
+    name: str | None = None
+    risk_level: int | None = None
 
 
 def serialize_attachment(instance: SupplierAttachment) -> dict:
@@ -75,7 +75,7 @@ def serialize_attachment(instance: SupplierAttachment) -> dict:
 
 
 def serialize_attachment_version(
-    instance: Union[SupplierAttachment, SupplierAttachmentHistory],
+    instance: SupplierAttachment | SupplierAttachmentHistory,
     *,
     is_current: bool,
 ) -> dict:

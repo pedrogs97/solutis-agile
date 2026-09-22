@@ -96,6 +96,10 @@ class AssetTechnicalEvaluationModel(Base):
     asset_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("asset.id"), nullable=True
     )
+    is_unregistered: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    unregistered_description: Mapped[str | None] = mapped_column(Text, nullable=True)
     patrimonio: Mapped[str | None] = mapped_column(String(100), nullable=True)
     asset_type_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
     brand_model: Mapped[str | None] = mapped_column(String(200), nullable=True)
@@ -105,6 +109,7 @@ class AssetTechnicalEvaluationModel(Base):
     cost_center: Mapped[str | None] = mapped_column(String(200), nullable=True)
     unity: Mapped[str | None] = mapped_column(String(200), nullable=True)
     current_location: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    acquisition_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     is_under_warranty: Mapped[bool | None] = mapped_column(
         Boolean, default=False, nullable=True
     )

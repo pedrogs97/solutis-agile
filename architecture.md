@@ -2,9 +2,6 @@
 
 Este documento detalha a arquitetura técnica, os serviços conteinerizados via Docker, os fluxos de rede, os mecanismos de roteamento via Nginx com destaque para o **TaskView**, bem como os bancos de dados, filas, mensageria e integrações do ecossistema **Solutis Agile**.
 
-> **💡 Dica de Visualização no VS Code / Antigravity IDE:**
-> Para renderizar diagramas Mermaid diretamente no Markdown Preview nativo do editor, instale a extensão recomendada **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) ou visualize o arquivo interativo [architecture.html](file:///home/pedroglsa/projects/solutis-agile/architecture.html) no navegador.
-
 ---
 
 ## 🗺️ Diagrama de Arquitetura dos Serviços

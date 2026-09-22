@@ -1,6 +1,6 @@
 """Shared schemas for the project."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -9,6 +9,6 @@ class PaginatedResponse(BaseModel):
     """Paginated list response."""
 
     count: int
-    next: Optional[str] = None
-    previous: Optional[str] = None
-    results: List[Dict[str, Any]]
+    next: str | None = None
+    previous: str | None = None
+    results: list[dict[str, Any]]

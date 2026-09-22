@@ -1,5 +1,4 @@
-'use client'
-
+import { useEffect } from 'react'
 import {
   Badge,
   Card,
@@ -44,6 +43,51 @@ export function TabSupplierEvaluation({
   const a = process.avaliacao
   const isAprovado = evaluationIndex != null && evaluationIndex >= 0.8
 
+  // F2-03 & F2-04: Autopreenchimento do fornecedor e do objeto
+  useEffect(() => {
+    if (!a.descritivoCompra && process.identificacao.objeto) {
+      updateEvaluation('descritivoCompra', process.identificacao.objeto)
+    }
+
+    if (!a.razaoSocial) {
+      const recId = process.decisao?.fornecedorRecomendadoId
+      const vencedor =
+        process.fornecedores.find((f) => f.id === recId) ||
+        (process.fornecedores.length === 1 ? process.fornecedores[0] : null)
+
+      if (vencedor) {
+        updateEvaluation('razaoSocial', vencedor.nome)
+        if (vencedor.cnpj && !a.cnpj) {
+          updateEvaluation('cnpj', vencedor.cnpj)
+        }
+      }
+    }
+  }, [
+    process.identificacao.objeto,
+    process.decisao?.fornecedorRecomendadoId,
+    process.fornecedores,
+    a.descritivoCompra,
+    a.razaoSocial,
+    a.cnpj,
+    updateEvaluation,
+  ])
+
+  const supplierOptions = process.fornecedores.map((f) => ({
+    value: f.id,
+    label: `${f.nome}${f.cnpj ? ` (${maskCnpj(f.cnpj)})` : ''}`,
+  }))
+
+  const handleSelectCotatedSupplier = (supplierId: string | null) => {
+    if (!supplierId) return
+    const found = process.fornecedores.find((f) => f.id === supplierId)
+    if (found) {
+      updateEvaluation('razaoSocial', found.nome)
+      if (found.cnpj) {
+        updateEvaluation('cnpj', found.cnpj)
+      }
+    }
+  }
+
   const getClassifColor = (cl?: string | null) => {
     switch (cl) {
       case 'Excelente':
@@ -76,6 +120,16 @@ export function TabSupplierEvaluation({
               onChange={(e) => updateEvaluation('preenchida', e.currentTarget.checked)}
             />
           </Group>
+
+          {supplierOptions.length > 0 && (
+            <Select
+              label="Copiar dados de um fornecedor cotado"
+              placeholder="Selecione um fornecedor da cotação para preenchimento rápido"
+              data={supplierOptions}
+              onChange={handleSelectCotatedSupplier}
+              clearable
+            />
+          )}
 
           <Grid gutter="md">
             <Grid.Col span={{ base: 12, sm: 6 }}>

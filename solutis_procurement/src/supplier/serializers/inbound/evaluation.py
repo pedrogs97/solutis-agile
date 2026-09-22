@@ -3,8 +3,6 @@ Serializer for Evaluation models.
 This module provides serializers for input representations of supplier evaluation models.
 """
 
-from typing import Dict
-
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.transaction import atomic
 from rest_framework import serializers
@@ -88,7 +86,7 @@ class SupplierEvaluationInSerializer(BaseSerializer):
         return attrs
 
     @atomic
-    def create(self, validated_data: Dict) -> SupplierEvaluation:
+    def create(self, validated_data: dict) -> SupplierEvaluation:
         """
         Create a new SupplierEvaluation instance with related criterion scores.
         This method handles the creation of related CriterionScore objects.
@@ -125,7 +123,7 @@ class SupplierEvaluationInSerializer(BaseSerializer):
 
     @atomic
     def update(
-        self, instance: SupplierEvaluation, validated_data: Dict
+        self, instance: SupplierEvaluation, validated_data: dict
     ) -> SupplierEvaluation:
         """
         Update an existing SupplierEvaluation instance with related criterion scores.

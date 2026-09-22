@@ -2,8 +2,6 @@
 Serializer for the Approval Workflow.
 """
 
-from typing import Optional
-
 from rest_framework import serializers
 from src.shared.serializers import BaseSerializer
 from src.supplier.models.approval_workflow import ApprovalFlow, ApprovalStep, Approver
@@ -74,7 +72,7 @@ class SupplierApprovalFlowSerializer(BaseSerializer):
         """Indicates if the approval flow step is reproved."""
         return obj.reproved_at is not None
 
-    def get_next_step(self, obj: ApprovalFlow) -> Optional[ApprovalStepSerializer]:
+    def get_next_step(self, obj: ApprovalFlow) -> ApprovalStepSerializer | None:
         """Returns the next step in the approval flow, if any."""
         next_flow = (
             ApprovalStep.objects.filter(order__gt=obj.step.order)

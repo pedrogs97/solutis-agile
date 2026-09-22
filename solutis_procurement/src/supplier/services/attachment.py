@@ -1,6 +1,6 @@
 """Service for handling supplier attachment operations."""
 
-from typing import Any, Dict
+from typing import Any
 
 from django.db.transaction import atomic
 from rest_framework import serializers
@@ -18,7 +18,7 @@ class AttachmentService:
     @staticmethod
     @atomic
     def create_attachment(
-        serializer_class: type[serializers.ModelSerializer], data: Dict
+        serializer_class: type[serializers.ModelSerializer], data: dict
     ) -> Any:
         """
         Create a new supplier attachment.

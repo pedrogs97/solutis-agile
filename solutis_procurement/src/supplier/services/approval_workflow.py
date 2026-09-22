@@ -1,7 +1,6 @@
 """Service to send a request to the approval workflow."""
 
 from logging import getLogger
-from typing import Optional
 
 from django.conf import settings
 from jwt import encode
@@ -78,7 +77,7 @@ class ApprovalWorkflowService:
     """
 
     @staticmethod
-    def get_next_approval_step(current_step: ApprovalStep) -> Optional[ApprovalStep]:
+    def get_next_approval_step(current_step: ApprovalStep) -> ApprovalStep | None:
         """
         Retrieves the next approval step based on the current step's order.
         """

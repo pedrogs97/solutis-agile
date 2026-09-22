@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Autocomplete,
   Card,
   Grid,
   Group,
@@ -19,12 +20,19 @@ interface EsgWeightSectionProps {
   readOnly?: boolean
 }
 
+const ESG_PARTNERS = [
+  { company: 'Recicla Já Soluções Ambientais', cnpj: '12.345.678/0001-90' },
+  { company: 'EcoTI Logística Reversa & Descarte', cnpj: '98.765.432/0001-10' },
+  { company: 'SucataTech Eletrônicos & Metais', cnpj: '45.678.901/0001-23' },
+  { company: 'GreenCycle Gestão de Resíduos', cnpj: '33.222.111/0001-44' },
+]
+
 export function EsgWeightSection({
   form,
   reusePercentage,
   readOnly = false,
 }: Readonly<EsgWeightSectionProps>) {
-  const { control } = form
+  const { control, setValue, getValues } = form
 
   return (
     <Card shadow="xs" radius="md" p="lg" withBorder>
@@ -115,7 +123,15 @@ export function EsgWeightSection({
                 decimalScale={2}
                 allowNegative={false}
                 value={field.value ?? 0}
-                onChange={(val) => field.onChange(val === '' ? 0 : Number(val))}
+                onChange={(val) => {
+                  const num = val === '' ? 0 : Number(val)
+                  field.onChange(num)
+                  // F1-15: Autopreencher peso de reciclagem se vazio ou coincidente
+                  const curRecycle = getValues('recycle_weight') || 0
+                  if (curRecycle === 0 || curRecycle === field.value) {
+                    setValue('recycle_weight', num)
+                  }
+                }}
                 disabled={readOnly}
               />
             )}
@@ -157,15 +173,26 @@ export function EsgWeightSection({
           />
         </Grid.Col>
 
+        {/* F1-17: Autocomplete de parceiros ESG com preenchimento automático de CNPJ */}
         <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
           <Controller
             control={control}
             name="destination_company"
             render={({ field }) => (
-              <TextInput
+              <Autocomplete
                 label="Empresa responsável pela destinação"
+                placeholder="Selecione ou digite o parceiro ESG"
+                data={ESG_PARTNERS.map((p) => p.company)}
                 value={field.value || ''}
-                onChange={field.onChange}
+                onChange={(val) => {
+                  field.onChange(val)
+                  const partner = ESG_PARTNERS.find(
+                    (p) => p.company.toLowerCase() === val.toLowerCase().trim()
+                  )
+                  if (partner) {
+                    setValue('destination_cnpj', partner.cnpj)
+                  }
+                }}
                 disabled={readOnly}
               />
             )}

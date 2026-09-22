@@ -96,9 +96,27 @@ export const uploadEvaluationAttachment = async (
   return data
 }
 
+export const searchAssetByIdentifier = async (query: string) => {
+  const { data } = await axios.get<any>(`${BASE_URL}/search-asset/`, {
+    params: { query },
+  })
+  return data
+}
+
+export const deleteAssetEvaluation = async (id: number | string) => {
+  const { data } = await axios.delete<{ message: string; id: number }>(
+    `${BASE_URL}/${id}/`
+  )
+  return data
+}
+
 export const approveAssetEvaluation = async (
   id: number | string,
-  payload: { comments?: string; write_off_asset: boolean }
+  payload: {
+    comments?: string
+    write_off_asset: boolean
+    evaluation_data?: Partial<AssetEvaluationFormValues>
+  }
 ) => {
   const { data } = await axios.post<AssetTechnicalEvaluation>(
     `${BASE_URL}/${id}/approve/`,

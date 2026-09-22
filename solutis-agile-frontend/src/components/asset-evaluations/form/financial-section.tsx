@@ -11,13 +11,20 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
+import { DateInput } from '@mantine/dates'
+import { Calendar } from 'lucide-react'
 import {
   Controller,
   type ControllerRenderProps,
   type UseFormReturn,
 } from 'react-hook-form'
 
-import { formatMoneyBRL } from '@/lib/utils'
+import {
+  calculateUsageTime,
+  formatDateToLocalYMD,
+  formatMoneyBRL,
+  parseLocalDateValue,
+} from '@/lib/utils'
 import type { AssetEvaluationFormValues } from '@/types/AssetEvaluation'
 
 interface FinancialSectionProps {
@@ -31,7 +38,7 @@ export function FinancialSection({
   estimatedEconomy,
   readOnly = false,
 }: Readonly<FinancialSectionProps>) {
-  const { control } = form
+  const { control, setValue, getValues } = form
 
   return (
     <Card shadow="xs" radius="md" p="lg" withBorder>
@@ -67,7 +74,39 @@ export function FinancialSection({
 
       {/* Grid de campos dinâmicos e persistidos */}
       <Grid gutter="md">
-        {/* Linha 1: Valor de aquisição, Valor contábil líquido e Tempo de utilização */}
+        {/* F1-19: Data de aquisição do bem */}
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Controller
+            control={control}
+            name="acquisition_date"
+            render={({ field }) => (
+              <DateInput
+                label="Data de aquisição do bem"
+                placeholder="dd/mm/aaaa"
+                valueFormat="DD/MM/YYYY"
+                rightSection={
+                  <Calendar size={16} color="var(--mantine-color-gray-6)" />
+                }
+                clearable
+                disabled={readOnly}
+                value={parseLocalDateValue(field.value)}
+                onChange={(val: any) => {
+                  const ymd = formatDateToLocalYMD(val)
+                  field.onChange(ymd)
+                  // F1-20: Calcular tempo de utilização automaticamente
+                  if (ymd) {
+                    const usage = calculateUsageTime(ymd, getValues('evaluation_date'))
+                    if (usage) {
+                      setValue('usage_time', usage)
+                    }
+                  }
+                }}
+              />
+            )}
+          />
+        </Grid.Col>
+
+        {/* F1-18: Valor de aquisição */}
         <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
           <Controller
             control={control}
@@ -100,6 +139,7 @@ export function FinancialSection({
           />
         </Grid.Col>
 
+        {/* Valor contábil líquido */}
         <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
           <Controller
             control={control}
@@ -132,6 +172,7 @@ export function FinancialSection({
           />
         </Grid.Col>
 
+        {/* F1-20: Tempo de utilização */}
         <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
           <Controller
             control={control}
@@ -152,7 +193,7 @@ export function FinancialSection({
           />
         </Grid.Col>
 
-        {/* Linha 2: Vida útil prevista e Economia estimada */}
+        {/* Vida útil prevista */}
         <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
           <Controller
             control={control}
@@ -173,7 +214,8 @@ export function FinancialSection({
           />
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, sm: 6, md: 8 }}>
+        {/* F1-21: Economia estimada reativa */}
+        <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
           <Stack gap={4}>
             <TextInput
               label="Economia estimada pelo reaproveitamento"
@@ -181,18 +223,19 @@ export function FinancialSection({
               readOnly
               styles={{
                 input: {
-                  fontWeight: 600,
+                  fontWeight: 700,
                   cursor: 'default',
+                  color: 'var(--mantine-color-teal-7)',
                 },
               }}
             />
             <Text size="xs" c="dimmed">
-              Calculado automaticamente: valor contábil líquido × % de reaproveitamento (item 4 — ESG &amp; controle de peso).
+              Calculado: valor contábil líquido × % reaproveitamento
             </Text>
           </Stack>
         </Grid.Col>
 
-        {/* Linha 3: Justificativa técnica da decisão */}
+        {/* Justificativa técnica da decisão */}
         <Grid.Col span={12}>
           <Controller
             control={control}
@@ -204,7 +247,7 @@ export function FinancialSection({
             }) => (
               <Textarea
                 label="Justificativa técnica da decisão"
-                placeholder=""
+                placeholder="Parecer técnico detalhado, motivos da viabilidade de reaproveitamento ou necessidade de baixa..."
                 rows={3}
                 value={field.value || ''}
                 onChange={field.onChange}

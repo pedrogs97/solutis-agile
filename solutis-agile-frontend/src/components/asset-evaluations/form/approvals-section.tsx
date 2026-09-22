@@ -40,30 +40,11 @@ interface ApprovalsSectionProps {
   readOnly?: boolean
 }
 
-function parseDateValue(value: unknown): Date | null {
-  if (!value) return null
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
-  if (typeof value === 'string') {
-    const d = new Date(value)
-    return Number.isNaN(d.getTime()) ? null : d
-  }
-  return null
-}
-
-function formatDateToISO(val: any): string | null {
-  if (!val) return null
-  if (val instanceof Date) return Number.isNaN(val.getTime()) ? null : val.toISOString()
-  if (typeof val === 'string') {
-    const d = new Date(val)
-    return Number.isNaN(d.getTime()) ? val : d.toISOString()
-  }
-  return null
-}
+import { formatDateBR, formatDateToLocalYMD, parseLocalDateValue } from '@/lib/utils'
 
 function formatDateDisplay(value: unknown): string {
-  const d = parseDateValue(value)
-  if (!d) return '-'
-  return d.toLocaleDateString('pt-BR')
+  if (!value) return '-'
+  return formatDateBR(String(value))
 }
 
 export function ApprovalsSection({
@@ -229,8 +210,8 @@ export function ApprovalsSection({
                     rightSection={<Calendar size={16} color="var(--mantine-color-gray-6)" />}
                     clearable
                     disabled={readOnly}
-                    value={parseDateValue(field.value)}
-                    onChange={(val: any) => field.onChange(formatDateToISO(val))}
+                    value={parseLocalDateValue(field.value)}
+                    onChange={(val: any) => field.onChange(formatDateToLocalYMD(val))}
                   />
                 )}
               />
@@ -247,13 +228,13 @@ export function ApprovalsSection({
             bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))"
           >
             <Group gap="xs" mb="xs">
-              <UserCheck size={18} color="var(--mantine-color-teal-6)" />
+              <Clock size={18} color="var(--mantine-color-orange-6)" />
               <div>
                 <Text size="sm" fw={700}>
                   Gestão Patrimonial
                 </Text>
                 <Text size="xs" c="dimmed">
-                  Validação dos critérios e catálogo
+                  Validação do inventário e tombamento
                 </Text>
               </div>
             </Group>
@@ -264,8 +245,8 @@ export function ApprovalsSection({
                 name="reviewer_name"
                 render={({ field }) => (
                   <TextInput
-                    label="Responsável pela Validação"
-                    placeholder="Ex.: Gestor Patrimonial"
+                    label="Responsável da Validação"
+                    placeholder="Nome do analista patrimonial"
                     disabled={readOnly}
                     {...field}
                     value={field.value || ''}
@@ -284,8 +265,8 @@ export function ApprovalsSection({
                     rightSection={<Calendar size={16} color="var(--mantine-color-gray-6)" />}
                     clearable
                     disabled={readOnly}
-                    value={parseDateValue(field.value)}
-                    onChange={(val: any) => field.onChange(formatDateToISO(val))}
+                    value={parseLocalDateValue(field.value)}
+                    onChange={(val: any) => field.onChange(formatDateToLocalYMD(val))}
                   />
                 )}
               />
@@ -339,8 +320,8 @@ export function ApprovalsSection({
                     rightSection={<Calendar size={16} color="var(--mantine-color-gray-6)" />}
                     clearable
                     disabled={readOnly}
-                    value={parseDateValue(field.value)}
-                    onChange={(val: any) => field.onChange(formatDateToISO(val))}
+                    value={parseLocalDateValue(field.value)}
+                    onChange={(val: any) => field.onChange(formatDateToLocalYMD(val))}
                   />
                 )}
               />
@@ -354,10 +335,11 @@ export function ApprovalsSection({
                     disabled={readOnly}
                     data={[
                       { value: 'Rascunho', label: '● Rascunho' },
-                      { value: 'Em Análise', label: '● Em Análise' },
+                      { value: 'Em avaliação', label: '● Em avaliação' },
                       { value: 'Aprovado', label: '● Aprovado' },
                       { value: 'Baixado', label: '● Baixado' },
-                      { value: 'Rejeitado', label: '● Rejeitado' },
+                      { value: 'Reprovado', label: '● Reprovado' },
+                      { value: 'Cancelado', label: '● Cancelado' },
                     ]}
                     value={field.value || 'Rascunho'}
                     onChange={(val) => field.onChange(val || 'Rascunho')}

@@ -53,6 +53,14 @@ class AssetEvaluationBaseSchema(BaseModel):
     asset_id: int | None = Field(
         default=None, description="ID do ativo no banco (se cadastrado)"
     )
+    is_unregistered: bool = Field(
+        default=False,
+        description="Indica se o ativo não possui número de patrimônio (não tombado)",
+    )
+    unregistered_description: str | None = Field(
+        default=None,
+        description="Descrição detalhada do item sem número de patrimônio",
+    )
     patrimonio: str | None = Field(
         default=None, description="Número de patrimônio ou tombo"
     )
@@ -71,6 +79,9 @@ class AssetEvaluationBaseSchema(BaseModel):
     unity: str | None = Field(default=None, description="Unidade ou filial")
     current_location: str | None = Field(
         default=None, description="Localização atual do ativo"
+    )
+    acquisition_date: datetime | None = Field(
+        default=None, description="Data de aquisição original do bem"
     )
     evaluation_date: datetime | None = Field(
         default=None, description="Data da avaliação técnica"
@@ -204,6 +215,7 @@ class AssetEvaluationBaseSchema(BaseModel):
     )
 
     @field_validator(
+        "acquisition_date",
         "evaluation_date",
         "warranty_expiry_date",
         "document_start_date",
@@ -252,6 +264,8 @@ class AssetEvaluationCreateSchema(AssetEvaluationBaseSchema):
 
 class AssetEvaluationUpdateSchema(BaseModel):
     asset_id: int | None = None
+    is_unregistered: bool | None = None
+    unregistered_description: str | None = None
     patrimonio: str | None = None
     asset_type_name: str | None = None
     brand_model: str | None = None
@@ -261,6 +275,7 @@ class AssetEvaluationUpdateSchema(BaseModel):
     cost_center: str | None = None
     unity: str | None = None
     current_location: str | None = None
+    acquisition_date: datetime | None = None
     evaluation_date: datetime | None = None
     evaluator_name: str | None = None
     is_under_warranty: bool | None = None
@@ -314,6 +329,7 @@ class AssetEvaluationUpdateSchema(BaseModel):
     approval_comments: str | None = None
 
     @field_validator(
+        "acquisition_date",
         "evaluation_date",
         "warranty_expiry_date",
         "document_start_date",
@@ -343,6 +359,10 @@ class AssetEvaluationApproveSchema(BaseModel):
         default=True,
         description="Se True, baixa automaticamente o ativo no sistema com status DESCARTE",
     )
+    evaluation_data: AssetEvaluationUpdateSchema | None = Field(
+        default=None,
+        description="Dados correntes do formulário para salvar antes de aprovar",
+    )
 
 
 class AssetEvaluationOutSchema(BaseModel):
@@ -359,6 +379,8 @@ class AssetEvaluationOutSchema(BaseModel):
     approved_by_date: datetime | None = None
 
     asset_id: int | None = None
+    is_unregistered: bool = False
+    unregistered_description: str | None = None
     patrimonio: str | None = None
     asset_type_name: str | None = None
     brand_model: str | None = None
@@ -368,6 +390,7 @@ class AssetEvaluationOutSchema(BaseModel):
     cost_center: str | None = None
     unity: str | None = None
     current_location: str | None = None
+    acquisition_date: datetime | None = None
     is_under_warranty: bool | None = False
     warranty_expiry_date: datetime | None = None
     asset_description: str | None = None

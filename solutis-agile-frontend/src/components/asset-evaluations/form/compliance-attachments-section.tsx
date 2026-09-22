@@ -119,8 +119,8 @@ export function ComplianceAttachmentsSection({
                           {att.file_name}
                         </Text>
                       </Group>
-                      <Badge size="xs" color="teal">
-                        Salvo
+                      <Badge size="xs" color="teal" variant="light">
+                        Salvo no servidor
                       </Badge>
                     </Group>
                   ))}
@@ -134,8 +134,8 @@ export function ComplianceAttachmentsSection({
                         </Text>
                       </Group>
                       <Group gap={4}>
-                        <Badge size="xs" color="blue">
-                          Pendente
+                        <Badge size="xs" color="blue" variant="light">
+                          Aguardando envio ao salvar
                         </Badge>
                         {onRemovePendingUpload && (
                           <ActionIcon

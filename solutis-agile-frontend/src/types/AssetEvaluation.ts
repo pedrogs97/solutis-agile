@@ -37,6 +37,8 @@ export interface AssetTechnicalEvaluation {
   approved_by_date?: string | null
 
   asset_id?: number | null
+  is_unregistered?: boolean
+  unregistered_description?: string | null
   patrimonio?: string | null
   asset_type_name?: string | null
   brand_model?: string | null
@@ -46,6 +48,7 @@ export interface AssetTechnicalEvaluation {
   cost_center?: string | null
   unity?: string | null
   current_location?: string | null
+  acquisition_date?: string | null
   is_under_warranty?: boolean
   warranty_expiry_date?: string | null
   asset_description?: string | null
@@ -117,6 +120,8 @@ export interface AssetEvaluationFormValues {
   approved_by_date?: string | null
 
   asset_id?: number | null
+  is_unregistered?: boolean
+  unregistered_description?: string | null
   patrimonio?: string | null
   asset_type_name?: string | null
   brand_model?: string | null
@@ -126,6 +131,7 @@ export interface AssetEvaluationFormValues {
   cost_center?: string | null
   unity?: string | null
   current_location?: string | null
+  acquisition_date?: string | null
   evaluation_date?: string | null
   evaluator_name?: string | null
   is_under_warranty?: boolean

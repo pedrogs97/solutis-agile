@@ -155,7 +155,7 @@ export function ComponentsMatrixSection({
                       color="red"
                       variant="subtle"
                       onClick={() => onRemoveRow(index)}
-                      disabled={components.length <= 1}
+                      title="Remover componente"
                     >
                       <Trash2 size={16} />
                     </ActionIcon>

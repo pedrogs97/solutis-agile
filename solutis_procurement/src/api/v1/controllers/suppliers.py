@@ -1,6 +1,6 @@
 """Controller functions for supplier-related operations."""
 
-from typing import Any, Dict, Optional, Type, Union
+from typing import Any
 
 from django.db.models import Model
 from django.db.transaction import atomic
@@ -17,7 +17,7 @@ from src.supplier.models.supplier import (
 )
 
 
-def _to_payload_dict(payload: Any) -> Dict[str, Any]:
+def _to_payload_dict(payload: Any) -> dict[str, Any]:
     """Normalize payloads coming from Ninja schemas or plain dictionaries."""
     if payload is None:
         return {}
@@ -36,7 +36,7 @@ def _to_payload_dict(payload: Any) -> Dict[str, Any]:
 
 
 def _create_or_update_related(
-    instance, attr_name: str, payload: Optional[CamelSchema], model_cls: Type[Model]
+    instance, attr_name: str, payload: CamelSchema | None, model_cls: type[Model]
 ):
     """Create or update a related object based on the provided payload."""
     if payload is None:
@@ -58,8 +58,8 @@ def _create_or_update_related(
 
 @atomic
 def apply_supplier_payload(
-    instance: Optional[Supplier],
-    payload: Union[SupplierCreateIn, SupplierUpdateIn],
+    instance: Supplier | None,
+    payload: SupplierCreateIn | SupplierUpdateIn,
 ) -> Supplier:
     """Persist supplier payload and nested objects."""
     supplier_data = _to_payload_dict(payload)
@@ -108,10 +108,10 @@ def apply_supplier_payload(
     return instance
 
 
-def serialize_supplier_list(instance: Supplier) -> Dict[str, Any]:
+def serialize_supplier_list(instance: Supplier) -> dict[str, Any]:
     """Serialize supplier list item output in camelCase."""
     situation = instance.situation
-    data: Dict[str, Any] = {
+    data: dict[str, Any] = {
         "id": instance.pk,
         "legalName": instance.legal_name,
         "taxId": instance.tax_id,

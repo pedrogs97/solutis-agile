@@ -1,5 +1,77 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-21] - Correções e Melhorias dos Formulários de Avaliação Técnica (FO-PAT-02) e Compras (FO-AD-01)
+- **Descrição**: Implementação completa das correções e melhorias dos apontamentos gravados em 18/09/2026 para os formulários de Avaliação Técnica e Descarte (FO-PAT-02) e Compras (FO-AD-01), abrangendo os bloqueadores críticos (F1-11, F1-12, F1-25, F2-02, F1-16/20/21), ajustes de usabilidade (F1-01 a F1-26, F2-01 a F2-05), alinhamentos entre formulários (AL-01 a AL-04), criação da rota de busca/autopreenchimento por tombo ou série (`/search-asset/`), exclusão de avaliações (`DELETE /{id}/`), e script utilitário de expurgo dos dados mockados de teste.
+- **Arquivos afetados**:
+  - `solutis_procurement/src/api/v1/schemas/purchase_process.py`
+  - `solutis_procurement/src/api/v1/routers/purchase_process.py`
+  - `solutis_procurement/src/supplier/tests/test_purchase_process.py`
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/alembic/versions/2026-09-21_210000_add_unregistered_and_acquisition_date_to_asset_evaluation.py`
+  - `solutis_manager_back/src/asset_evaluation/schemas.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/src/asset_evaluation/router.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
+  - `solutis-agile-frontend/src/services/api/asset-evaluation.ts`
+  - `solutis-agile-frontend/src/lib/utils.ts`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-identification.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-supplier-evaluation.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/identification-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/components-matrix-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/esg-weight-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/financial-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/compliance-attachments-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/approvals-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/document-control-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/asset-management-section.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationList.ts`
+  - `solutis-agile-frontend/src/components/asset-evaluations/evaluations-table.tsx`
+  - `solutis-agile-frontend/src/routes/_dashboard/asset-evaluations/index.tsx`
+  - `.agents/scripts/clean_test_data.py` [NOVO]
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Módulo de Compras (FO-AD-01)**:
+    - **F2-02**: Correção da perda de dados de fornecedores e cotações (`prazoEntrega`, `validadeProposta`, `condPagamento`) e comprador responsável através da herança de `CamelSchema` e serialização correta por aliases `by_alias=True` no `solutis_procurement`.
+    - **F2-01 / AL-03**: Padronização do campo Centro de Custo como Select com busca conectado ao hook `useCostCenterOptions`.
+    - **F2-03 & F2-04**: Autopreenchimento automático da Razão Social e CNPJ do fornecedor aprovado e do Objeto da Compra na aba de Avaliação de Fornecedores, com seletor rápido para múltiplos participantes.
+  - **Módulo de Avaliação Técnica e Descarte (FO-PAT-02)**:
+    - **F1-03 & F1-06**: Remoção do seletor avulso de vínculo de ativo e integração do autopreenchimento diretamente nos campos de Nº Patrimônio (Tombo) e Número de Série via novo endpoint `GET /api/v1/asset-evaluations/search-asset/?query=...`.
+    - **F1-04**: Suporte a ativo não tombado através de toggle ("Sem número de patrimônio") com campo livre para descrição do bem.
+    - **F1-05 & F1-07**: Reordenação visual da seção de identificação trazendo tombo, série e descrição no topo prioritário.
+    - **F1-08 / AL-03**: Centro de Custo transformado em Select com busca padronizado com compras.
+    - **F1-09**: Unidade padronizada com opções fixas `["Salvador", "São Paulo"]`.
+    - **F1-10**: Inclusão de "Impressora" nas opções pré-definidas de Tipo de Ativo.
+    - **F1-02 / AL-02**: Resolução definitiva do bug de fuso horário nas datas com funções `formatDateToLocalYMD` e `parseLocalDateValue`.
+    - **F1-14**: Remoção da trava que impedia a exclusão da primeira linha na matriz dinâmica de componentes.
+    - **F1-15**: Autopreenchimento do peso de reciclagem a partir do peso descartado.
+    - **F1-16**: Cálculo reativo do percentual de reaproveitamento ESG em tempo real na tela.
+    - **F1-17**: Autocomplete de empresas parceiras de descarte com autopreenchimento imediato do CNPJ correspondente.
+    - **F1-18, F1-19, F1-20 & F1-21**: Autopreenchimento do valor original de aquisição, inclusão do campo Data de Aquisição do bem, cálculo dinâmico do Tempo de Utilização ("X anos e Y meses") e cálculo reativo da economia estimada.
+    - **F1-22 & F1-23**: Textos dos status de anexos esclarecidos para "Salvo no servidor" (verde) e "Aguardando envio ao salvar" (azul).
+    - **F1-11, F1-12, F1-25 & F1-26**: Persistência de dados correntes no payload de aprovação e baixa, preservação total de campos nos rascunhos salvos e feedbacks amigáveis com confirmação clara.
+    - **F1-01 / AL-04**: Ajuste no cálculo dos indicadores do Painel Executivo para incluir todas as avaliações ativas (não canceladas).
+    - **AL-01**: Adição de funcionalidade de exclusão de avaliações técnicas (`DELETE /asset-evaluations/{id}/`) na listagem com modal de confirmação.
+  - **Higienização de Dados**:
+    - Criação de `.agents/scripts/clean_test_data.py` com modos `--dry-run` e `--execute` para expurgo dos dados de teste inseridos em 18/09/2026 e restauração dos ativos baixados indevidamente.
+
+## [2026-09-18] - Documentação da Arquitetura dos Serviços, Diagrama Completo e Exportação em Imagem
+- **Descrição**: Criação do arquivo `architecture.md`, `architecture.html`, e atualização de `.spec/architecture.md` com o diagrama de arquitetura do ecossistema Solutis Agile. Geração e exportação dos diagramas em formatos de alta resolução `architecture.png` (3017x2541) e vetorizado `architecture.svg`. Correção da sintaxe de link Mermaid bidirecional/reverso para compatibilidade total com renderizadores estritos.
+- **Arquivos afetados**:
+  - `architecture.md`
+  - `architecture.html`
+  - `architecture.png`
+  - `architecture.svg`
+  - `.spec/architecture.md`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - Exportação de imagem PNG em alta resolução e SVG vetorial para visualização direta sem necessidade de compilador Mermaid.
+  - Correção de sintaxe Mermaid de direção de fluxo SSE entre `FLOW_BACK` e `TASKVIEW_FRONT`.
+  - Centralização e clareza visual da infraestrutura em containers Docker.
+  - Especificação explícita do fluxo Nginx com roteamento `/taskview` para o container `solutis-taskview-prod`.
+  - Mapeamento completo dos bancos de dados, mensageria e fluxos assíncronos.
+
 ## [2026-09-16] - Ativação do SSO Azure Entra ID e Correções de Rotas/Linter (Backend v1.26.17 e Frontend v2.7.17)
 - **Descrição**: Ativação e configuração da integração de Single Sign-On (SSO) corporativo com Microsoft Entra ID (Azure AD) em produção. Regeneração da árvore de rotas tipadas do TanStack Router (`src/routeTree.gen.ts`) para incluir a rota de callback SSO `/auth/callback/azure`, resolvendo erros de tipagem TypeScript e de compilação. Correção e ordenação automática de imports com `simple-import-sort` via ESLint nos componentes de avaliações e processos de compra.
 - **Arquivos afetados**:

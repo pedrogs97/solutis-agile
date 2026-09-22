@@ -187,6 +187,34 @@ def post_create_evaluation_route(
     )
 
 
+@asset_evaluation_router.get("/search-asset/")
+def get_search_asset_route(
+    query: str = Query(..., description="Tombo, código ou número de série do ativo"),
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: UserModel
+    | None = Depends(
+        PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
+    ),
+):
+    """Busca ativo cadastrado por patrimônio (tombo), código ou número de série para autopreenchimento."""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    asset_data = evaluation_service.find_asset_by_identifier(db_session, query)
+    db_session.close()
+    if not asset_data:
+        return JSONResponse(
+            content={"found": False, "asset": None},
+            status_code=status.HTTP_200_OK,
+        )
+    return JSONResponse(
+        content={"found": True, "asset": asset_data},
+        status_code=status.HTTP_200_OK,
+    )
+
+
 @asset_evaluation_router.get("/{evaluation_id}/")
 def get_evaluation_detail_route(
     evaluation_id: int,
@@ -237,6 +265,30 @@ def patch_update_evaluation_route(
         content=updated.model_dump(mode="json"),
         status_code=status.HTTP_200_OK,
     )
+
+
+@asset_evaluation_router.delete("/{evaluation_id}/")
+def delete_evaluation_route(
+    evaluation_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: UserModel
+    | None = Depends(
+        PermissionChecker({"module": "asset", "model": "asset", "action": "delete"})
+    ),
+):
+    """Exclui uma avaliação técnica FO-PAT-02 com componentes e anexos em cascata (AL-01)."""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    evaluation_service.delete_evaluation(
+        db_session=db_session,
+        evaluation_id=evaluation_id,
+        authenticated_user=authenticated_user,
+    )
+    db_session.close()
+    return JSONResponse(content={"ok": True}, status_code=status.HTTP_200_OK)
 
 
 @asset_evaluation_router.post("/{evaluation_id}/attachments/")

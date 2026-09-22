@@ -2,7 +2,6 @@
 
 import mimetypes
 import os
-from typing import Optional
 
 from django.db import transaction
 from django.db.models import Q
@@ -61,7 +60,7 @@ def _serialize_attachment_type(item: DomAttachmentType) -> dict:
     ).model_dump(by_alias=True)
 
 
-def _validate_risk_level(risk_level_id: Optional[int]) -> None:
+def _validate_risk_level(risk_level_id: int | None) -> None:
     if risk_level_id is None:
         return
     if not DomRiskLevel.objects.filter(pk=risk_level_id).exists():
@@ -81,8 +80,8 @@ def list_attachments(request, supplier_id: int):
 def upload_attachment(
     request,
     supplier: int = Form(...),
-    attachment_type: Optional[int] = Form(None),
-    description: Optional[str] = Form(None),
+    attachment_type: int | None = Form(None),
+    description: str | None = Form(None),
     file: UploadedFile = File(...),
 ):
     """Upload or replace a supplier attachment."""

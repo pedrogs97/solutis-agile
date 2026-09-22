@@ -31,6 +31,8 @@ const DEFAULT_FORM_VALUES: AssetEvaluationFormValues = {
   reviewed_by_date: null,
   approved_by_date: null,
   asset_id: null,
+  is_unregistered: false,
+  unregistered_description: '',
   patrimonio: '',
   asset_type_name: '',
   brand_model: '',
@@ -40,7 +42,8 @@ const DEFAULT_FORM_VALUES: AssetEvaluationFormValues = {
   cost_center: '',
   unity: '',
   current_location: '',
-  evaluation_date: new Date().toISOString(),
+  acquisition_date: null,
+  evaluation_date: new Date().toLocaleDateString('en-CA'),
   evaluator_name: '',
   is_under_warranty: false,
   warranty_expiry_date: null,
@@ -169,6 +172,8 @@ export function useAssetEvaluationForm({
         reviewed_by_date: evalData.reviewed_by_date || null,
         approved_by_date: evalData.approved_by_date || null,
         asset_id: evalData.asset_id,
+        is_unregistered: Boolean(evalData.is_unregistered),
+        unregistered_description: evalData.unregistered_description || '',
         patrimonio: evalData.patrimonio || '',
         asset_type_name: evalData.asset_type_name || '',
         brand_model: evalData.brand_model || '',
@@ -178,6 +183,7 @@ export function useAssetEvaluationForm({
         cost_center: evalData.cost_center || '',
         unity: evalData.unity || '',
         current_location: evalData.current_location || '',
+        acquisition_date: evalData.acquisition_date ? evalData.acquisition_date.split('T')[0] : null,
         evaluation_date: evalData.evaluation_date || null,
         evaluator_name: evalData.evaluator_name || '',
         is_under_warranty: Boolean(evalData.is_under_warranty),
@@ -321,7 +327,11 @@ export function useAssetEvaluationForm({
   })
 
   const approveMutation = useMutation({
-    mutationFn: (data: { comments?: string; write_off_asset: boolean }) =>
+    mutationFn: (data: {
+      comments?: string
+      write_off_asset: boolean
+      evaluation_data?: Partial<AssetEvaluationFormValues>
+    }) =>
       approveAssetEvaluation(evaluationId!, data),
     onSuccess: (approved: AssetTechnicalEvaluation) => {
       notifications.show({
@@ -417,7 +427,11 @@ export function useAssetEvaluationForm({
     saveDraft,
     onSubmit: form.handleSubmit(onSubmit),
     onApprove: (comments?: string, writeOff: boolean = true) =>
-      approveMutation.mutate({ comments, write_off_asset: writeOff }),
+      approveMutation.mutate({
+        comments,
+        write_off_asset: writeOff,
+        evaluation_data: getValues(),
+      }),
     pendingUploads,
     addPendingUpload,
     removePendingUpload,

@@ -3,8 +3,6 @@ Serializers for the shared app in Django.
 This module contains serializers for common models used across the application.
 """
 
-from typing import Dict
-
 from brazilcep.client import WebService, get_address_from_cep
 from brazilcep.exceptions import (
     BrazilCEPException,
@@ -61,7 +59,7 @@ class AddressSerializer(BaseSerializer):
         ]
         read_only_fields = ("id",)
 
-    def __validate_postal_code(self, value: str) -> Dict:
+    def __validate_postal_code(self, value: str) -> dict:
         """
         Validate the postal code and return address details.
         Tries multiple services to get the address from the postal code.
@@ -82,7 +80,7 @@ class AddressSerializer(BaseSerializer):
             message="Não foi possível conectar ao serviço de CEP.",
         )
 
-    def validate(self, attrs: Dict) -> Dict:
+    def validate(self, attrs: dict) -> dict:
         """
         Validate the address fields.
         Validates the postal code and retrieves address details.
@@ -98,7 +96,7 @@ class AddressSerializer(BaseSerializer):
         if not postal_code:
             return attrs
         try:
-            address: Dict = self.__validate_postal_code(postal_code)
+            address: dict = self.__validate_postal_code(postal_code)
             attrs["street"] = address.get("street", "")
             attrs["neighbourhood"] = address.get("district", "")
             attrs["city"] = address.get("city", "")
@@ -163,7 +161,7 @@ class ContactSerializer(BaseSerializer):
 
         return value
 
-    def validate(self, attrs: Dict) -> Dict:
+    def validate(self, attrs: dict) -> dict:
         """
         Validate the contact fields.
 

@@ -15,5 +15,5 @@ class SupplierConfig(AppConfig):
         Ready method to perform initialization tasks.
         Import signals to ensure they're registered.
         """
-        import src.supplier.signals  # noqa  # pylint: disable=unused-import
+        import src.supplier.signals  # pylint: disable=unused-import
         import src.supplier.signals.supplier  # noqa  # pylint: disable=unused-import

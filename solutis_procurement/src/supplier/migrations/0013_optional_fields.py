@@ -250,7 +250,7 @@ class Migration(migrations.Migration):
             name="contract_monthly_value",
             field=models.DecimalField(
                 decimal_places=2,
-                default=Decimal("0"),
+                default=Decimal(0),
                 help_text="Valor Mensal do Contrato",
                 max_digits=15,
             ),
@@ -260,7 +260,7 @@ class Migration(migrations.Migration):
             name="contract_total_value",
             field=models.DecimalField(
                 decimal_places=2,
-                default=Decimal("0"),
+                default=Decimal(0),
                 help_text="Valor Total do Contrato",
                 max_digits=15,
             ),

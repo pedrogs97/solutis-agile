@@ -6,16 +6,16 @@ Create Date: 2026-09-06 23:40:00.000000
 
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "b7d2e9f1a043"
-down_revision: Union[str, None] = "a1e4c02f09b1"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "a1e4c02f09b1"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -32,7 +32,9 @@ def upgrade() -> None:
 
     # Ensure all existing users have 'agile,flow'
     op.execute(
-        sa.text("UPDATE user SET products = 'agile,flow' WHERE products IS NULL OR products = ''")
+        sa.text(
+            "UPDATE user SET products = 'agile,flow' WHERE products IS NULL OR products = ''"
+        )
     )
 
 

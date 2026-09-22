@@ -11,6 +11,8 @@ import {
   Title,
 } from '@mantine/core'
 
+import { useMemo } from 'react'
+import { useCostCenterOptions } from '@/hooks/useCostCenterOptions'
 import type { PurchaseProcess } from '@/types/PurchaseProcess'
 import {
   CATEGORIAS,
@@ -33,6 +35,19 @@ export function TabIdentification({
 }: TabIdentificationProps) {
   const i = process.identificacao
   const apr = process.aprovacao
+
+  const { costCenterOptions } = useCostCenterOptions()
+
+  const selectCostCenterData = useMemo(() => {
+    const options = (costCenterOptions || []).map((o) => ({
+      value: o.label || o.value,
+      label: o.label || o.value,
+    }))
+    if (i.centroCusto && !options.some((o) => o.value === i.centroCusto)) {
+      options.unshift({ value: i.centroCusto, label: i.centroCusto })
+    }
+    return options
+  }, [costCenterOptions, i.centroCusto])
 
   return (
     <Paper withBorder radius="md" p="lg">
@@ -76,11 +91,14 @@ export function TabIdentification({
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <TextInput
+            <Select
               label="Centro de Custo"
-              placeholder="Ex.: 1000 - TI"
-              value={i.centroCusto || ''}
-              onChange={(e) => updateIdentification('centroCusto', e.currentTarget.value)}
+              placeholder="Selecione o centro de custo"
+              value={i.centroCusto || null}
+              onChange={(val) => updateIdentification('centroCusto', val || '')}
+              data={selectCostCenterData}
+              searchable
+              clearable
             />
           </Grid.Col>
 

@@ -192,6 +192,59 @@ def test_create_and_list_purchase_process_api(sample_purchase_process_data):
     assert detail_res.status_code == status.HTTP_200_OK
     assert detail_res.json()["id"] == proc_id
 
+    # PUT update (F2-02: persistência de compradorResponsavel, prazoEntrega, validadeProposta, condPagamento)
+    update_data = {
+        "identificacao": {
+            "data": "2026-09-07",
+            "categoria": "Normal",
+            "modalidade": "Produto",
+            "centroCusto": "2000 - Inovação",
+            "objeto": "Aquisição de Notebooks Atualizado",
+            "tipoContratacao": "Compra nova",
+            "risco": "Baixo",
+            "solicitante": "TI Infraestrutura",
+            "compradorResponsavel": "Carlos Eduardo",
+        },
+        "fornecedores": [
+            {
+                "id": "f_1",
+                "nome": "Fornecedor Alfa Atualizado",
+                "cnpj": "12345678000199",
+                "desconto": 250.0,
+                "impostos": 80.0,
+                "frete": 50.0,
+                "outros": 0.0,
+                "valorBrutoManual": None,
+                "orcado": 4950.0,
+                "condPagamento": "45 dias úteis",
+                "prazoEntrega": "3 dias úteis",
+                "validadeProposta": "30 dias",
+                "garantia": "24 meses",
+                "obs": "Proposta renegociada",
+            }
+        ],
+    }
+    put_res = client.put(
+        f"/api/v1/purchase-processes/{proc_id}/",
+        data=update_data,
+        format="json",
+    )
+    assert put_res.status_code == status.HTTP_200_OK
+    updated_json = put_res.json()
+    assert updated_json["identificacao"]["compradorResponsavel"] == "Carlos Eduardo"
+    assert updated_json["fornecedores"][0]["condPagamento"] == "45 dias úteis"
+    assert updated_json["fornecedores"][0]["prazoEntrega"] == "3 dias úteis"
+    assert updated_json["fornecedores"][0]["validadeProposta"] == "30 dias"
+
+    # Verificar no GET subsequente se persiste no banco
+    get_after_update = client.get(f"/api/v1/purchase-processes/{proc_id}/")
+    assert get_after_update.status_code == status.HTTP_200_OK
+    persisted_json = get_after_update.json()
+    assert persisted_json["identificacao"]["compradorResponsavel"] == "Carlos Eduardo"
+    assert persisted_json["fornecedores"][0]["condPagamento"] == "45 dias úteis"
+    assert persisted_json["fornecedores"][0]["prazoEntrega"] == "3 dias úteis"
+    assert persisted_json["fornecedores"][0]["validadeProposta"] == "30 dias"
+
 
 @pytest.mark.django_db
 def test_decision_and_metrics_api(sample_purchase_process_data):

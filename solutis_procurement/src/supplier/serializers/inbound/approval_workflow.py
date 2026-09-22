@@ -2,8 +2,6 @@
 Inbound Approval Workflow Serializers
 """
 
-from typing import Dict
-
 from rest_framework import serializers
 from src.supplier.models.approval_workflow import (
     ApprovalFlow,
@@ -30,7 +28,7 @@ class StartApprovalFlowSerializer(serializers.Serializer):
             "approver_email",
         ]
 
-    def validate(self, data: Dict):
+    def validate(self, data: dict):
         """
         Validate the input data to ensure the supplier exists.
         """
@@ -77,7 +75,7 @@ class SetResponsibleApproverSerializer(serializers.Serializer):
             "observations",
         ]
 
-    def validate(self, data: Dict):
+    def validate(self, data: dict):
         """
         Validate the input data to ensure the workflow and step exist.
         """
@@ -109,7 +107,7 @@ class SetResponsibleApproverSerializer(serializers.Serializer):
 
         return data
 
-    def create(self, validated_data: Dict):
+    def create(self, validated_data: dict):
         """
         Set the responsible approver for the specified step in the workflow.
         """
@@ -151,7 +149,7 @@ class ApproveApprovalFlowStepSerializer(serializers.Serializer):
             "is_approved",
         ]
 
-    def validate(self, data: Dict):
+    def validate(self, data: dict):
         """
         Validate the input data to ensure the workflow and step exist.
         """

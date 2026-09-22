@@ -121,7 +121,7 @@ class SupplierAttachmentDownloadView(APIView):
 
         except Exception as e:
             return Response(
-                {"error": f"Erro ao baixar arquivo: {str(e)}"},
+                {"error": f"Erro ao baixar arquivo: {e!s}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

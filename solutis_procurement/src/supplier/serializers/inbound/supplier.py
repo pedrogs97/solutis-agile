@@ -3,8 +3,6 @@ Serializer for Supplier model.
 This module provides serializers for input representations of the Supplier model.
 """
 
-from typing import Dict
-
 from django.db.transaction import atomic
 from src.shared.models import Address, Contact
 from src.shared.serializers import AddressSerializer, BaseSerializer, ContactSerializer
@@ -126,7 +124,7 @@ class SupplierInSerializer(BaseSerializer):
         read_only_fields = ("id", "situation", "created_at", "updated_at")
 
     @atomic
-    def create(self, validated_data: Dict) -> Supplier:
+    def create(self, validated_data: dict) -> Supplier:
         """
         Create a new Supplier instance with related objects.
         This method handles the creation of related objects like Address, Contact, etc.
@@ -189,7 +187,7 @@ class SupplierInSerializer(BaseSerializer):
         return super().create(validated_data)
 
     def _update_or_create_related(
-        self, instance: Supplier, field_name: str, data: Dict, model_class
+        self, instance: Supplier, field_name: str, data: dict, model_class
     ) -> None:
         """
         Update or create a related object on the instance.
@@ -219,7 +217,7 @@ class SupplierInSerializer(BaseSerializer):
         related_obj.save()
 
     @atomic
-    def update(self, instance: Supplier, validated_data: Dict) -> Supplier:
+    def update(self, instance: Supplier, validated_data: dict) -> Supplier:
         """
         Update an existing Supplier instance with related objects.
         This method handles the update of related objects like Address, Contact, etc.

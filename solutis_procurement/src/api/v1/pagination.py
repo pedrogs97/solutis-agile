@@ -1,13 +1,13 @@
 """Pagination helpers for Ninja v1 routers."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.core.paginator import EmptyPage, Paginator
 from django.db.models import QuerySet
 from src.shared.schemas import PaginatedResponse
 
 
-def build_page_link(request, page_number: Optional[int], size: int) -> Optional[str]:
+def build_page_link(request, page_number: int | None, size: int) -> str | None:
     """Build a pagination link preserving current query params."""
     if page_number is None:
         return None
@@ -20,7 +20,7 @@ def build_page_link(request, page_number: Optional[int], size: int) -> Optional[
 
 def paginate(
     request, queryset: QuerySet, page: int, size: int, serializer_class
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Paginate a queryset and return a structured response."""
     paginator = Paginator(queryset, size)
 

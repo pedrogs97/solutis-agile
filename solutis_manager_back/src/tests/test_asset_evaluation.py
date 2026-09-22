@@ -932,3 +932,186 @@ class TestAssetEvaluationModule(TestBase):
             patched["approval_comments"]
             == "Homologação definitiva após revisão de inventário."
         )
+
+    def test_unregistered_asset_and_acquisition_date_persistence(
+        self, setup, create_initial_data, auth_headers
+    ):
+        """Valida criação e atualização de ativo não tombado e data de aquisição (F1-04, F1-19)."""
+        create_payload = {
+            "is_unregistered": True,
+            "unregistered_description": "Mesa de escritório sem etiqueta de tombo encontrada no 3º andar",
+            "acquisition_date": "2023-05-10T10:00:00",
+            "asset_type_name": "Mobiliário",
+            "brand_model": "Mesa Estação 4 Lugares",
+            "cost_center": "1000 - Administrativo",
+            "unity": "Salvador",
+            "status": "Rascunho",
+        }
+        create_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert create_resp.status_code == 201
+        created = create_resp.json()
+        eval_id = created["id"]
+        assert created["is_unregistered"] is True
+        assert (
+            created["unregistered_description"]
+            == "Mesa de escritório sem etiqueta de tombo encontrada no 3º andar"
+        )
+        assert "2023-05-10" in created["acquisition_date"]
+
+        # GET
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 200
+        fetched = get_resp.json()
+        assert fetched["is_unregistered"] is True
+        assert "2023-05-10" in fetched["acquisition_date"]
+
+        # PATCH
+        patch_resp = self.client.patch(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+            json={
+                "unregistered_description": "Mesa de escritório atualizada com gaveteiro",
+                "acquisition_date": "2023-06-15T00:00:00",
+            },
+        )
+        assert patch_resp.status_code == 200
+        patched = patch_resp.json()
+        assert (
+            patched["unregistered_description"]
+            == "Mesa de escritório atualizada com gaveteiro"
+        )
+        assert "2023-06-15" in patched["acquisition_date"]
+
+    def test_approve_evaluation_with_form_data_persistence(
+        self, setup, create_initial_data, auth_headers, sample_asset
+    ):
+        """Valida que approve_evaluation salva os dados correntes da tela antes de efetivar a baixa (F1-12)."""
+        create_payload = {
+            "asset_id": sample_asset,
+            "status": "Em Análise",
+            "gross_weight": 0.0,
+            "discarded_weight": 0.0,
+        }
+        create_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert create_resp.status_code == 201
+        eval_id = create_resp.json()["id"]
+
+        # Aprova enviando evaluation_data com pesos preenchidos na tela
+        approve_payload = {
+            "comments": "Baixa autorizada pelo comitê técnico.",
+            "write_off_asset": True,
+            "evaluation_data": {
+                "gross_weight": 2.5,
+                "discarded_weight": 2.5,
+                "reused_weight": 0.0,
+                "recycle_weight": 2.5,
+                "waste_final_destination": "Cooperativa EcoDigital",
+            },
+        }
+        approve_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/{eval_id}/approve/",
+            headers=auth_headers,
+            json=approve_payload,
+        )
+        assert approve_resp.status_code == 200
+        approved = approve_resp.json()
+        assert approved["status"] == "Baixado"
+        assert approved["gross_weight"] == 2.5
+        assert approved["discarded_weight"] == 2.5
+        assert approved["recycle_weight"] == 2.5
+        assert approved["waste_final_destination"] == "Cooperativa EcoDigital"
+
+        # Conferir no GET subsequente
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 200
+        fetched = get_resp.json()
+        assert fetched["gross_weight"] == 2.5
+        assert fetched["discarded_weight"] == 2.5
+        assert fetched["waste_final_destination"] == "Cooperativa EcoDigital"
+
+    def test_delete_evaluation_flow(self, setup, create_initial_data, auth_headers):
+        """Valida endpoint de exclusão de avaliação técnica com cascata (AL-01)."""
+        create_payload = {
+            "brand_model": "Ativo para Exclusão",
+            "status": "Rascunho",
+            "components": [
+                {
+                    "name": "Peça Teste",
+                    "quantity": 1,
+                    "condition": "Boa",
+                    "destination": "Reaproveitamento interno",
+                }
+            ],
+        }
+        create_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert create_resp.status_code == 201
+        eval_id = create_resp.json()["id"]
+
+        # Deletar via DELETE
+        del_resp = self.client.delete(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert del_resp.status_code == 200
+        assert del_resp.json()["ok"] is True
+
+        # GET deve retornar 404
+        get_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/{eval_id}/",
+            headers=auth_headers,
+        )
+        assert get_resp.status_code == 404
+
+    def test_search_asset_endpoint(
+        self, setup, create_initial_data, auth_headers, sample_asset
+    ):
+        """Valida busca de ativo por tombo ou série para autopreenchimento (F1-06, F1-18)."""
+        # Busca por tombo PAT-123456
+        search_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/search-asset/?query=PAT-123456",
+            headers=auth_headers,
+        )
+        assert search_resp.status_code == 200
+        data = search_resp.json()
+        assert data["found"] is True
+        assert data["asset"]["id"] == sample_asset
+        assert data["asset"]["patrimonio"] == "PAT-123456"
+        assert data["asset"]["brand"] == "Dell"
+        assert data["asset"]["model"] == "Latitude 5420"
+        assert data["asset"]["value"] == 4500.0
+
+        # Busca por serial BR12345678
+        search_serial_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/search-asset/?query=BR12345678",
+            headers=auth_headers,
+        )
+        assert search_serial_resp.status_code == 200
+        data_serial = search_serial_resp.json()
+        assert data_serial["found"] is True
+        assert data_serial["asset"]["id"] == sample_asset
+
+        # Busca inexistente
+        not_found_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/search-asset/?query=INEXISTENTE-999",
+            headers=auth_headers,
+        )
+        assert not_found_resp.status_code == 200
+        assert not_found_resp.json()["found"] is False
