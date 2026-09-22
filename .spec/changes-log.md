@@ -1,5 +1,13 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-21] - Deploy Remoto de Correções e Melhorias dos Formulários (FO-PAT-02 e FO-AD-01)
+- **Descrição**: Commit, push para `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), atualizando os containers `solutis-agile-frontend-prod` (v2.7.18), `solutis-manager-back-prod` (v1.26.18) e `solutis-procurement-prod` (v2.18.6).
+- **Commit**: `c4725cb` (`feat: correções e melhorias nos formulários FO-PAT-02 e FO-AD-01 e bump de versões`)
+- **Containers Atualizados**:
+  - `solutis-agile-frontend-prod` (`2.7.18`)
+  - `solutis-manager-back-prod` (`1.26.18`)
+  - `solutis-procurement-prod` (`2.18.6`)
+
 ## [2026-09-21] - Correções e Melhorias dos Formulários de Avaliação Técnica (FO-PAT-02) e Compras (FO-AD-01)
 - **Descrição**: Implementação completa das correções e melhorias dos apontamentos gravados em 18/09/2026 para os formulários de Avaliação Técnica e Descarte (FO-PAT-02) e Compras (FO-AD-01), abrangendo os bloqueadores críticos (F1-11, F1-12, F1-25, F2-02, F1-16/20/21), ajustes de usabilidade (F1-01 a F1-26, F2-01 a F2-05), alinhamentos entre formulários (AL-01 a AL-04), criação da rota de busca/autopreenchimento por tombo ou série (`/search-asset/`), exclusão de avaliações (`DELETE /{id}/`), e script utilitário de expurgo dos dados mockados de teste.
 - **Arquivos afetados**:
