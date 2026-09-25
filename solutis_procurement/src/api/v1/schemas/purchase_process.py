@@ -99,6 +99,7 @@ class PurchaseProcessDecisionIn(CamelSchema):
     aprovado_por: str | None = ""
     data_decisao: str | None = ""
     comentario: str | None = ""
+    decisao: PurchaseDecisionSchema | None = None
 
 
 class PurchaseProcessComputedSchema(Schema):

@@ -24,6 +24,30 @@ class AssetCatalogComponentModel(Base):
         return str(self.name)
 
 
+class AssetDepreciationCategoryModel(Base):
+    """
+    Tabela de categorias de depreciação contábil (IN RFB 1.700/2017, Anexo III).
+    Permite parametrizar taxa anual (%) e vida útil em meses sem alterar o código.
+    """
+
+    __tablename__ = "asset_depreciation_category"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(
+        String(150), unique=True, nullable=False, index=True
+    )
+    annual_rate: Mapped[float] = mapped_column(Float, default=20.0, nullable=False)
+    useful_life_months: Mapped[int] = mapped_column(Integer, default=60, nullable=False)
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.annual_rate}% a.a. - {self.useful_life_months}m)"
+
+
 class AssetEvaluationComponentModel(Base):
     """Componentes avaliados na matriz dinâmica de reaproveitamento do FO-PAT-02."""
 
@@ -151,6 +175,22 @@ class AssetTechnicalEvaluationModel(Base):
     )
     waste_manifest: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
+    # Avaliação Financeira e Contábil (Beatriz Cunha - 24/09/2026)
+    depreciation_category_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("asset_depreciation_category.id"), nullable=True
+    )
+    depreciation_category_name: Mapped[str | None] = mapped_column(
+        String(150), nullable=True
+    )
+    reference_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    residual_value: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    monthly_depreciation: Mapped[float] = mapped_column(
+        Float, default=0.0, nullable=False
+    )
+    depreciated_months: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    accumulated_depreciation: Mapped[float] = mapped_column(
+        Float, default=0.0, nullable=False
+    )
     acquisition_value: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     net_book_value: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     usage_time: Mapped[str | None] = mapped_column(String(100), nullable=True)

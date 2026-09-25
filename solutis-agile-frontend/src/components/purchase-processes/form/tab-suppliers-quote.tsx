@@ -32,6 +32,21 @@ interface TabSuppliersQuoteProps {
   removeSupplier: (supplierId: string) => void
 }
 
+function parseCurrencyInput(
+  val: string | number | undefined | null,
+  allowZeroAsDefault = true
+): number | null {
+  if (val === undefined || val === null || val === '') {
+    return allowZeroAsDefault ? 0 : null
+  }
+  if (typeof val === 'number') {
+    return Number.isNaN(val) ? (allowZeroAsDefault ? 0 : null) : val
+  }
+  const cleanStr = String(val).replace(/\./g, '').replace(',', '.')
+  const parsed = parseFloat(cleanStr)
+  return Number.isNaN(parsed) ? (allowZeroAsDefault ? 0 : null) : parsed
+}
+
 export function TabSuppliersQuote({
   process,
   updateSupplier,
@@ -178,10 +193,13 @@ export function TabSuppliersQuote({
                         size="xs"
                         placeholder="0,00"
                         decimalScale={2}
-                        fixedDecimalScale
+                        decimalSeparator=","
+                        thousandSeparator="."
                         prefix="R$ "
                         value={f.valorBrutoManual ?? undefined}
-                        onChange={(val) => updateSupplier(f.id, 'valorBrutoManual', val)}
+                        onChange={(val) =>
+                          updateSupplier(f.id, 'valorBrutoManual', parseCurrencyInput(val, false))
+                        }
                       />
                     )}
                   </Table.Td>
@@ -197,9 +215,13 @@ export function TabSuppliersQuote({
                       size="xs"
                       placeholder="0,00"
                       decimalScale={2}
+                      decimalSeparator=","
+                      thousandSeparator="."
                       prefix="R$ "
                       value={f.desconto ?? 0}
-                      onChange={(val) => updateSupplier(f.id, 'desconto', typeof val === 'number' ? val : 0)}
+                      onChange={(val) =>
+                        updateSupplier(f.id, 'desconto', parseCurrencyInput(val, true) ?? 0)
+                      }
                     />
                   </Table.Td>
                 ))}
@@ -214,9 +236,13 @@ export function TabSuppliersQuote({
                       size="xs"
                       placeholder="0,00"
                       decimalScale={2}
+                      decimalSeparator=","
+                      thousandSeparator="."
                       prefix="R$ "
                       value={f.impostos ?? 0}
-                      onChange={(val) => updateSupplier(f.id, 'impostos', typeof val === 'number' ? val : 0)}
+                      onChange={(val) =>
+                        updateSupplier(f.id, 'impostos', parseCurrencyInput(val, true) ?? 0)
+                      }
                     />
                   </Table.Td>
                 ))}
@@ -231,9 +257,13 @@ export function TabSuppliersQuote({
                       size="xs"
                       placeholder="0,00"
                       decimalScale={2}
+                      decimalSeparator=","
+                      thousandSeparator="."
                       prefix="R$ "
                       value={f.frete ?? 0}
-                      onChange={(val) => updateSupplier(f.id, 'frete', typeof val === 'number' ? val : 0)}
+                      onChange={(val) =>
+                        updateSupplier(f.id, 'frete', parseCurrencyInput(val, true) ?? 0)
+                      }
                     />
                   </Table.Td>
                 ))}
@@ -248,9 +278,13 @@ export function TabSuppliersQuote({
                       size="xs"
                       placeholder="0,00"
                       decimalScale={2}
+                      decimalSeparator=","
+                      thousandSeparator="."
                       prefix="R$ "
                       value={f.outros ?? 0}
-                      onChange={(val) => updateSupplier(f.id, 'outros', typeof val === 'number' ? val : 0)}
+                      onChange={(val) =>
+                        updateSupplier(f.id, 'outros', parseCurrencyInput(val, true) ?? 0)
+                      }
                     />
                   </Table.Td>
                 ))}
@@ -297,9 +331,13 @@ export function TabSuppliersQuote({
                       size="xs"
                       placeholder="0,00"
                       decimalScale={2}
+                      decimalSeparator=","
+                      thousandSeparator="."
                       prefix="R$ "
                       value={f.orcado ?? undefined}
-                      onChange={(val) => updateSupplier(f.id, 'orcado', typeof val === 'number' ? val : null)}
+                      onChange={(val) =>
+                        updateSupplier(f.id, 'orcado', parseCurrencyInput(val, false))
+                      }
                     />
                   </Table.Td>
                 ))}

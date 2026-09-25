@@ -11,8 +11,19 @@ interface DatePickerProps extends DateInputProps {
 
 const normalizeDateValue = (value: unknown) => {
   if (!value) return null
-  if (value instanceof Date) return value
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
   if (typeof value === 'string') {
+    const ymdMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (ymdMatch) {
+      return new Date(
+        parseInt(ymdMatch[1], 10),
+        parseInt(ymdMatch[2], 10) - 1,
+        parseInt(ymdMatch[3], 10),
+        12,
+        0,
+        0
+      )
+    }
     const parsed = parse(value, 'dd/MM/yyyy', new Date())
     if (!Number.isNaN(parsed.getTime())) return parsed
     const fallback = new Date(value)

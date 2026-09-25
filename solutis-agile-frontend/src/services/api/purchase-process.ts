@@ -85,6 +85,7 @@ export const decidePurchaseProcess = async (
     aprovadoPor?: string
     dataDecisao?: string
     comentario?: string
+    decisao?: PurchaseProcess['decisao']
   }
 ) => {
   const { data } = await axios.post<PurchaseProcess>(

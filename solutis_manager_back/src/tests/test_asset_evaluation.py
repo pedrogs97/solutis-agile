@@ -1115,3 +1115,69 @@ class TestAssetEvaluationModule(TestBase):
         )
         assert not_found_resp.status_code == 200
         assert not_found_resp.json()["found"] is False
+
+    def test_depreciation_categories_and_vcl_endpoints(
+        self, setup, create_initial_data, auth_headers
+    ):
+        """Valida endpoint de categorias fiscais e endpoint de cálculo VCL (Beatriz Cunha - 24/09/2026)."""
+        # 1. Listar categorias de depreciação
+        cat_resp = self.client.get(
+            f"{BASE_API}/asset-evaluations/depreciation-categories/",
+            headers=auth_headers,
+        )
+        assert cat_resp.status_code == 200
+        categories = cat_resp.json()
+        assert len(categories) >= 7
+        names = [c["name"] for c in categories]
+        assert "Computadores e periféricos" in names
+        assert "Veículos" in names
+        assert "Terrenos" in names
+
+        comp_cat = next(
+            c for c in categories if c["name"] == "Computadores e periféricos"
+        )
+        assert comp_cat["annual_rate"] == 20.0
+        assert comp_cat["lifespan_months"] == 60
+
+        # 2. Endpoint de cálculo VCL (Caso 7: Móvel R$ 5.000, residual R$ 500, 120m, 21m)
+        calc_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/calculate-vcl/",
+            headers=auth_headers,
+            json={
+                "acquisition_value": 5000.0,
+                "acquisition_date": "2025-01-10",
+                "lifespan_months": 120,
+                "annual_rate": 10.0,
+                "reference_date": "2026-09-24",
+                "residual_value": 500.0,
+            },
+        )
+        assert calc_resp.status_code == 200
+        calc_data = calc_resp.json()
+        assert calc_data["depreciated_months"] == 21
+        assert calc_data["monthly_depreciation"] == 37.5
+        assert calc_data["accumulated_depreciation"] == 787.5
+        assert calc_data["net_book_value"] == 4212.5
+
+        # 3. Criação de avaliação com categoria e cálculo automático persistido
+        create_payload = {
+            "patrimonio": "PAT-VCL-001",
+            "asset_type_name": "Notebook Dell",
+            "acquisition_value": 3970.0,
+            "acquisition_date": "2019-04-04",
+            "depreciation_category_id": comp_cat["id"],
+            "reference_date": "2021-12-31",
+            "residual_value": 0.0,
+        }
+        create_resp = self.client.post(
+            f"{BASE_API}/asset-evaluations/",
+            headers=auth_headers,
+            json=create_payload,
+        )
+        assert create_resp.status_code == 201
+        created = create_resp.json()
+        assert created["depreciation_category_name"] == "Computadores e periféricos"
+        assert created["depreciated_months"] == 33
+        assert created["monthly_depreciation"] == 66.17
+        assert created["accumulated_depreciation"] == 2183.61
+        assert created["net_book_value"] == 1786.39

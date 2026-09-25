@@ -3,15 +3,33 @@ import type { QueryFunctionContext } from '@tanstack/react-query'
 import axios from '@/lib/axios'
 import type {
   AssetCatalogComponent,
+  AssetDepreciationCategory,
   AssetEvaluationAttachment,
   AssetEvaluationFilters,
   AssetEvaluationFormValues,
   AssetEvaluationListResponse,
   AssetEvaluationMetrics,
   AssetTechnicalEvaluation,
+  VCLCalculationInput,
+  VCLCalculationOutput,
 } from '@/types/AssetEvaluation'
 
 const BASE_URL = '/asset-evaluations'
+
+export const fetchDepreciationCategories = async () => {
+  const { data } = await axios.get<AssetDepreciationCategory[]>(
+    `${BASE_URL}/depreciation-categories/`
+  )
+  return data
+}
+
+export const calculateVclApi = async (payload: VCLCalculationInput) => {
+  const { data } = await axios.post<VCLCalculationOutput>(
+    `${BASE_URL}/calculate-vcl/`,
+    payload
+  )
+  return data
+}
 
 export const fetchAssetEvaluations = async ({
   queryKey,

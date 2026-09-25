@@ -24,6 +24,36 @@ export interface AssetCatalogComponent {
   createdAt?: string
 }
 
+export interface AssetDepreciationCategory {
+  id: number
+  name: string
+  annual_rate: number
+  lifespan_months: number
+  description?: string | null
+  is_active: boolean
+  created_at?: string
+}
+
+export interface VCLCalculationInput {
+  acquisition_value: number
+  acquisition_date: string
+  lifespan_months?: number
+  annual_rate?: number
+  reference_date?: string
+  residual_value?: number
+  write_off_date?: string | null
+}
+
+export interface VCLCalculationOutput {
+  monthly_depreciation: number
+  depreciated_months: number
+  accumulated_depreciation: number
+  net_book_value: number
+  base_depreciable: number
+  lifespan_months: number
+  annual_rate: number
+}
+
 export interface AssetTechnicalEvaluation {
   id: number
   protocol: string
@@ -67,6 +97,13 @@ export interface AssetTechnicalEvaluation {
   waste_manifest?: string | null
   acquisition_value: number
   net_book_value: number
+  depreciation_category_id?: number | null
+  depreciation_category_name?: string | null
+  reference_date?: string | null
+  residual_value?: number | null
+  monthly_depreciation?: number | null
+  depreciated_months?: number | null
+  accumulated_depreciation?: number | null
   usage_time?: string | null
   expected_lifespan?: string | null
   estimated_economy: number
@@ -152,6 +189,13 @@ export interface AssetEvaluationFormValues {
   waste_manifest?: string | null
   acquisition_value: number
   net_book_value: number
+  depreciation_category_id?: number | null
+  depreciation_category_name?: string | null
+  reference_date?: string | null
+  residual_value?: number | null
+  monthly_depreciation?: number | null
+  depreciated_months?: number | null
+  accumulated_depreciation?: number | null
   usage_time?: string | null
   expected_lifespan?: string | null
   estimated_economy: number

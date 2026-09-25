@@ -258,19 +258,43 @@ def test_decision_and_metrics_api(sample_purchase_process_data):
     )
     proc_id = res.json()["id"]
 
-    # Decision approval POST
+    # Decision approval POST with recomendacao
     dec_res = client.post(
         f"/api/v1/purchase-processes/{proc_id}/decision/",
         data={
             "status": "Aprovado",
             "aprovadoPor": "Diretor Solutis",
             "comentario": "Aprovado conforme menor CTA.",
+            "decisao": {
+                "fornecedorRecomendadoId": "f_1",
+                "minimoAtingido": "sim",
+                "motivoKey": "",
+                "justificativa": "Menor CTA e melhor prazo de entrega.",
+                "recomendacao": "Recomendamos a contratação imediata da fornecedora Alfa.",
+                "observacoes": "Contrato com vigência de 12 meses.",
+            },
         },
         format="json",
     )
     assert dec_res.status_code == status.HTTP_200_OK
     assert dec_res.json()["aprovacao"]["status"] == "Aprovado"
     assert dec_res.json()["aprovacao"]["aprovadoPor"] == "Diretor Solutis"
+    assert (
+        dec_res.json()["decisao"]["recomendacao"]
+        == "Recomendamos a contratação imediata da fornecedora Alfa."
+    )
+
+    # Subsequent GET verifies persistence in DB
+    get_res = client.get(f"/api/v1/purchase-processes/{proc_id}/")
+    assert get_res.status_code == status.HTTP_200_OK
+    assert (
+        get_res.json()["decisao"]["recomendacao"]
+        == "Recomendamos a contratação imediata da fornecedora Alfa."
+    )
+    assert (
+        get_res.json()["decisao"]["justificativa"]
+        == "Menor CTA e melhor prazo de entrega."
+    )
 
     # Metrics endpoint
     metrics_res = client.get("/api/v1/purchase-processes/metrics/")

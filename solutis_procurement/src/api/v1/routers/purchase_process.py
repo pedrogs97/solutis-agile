@@ -460,6 +460,12 @@ def decide_purchase_process(request, id: str, payload: PurchaseProcessDecisionIn
     if payload.comentario is not None:
         apr["comentario"] = payload.comentario
 
+    if payload.decisao is not None:
+        dec_data = payload.decisao.dict(by_alias=True, exclude_unset=True)
+        current_decision = proc.decision or {}
+        current_decision.update(dec_data)
+        proc.decision = current_decision
+
     proc.approval = apr
     proc.status = payload.status
     proc.save()

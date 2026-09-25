@@ -63,6 +63,13 @@ const DEFAULT_FORM_VALUES: AssetEvaluationFormValues = {
   waste_manifest: '',
   acquisition_value: 0,
   net_book_value: 0,
+  depreciation_category_id: null,
+  depreciation_category_name: '',
+  reference_date: new Date().toLocaleDateString('en-CA'),
+  residual_value: 0,
+  monthly_depreciation: 0,
+  depreciated_months: 0,
+  accumulated_depreciation: 0,
   usage_time: '',
   expected_lifespan: '',
   estimated_economy: 0,
@@ -165,12 +172,12 @@ export function useAssetEvaluationForm({
     if (existingEvaluation) {
       const evalData = existingEvaluation
       reset({
-        document_start_date: evalData.document_start_date || null,
-        document_end_date: evalData.document_end_date || null,
+        document_start_date: evalData.document_start_date ? evalData.document_start_date.split('T')[0] : null,
+        document_end_date: evalData.document_end_date ? evalData.document_end_date.split('T')[0] : null,
         document_classification: evalData.document_classification || 'USO INTERNO',
-        elaborated_by_date: evalData.elaborated_by_date || null,
-        reviewed_by_date: evalData.reviewed_by_date || null,
-        approved_by_date: evalData.approved_by_date || null,
+        elaborated_by_date: evalData.elaborated_by_date ? evalData.elaborated_by_date.split('T')[0] : null,
+        reviewed_by_date: evalData.reviewed_by_date ? evalData.reviewed_by_date.split('T')[0] : null,
+        approved_by_date: evalData.approved_by_date ? evalData.approved_by_date.split('T')[0] : null,
         asset_id: evalData.asset_id,
         is_unregistered: Boolean(evalData.is_unregistered),
         unregistered_description: evalData.unregistered_description || '',
@@ -184,10 +191,10 @@ export function useAssetEvaluationForm({
         unity: evalData.unity || '',
         current_location: evalData.current_location || '',
         acquisition_date: evalData.acquisition_date ? evalData.acquisition_date.split('T')[0] : null,
-        evaluation_date: evalData.evaluation_date || null,
+        evaluation_date: evalData.evaluation_date ? evalData.evaluation_date.split('T')[0] : null,
         evaluator_name: evalData.evaluator_name || '',
         is_under_warranty: Boolean(evalData.is_under_warranty),
-        warranty_expiry_date: evalData.warranty_expiry_date || null,
+        warranty_expiry_date: evalData.warranty_expiry_date ? evalData.warranty_expiry_date.split('T')[0] : null,
         asset_description: evalData.asset_description || '',
         status: evalData.status || 'Rascunho',
         classification: evalData.classification || 'Bom',
@@ -206,23 +213,30 @@ export function useAssetEvaluationForm({
         waste_manifest: evalData.waste_manifest || '',
         acquisition_value: evalData.acquisition_value ?? 0,
         net_book_value: evalData.net_book_value ?? 0,
+        depreciation_category_id: evalData.depreciation_category_id ?? null,
+        depreciation_category_name: evalData.depreciation_category_name || '',
+        reference_date: evalData.reference_date
+          ? evalData.reference_date.split('T')[0]
+          : new Date().toLocaleDateString('en-CA'),
+        residual_value: evalData.residual_value ?? 0,
+        monthly_depreciation: evalData.monthly_depreciation ?? 0,
+        depreciated_months: evalData.depreciated_months ?? 0,
+        accumulated_depreciation: evalData.accumulated_depreciation ?? 0,
         usage_time: evalData.usage_time || '',
         expected_lifespan: evalData.expected_lifespan || '',
         estimated_economy: evalData.estimated_economy ?? 0,
         justification: evalData.justification || '',
         technical_opinion: evalData.technical_opinion || '',
-        write_off_date: evalData.write_off_date || null,
+        write_off_date: evalData.write_off_date ? evalData.write_off_date.split('T')[0] : null,
         write_off_reason: evalData.write_off_reason || '',
         reused_parts_location: evalData.reused_parts_location || '',
         waste_final_destination: evalData.waste_final_destination || '',
         write_off_notes: evalData.write_off_notes || '',
         reviewer_name: evalData.reviewer_name || '',
         approver_name: evalData.approver_name || '',
-        approval_date: evalData.approval_date || null,
+        approval_date: evalData.approval_date ? evalData.approval_date.split('T')[0] : null,
         approval_comments: evalData.approval_comments || '',
-        components: evalData.components?.length
-          ? evalData.components
-          : DEFAULT_FORM_VALUES.components,
+        components: evalData.components || [],
       })
     } else if (!isEdit) {
       // Check draft in localStorage
@@ -307,6 +321,17 @@ export function useAssetEvaluationForm({
     mutationFn: (values: AssetEvaluationFormValues) =>
       updateAssetEvaluation(evaluationId!, values),
     onSuccess: async (updated: AssetTechnicalEvaluation) => {
+      // Upload pending files if any
+      if (pendingUploads.length > 0) {
+        for (const item of pendingUploads) {
+          try {
+            await uploadEvaluationAttachment(updated.id, item.file, item.checklistKey)
+          } catch (e) {
+            console.error('Error uploading attachment', e)
+          }
+        }
+      }
+
       notifications.show({
         color: 'green',
         title: 'Avaliação Atualizada',
@@ -333,7 +358,18 @@ export function useAssetEvaluationForm({
       evaluation_data?: Partial<AssetEvaluationFormValues>
     }) =>
       approveAssetEvaluation(evaluationId!, data),
-    onSuccess: (approved: AssetTechnicalEvaluation) => {
+    onSuccess: async (approved: AssetTechnicalEvaluation) => {
+      // Upload pending files if any
+      if (pendingUploads.length > 0) {
+        for (const item of pendingUploads) {
+          try {
+            await uploadEvaluationAttachment(approved.id, item.file, item.checklistKey)
+          } catch (e) {
+            console.error('Error uploading attachment', e)
+          }
+        }
+      }
+
       notifications.show({
         color: 'green',
         title: 'Avaliação Aprovada',
@@ -354,6 +390,11 @@ export function useAssetEvaluationForm({
   })
 
   const onSubmit = (values: AssetEvaluationFormValues) => {
+    // Filtrar linhas vazias da matriz (sem nome preenchido)
+    values.components = (values.components || []).filter(
+      (comp) => comp && comp.name && comp.name.trim().length > 0
+    )
+
     // Detect custom new components not in catalog
     const existingNames = new Set((catalogComponents || []).map((c: { name: string }) => c.name.toLowerCase()))
     const newComponents: string[] = []
@@ -365,8 +406,6 @@ export function useAssetEvaluationForm({
       }
     })
     values.new_components_for_catalog = newComponents
-
-
 
     if (isEdit) {
       updateMutation.mutate(values)
@@ -388,6 +427,20 @@ export function useAssetEvaluationForm({
 
   const removeComponentRow = (index: number) => {
     remove(index)
+    saveDraft()
+  }
+
+  const clearComponentRow = (index: number) => {
+    setValue(`components.${index}.name`, '')
+    setValue(`components.${index}.quantity`, 1)
+    setValue(`components.${index}.condition`, 'Boa')
+    setValue(`components.${index}.destination`, 'Reaproveitamento interno')
+    setValue(`components.${index}.observations`, '')
+    saveDraft()
+  }
+
+  const clearAllComponents = () => {
+    setValue('components', [])
     saveDraft()
   }
 
@@ -416,6 +469,8 @@ export function useAssetEvaluationForm({
     componentFields: fields,
     addComponentRow,
     removeComponentRow,
+    clearComponentRow,
+    clearAllComponents,
     calculatedReusePercentage,
     calculatedEstimatedEconomy,
     watchedClassification,

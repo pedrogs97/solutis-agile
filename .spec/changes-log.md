@@ -1,5 +1,65 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-24] - Implementação do Cálculo Automático do Valor Contábil Líquido (VCL)
+- **Descrição**: Implementação completa da "Especificação – Cálculo automático do valor contábil líquido" (24/09/2026 · Beatriz Cunha) para o módulo de Avaliação Técnica de Patrimônio (FO-PAT-02). O sistema calcula linearmente a depreciação mensal e acumulada, meses decorridos e valor contábil líquido de cada bem a partir de categorias fiscais dinâmicas (IN RFB 1.700/2017), valor residual, data de referência customizável e data de baixa.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/asset_evaluation/vcl.py`
+  - `solutis_manager_back/src/asset_evaluation/models.py`
+  - `solutis_manager_back/alembic/versions/2026-09-24_220000_add_asset_depreciation_category_and_vcl_fields.py`
+  - `solutis_manager_back/src/asset_evaluation/schemas.py`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/src/asset_evaluation/router.py`
+  - `solutis_manager_back/src/tests/test_vcl_calculation.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `solutis-agile-frontend/src/lib/utils.ts`
+  - `solutis-agile-frontend/src/types/AssetEvaluation.ts`
+  - `solutis-agile-frontend/src/services/api/asset-evaluation.ts`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/financial-section.tsx`
+  - `.spec/changes-log.md`
+- **Impacto / Regras implementadas**:
+  1. **Regra de Cálculo Linear Mensal**: Mês de aquisição conta como mês cheio (`(ano_ref - ano_aq)*12 + (mes_ref - mes_aq) + 1`). Vida útil em meses calculada por `100 ÷ taxa anual × 12`. Depreciação mensal `base_depreciavel ÷ vida_util` com arredondamento em 2 casas decimais.
+  2. **Ajuste de Centavos no Último Mês**: No último mês de depreciação (ou superior), a depreciação acumulada é igualada exatamente à base depreciável (`acumulada = base`), absorvendo eventuais centavos de arredondamento.
+  3. **Piso do Valor Residual**: O Valor Contábil Líquido nunca fica inferior ao valor residual (`VCL >= residual_value`).
+  4. **Parada na Baixa**: Se o bem possuir data de baixa (`write_off_date`), a depreciação é congelada no mês da baixa.
+  5. **Terrenos e Categorias Não Depreciáveis**: Ativos com vida útil igual a 0 possuem taxa 0%, depreciação mensal e acumulada zeradas e VCL igual ao valor de aquisição.
+  6. **Tabela de Categorias Fiscais Parametrizável**: Criada a entidade `asset_depreciation_category` populada com as 7 categorias oficiais da Receita Federal (Computadores e periféricos, Veículos, Máquinas e equipamentos, Móveis e utensílios, Instalações, Edificações e Terrenos). Rota `GET /api/v1/asset-evaluations/depreciation-categories/` permite que novas taxas ou categorias sejam configuradas sem alterar o código.
+  7. **Endpoint de Simulação / Cálculo**: Rota `POST /api/v1/asset-evaluations/calculate-vcl/` que calcula em tempo real o VCL e seus parâmetros.
+  8. **UI FO-PAT-02 Modernizada**: Seletor de Categoria de Depreciação fiscal, campo de Data de Referência (com padrão na data atual e flexibilidade para fechamentos mensais), campo de Valor Residual, e painel de demonstrativo com os 4 novos campos (Depreciação mensal, Meses depreciados, Depreciação acumulada e Valor contábil líquido).
+  9. **Validação Rigorosa de Testes**: 100% de conformidade com os 8 cenários oficiais de teste de Beatriz Cunha em `test_vcl_calculation.py` e testes de integração de API em `test_asset_evaluation.py` (32 testes passando).
+
+## [2026-09-24] - Ajustes e Correções em Avaliação de Ativo (FO-PAT-02) e Análise de Compras (FO-AD-01)
+- **Descrição**: Atendimento ao pacote de 9 correções e ajustes solicitados para o Formulário de Avaliação Técnica e Descarte de Ativo (FO-PAT-02) e o Formulário de Análise de Compras (FO-AD-01).
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/lib/utils.ts`
+  - `solutis-agile-frontend/src/components/common/date-input/index.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/identification-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/components-matrix-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/evaluation-form.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/financial-section.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-suppliers-quote.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-items-detail.tsx`
+  - `solutis-agile-frontend/src/services/api/purchase-process.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessForm.ts`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_procurement/src/api/v1/schemas/purchase_process.py`
+  - `solutis_procurement/src/api/v1/routers/purchase_process.py`
+  - `solutis_procurement/src/supplier/tests/test_purchase_process.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Formulário de Ativo (FO-PAT-02)**:
+    1. **Autopreenchimento por Tombo/Série**: Aprimorada a busca `find_asset_by_identifier` no `solutis_manager_back` com correspondência exata prioritária e busca parcial normalizada, retornando data de aquisição do ativo original, valor de aquisição, centro de custo, unidade, tipo e marca/modelo. No frontend (`identification-section.tsx`), integração completa preenchendo todos os campos vinculados.
+    2. **Correção de Datas no Calendário**: Corrigido bug de fuso horário onde qualquer data selecionada subtraía 1 dia (UTC para UTC-3). `formatDateToLocalYMD` agora formata strings ISO/YMD diretamente via regex sem instanciar Date UTC, `parseLocalDateValue` converte para meio-dia local (`12:00:00`), e `DateInput` normaliza de forma segura.
+    3. **Matriz de Reaproveitamento de Componentes**: Permitida a limpeza individual dos campos da linha (`RotateCcw`), limpeza de toda a matriz (`Eraser`), e exclusão de linhas com keys estáveis; componentes em branco são descartados automaticamente no envio.
+    4. **Fórmula do Valor Contábil Líquido**: Implementado cálculo automático `calculateNetBookValue` considerando valor de aquisição, data de aquisição e vida útil contábil (anos). Se o tempo de uso ultrapassar a vida útil (100% depreciado / fora do escopo contábil), o valor contábil líquido é automaticamente fixado em R$ 0,00, com badge explicativa e botão "Fórmula" para recálculo rápido.
+    5. **Persistência de Anexos**: Corrigido fluxo de upload onde `pendingUploads` eram descartados ao salvar rascunhos ou aprovar. `updateMutation.onSuccess` e `approveMutation.onSuccess` agora realizam o envio automático de todos os arquivos pendentes via `uploadEvaluationAttachment`.
+    6. **Persistência da Aprovação Final**: Corrigido `approve_evaluation` no backend para preservar o `approver_name` informado no formulário/usuário em vez de sobrescrever incondicionalmente pelo username logado.
+    7. **Validação Completa de Persistência**: Validada e confirmada a persistência e recuperação de todas as seções (Identificação, Matriz de Peças, ESG, Financeira, Gestão Patrimonial, Aprovações e Anexos) com 21 testes automatizados passando no `solutis_manager_back`.
+  - **Análise de Compras (FO-AD-01)**:
+    8. **Decimais em Cotação e Itens**: Adicionada função de parsing `parseCurrencyInput`, `parseCurrencyOrNull` e `parseQuantityInput` com `decimalSeparator=","`, `thousandSeparator="."` e `decimalScale={2}` no `tab-suppliers-quote.tsx` e `tab-items-detail.tsx`, permitindo digitação fluida de casas decimais com vírgula ou ponto sem zerar o campo.
+    9. **Persistência da Recomendação Final**: Adicionado campo `decisao` em `PurchaseProcessDecisionIn` e persistência de `proc.decision` no endpoint `decide_purchase_process` (`solutis_procurement`). No frontend (`usePurchaseProcessForm.ts`), `decisionMutation` pré-salva os dados do formulário e repassa `decisao` com `recomendacao`, mantendo o cache e o formulário perfeitamente sincronizados sem perda de dados. Testes atualizados e validados.
+
 ## [2026-09-21] - Deploy Remoto de Correções e Melhorias dos Formulários (FO-PAT-02 e FO-AD-01)
 - **Descrição**: Commit, push para `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), atualizando os containers `solutis-agile-frontend-prod` (v2.7.18), `solutis-manager-back-prod` (v1.26.18) e `solutis-procurement-prod` (v2.18.6).
 - **Commit**: `c4725cb` (`feat: correções e melhorias nos formulários FO-PAT-02 e FO-AD-01 e bump de versões`)

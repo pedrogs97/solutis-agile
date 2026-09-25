@@ -50,8 +50,11 @@ export function EvaluationForm({
     existingEvaluation,
     catalogComponents,
     assetOptions,
+    componentFields,
     addComponentRow,
     removeComponentRow,
+    clearComponentRow,
+    clearAllComponents,
     calculatedReusePercentage,
     calculatedEstimatedEconomy,
     watchedClassification,
@@ -125,8 +128,11 @@ export function EvaluationForm({
         <ComponentsMatrixSection
           form={form}
           catalogComponents={catalogComponents}
+          componentFields={componentFields}
           onAddRow={addComponentRow}
           onRemoveRow={removeComponentRow}
+          onClearRow={clearComponentRow}
+          onClearAll={clearAllComponents}
           readOnly={readOnly}
         />
 

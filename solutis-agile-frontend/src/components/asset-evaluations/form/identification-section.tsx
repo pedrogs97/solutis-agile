@@ -81,36 +81,61 @@ export function IdentificationSection({
   // F1-06: Autopreenchimento ao buscar por Tombo ou Série
   const handleSearchAsset = async (query: string) => {
     const cleanQuery = query.trim()
-    if (!cleanQuery || cleanQuery.length < 3 || readOnly) return
+    if (!cleanQuery || readOnly) return
 
     setIsSearching(true)
     try {
       const data = await searchAssetByIdentifier(cleanQuery)
-      if (data && data.id) {
-        setValue('asset_id', data.id)
-        if (data.patrimonio) setValue('patrimonio', data.patrimonio)
-        if (data.serial_number) setValue('serial_number', data.serial_number)
-        if (data.type_name) setValue('asset_type_name', data.type_name)
-        if (data.brand) setValue('manufacturer', data.brand)
-        if (data.model) setValue('model', data.model)
-        if (data.brand_model) setValue('brand_model', data.brand_model)
-        if (data.cost_center) setValue('cost_center', data.cost_center)
-        if (data.unity) setValue('unity', data.unity)
-        if (data.acquisition_value !== undefined && data.acquisition_value !== null) {
-          setValue('acquisition_value', Number(data.acquisition_value))
+      const asset = data?.asset || (data?.id ? data : null)
+      if (asset && asset.id) {
+        setValue('asset_id', asset.id)
+        if (asset.patrimonio || asset.register_number) {
+          setValue('patrimonio', asset.patrimonio || asset.register_number)
         }
-        if (data.net_book_value !== undefined && data.net_book_value !== null) {
-          setValue('net_book_value', Number(data.net_book_value))
+        if (asset.serial_number) setValue('serial_number', asset.serial_number)
+        if (asset.asset_type_name || asset.type_name) {
+          setValue('asset_type_name', asset.asset_type_name || asset.type_name)
         }
-        if (data.acquisition_date) {
-          const ymd = data.acquisition_date.split('T')[0]
-          setValue('acquisition_date', ymd)
+        if (asset.manufacturer || asset.brand) {
+          setValue('manufacturer', asset.manufacturer || asset.brand)
+        }
+        if (asset.model) setValue('model', asset.model)
+        if (asset.brand_model) setValue('brand_model', asset.brand_model)
+        if (asset.description || asset.asset_description) {
+          setValue('asset_description', asset.description || asset.asset_description)
+        }
+        if (asset.cost_center) setValue('cost_center', asset.cost_center)
+        if (asset.unity || asset.unit) setValue('unity', asset.unity || asset.unit)
+
+        const acqVal =
+          asset.acquisition_value !== undefined && asset.acquisition_value !== null
+            ? asset.acquisition_value
+            : asset.value
+        if (acqVal !== undefined && acqVal !== null) {
+          setValue('acquisition_value', Number(acqVal))
+        }
+
+        if (asset.net_book_value !== undefined && asset.net_book_value !== null) {
+          setValue('net_book_value', Number(asset.net_book_value))
+        }
+
+        if (asset.acquisition_date) {
+          const ymd = formatDateToLocalYMD(asset.acquisition_date)
+          if (ymd) {
+            setValue('acquisition_date', ymd)
+          }
         }
 
         notifications.show({
           color: 'teal',
-          title: 'Ativo Localizado',
-          message: `Dados do patrimônio ${data.patrimonio || cleanQuery} preenchidos automaticamente.`,
+          title: 'Ativo Localizado no Banco',
+          message: `Dados do patrimônio ${asset.patrimonio || cleanQuery} preenchidos com sucesso.`,
+        })
+      } else {
+        notifications.show({
+          color: 'yellow',
+          title: 'Ativo Não Encontrado',
+          message: `Nenhum ativo localizado com "${cleanQuery}". Preencha os dados manualmente.`,
         })
       }
     } catch {

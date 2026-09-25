@@ -25,6 +25,22 @@ import {
 import type { PurchaseItem, PurchaseProcess } from '@/types/PurchaseProcess'
 import { UNIDADES } from '@/types/PurchaseProcess'
 
+function parseCurrencyOrNull(val: string | number): number | null {
+  if (val === '' || val === null || val === undefined) return null
+  if (typeof val === 'number') return isNaN(val) ? null : val
+  const normalized = String(val).trim().replace(/\./g, '').replace(',', '.')
+  const num = parseFloat(normalized)
+  return isNaN(num) ? null : num
+}
+
+function parseQuantityInput(val: string | number): number {
+  if (typeof val === 'number') return isNaN(val) ? 1 : val
+  if (!val) return 1
+  const normalized = String(val).trim().replace(/\./g, '').replace(',', '.')
+  const num = parseFloat(normalized)
+  return isNaN(num) ? 1 : num
+}
+
 interface TabItemsDetailProps {
   process: PurchaseProcess
   updateItem: (itemId: string, field: keyof PurchaseItem, value: any) => void
@@ -113,8 +129,10 @@ export function TabItemsDetail({
                       size="xs"
                       min={0.01}
                       decimalScale={2}
+                      decimalSeparator=","
+                      thousandSeparator="."
                       value={it.qtd ?? 1}
-                      onChange={(val) => updateItem(it.id, 'qtd', typeof val === 'number' ? val : 1)}
+                      onChange={(val) => updateItem(it.id, 'qtd', parseQuantityInput(val))}
                     />
                   </Table.Td>
 
@@ -137,9 +155,11 @@ export function TabItemsDetail({
                             size="xs"
                             placeholder="0,00"
                             decimalScale={2}
+                            decimalSeparator=","
+                            thousandSeparator="."
                             value={price ?? undefined}
                             onChange={(val) =>
-                              updateItemPrice(it.id, f.id, typeof val === 'number' ? val : null)
+                              updateItemPrice(it.id, f.id, parseCurrencyOrNull(val))
                             }
                           />
                         </Table.Td>

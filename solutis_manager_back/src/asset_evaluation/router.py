@@ -12,6 +12,7 @@ from src.asset_evaluation.schemas import (
     AssetEvaluationCreateSchema,
     AssetEvaluationUpdateSchema,
     CatalogComponentCreateSchema,
+    VCLCalculationInputSchema,
 )
 from src.asset_evaluation.service import AssetEvaluationService
 from src.auth.models import UserModel
@@ -211,6 +212,51 @@ def get_search_asset_route(
         )
     return JSONResponse(
         content={"found": True, "asset": asset_data},
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@asset_evaluation_router.get("/depreciation-categories/")
+def get_depreciation_categories_route(
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: UserModel
+    | None = Depends(
+        PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
+    ),
+):
+    """Retorna as categorias de depreciação contábil ativas (IN RFB 1.700/2017)."""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    cats = evaluation_service.list_depreciation_categories(db_session)
+    db_session.close()
+    return JSONResponse(
+        content=[c.model_dump(mode="json") for c in cats],
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@asset_evaluation_router.post("/calculate-vcl/")
+def post_calculate_vcl_route(
+    data: VCLCalculationInputSchema,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: UserModel
+    | None = Depends(
+        PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
+    ),
+):
+    """Calcula o Valor Contábil Líquido (VCL) e parâmetros de depreciação mensal e acumulada."""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    res = evaluation_service.calculate_vcl_service(db_session, data)
+    db_session.close()
+    return JSONResponse(
+        content=res.model_dump(mode="json"),
         status_code=status.HTTP_200_OK,
     )
 

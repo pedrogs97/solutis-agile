@@ -8,7 +8,7 @@ O **Solutis Agile** é um ecossistema modularizado para gestão, automação de 
 ### ⚙️ `solutis_manager_back` (Backend Manager Core)
 Serviço base e coração da solução com toda a lógica de autenticação e autorização. Contém os seguintes módulos e responsabilidades:
 - **Autenticação e Autorização**: Gestão centralizada de permissões, controle de acesso e login unificado padrão com suporte opcional a Single Sign-On (SSO) corporativo com Microsoft Entra ID (Azure AD) sob Feature Flag (`ENABLE_SSO` / `VITE_ENABLE_SSO`, com padrão `false`).
-- **Módulos Core**: Comodato, Colaborador, Ativos, Avaliação Técnica e Baixa Patrimonial (FO-PAT-02), Relatórios (versão antiga/legada), Inventário, Documentos, Notas Fiscais, Manutenção e Melhoria, Termo de Empréstimo, Verificação de Ativo, Logs e Uso da Plataforma.
+- **Módulos Core**: Comodato, Colaborador, Ativos, Avaliação Técnica e Baixa Patrimonial (FO-PAT-02 com cálculo automático do Valor Contábil Líquido - VCL e parametrização fiscal IN RFB 1.700/2017), Relatórios (versão antiga/legada), Inventário, Documentos, Notas Fiscais, Manutenção e Melhoria, Termo de Empréstimo, Verificação de Ativo, Logs e Uso da Plataforma.
 - **Integrações e Proxy**: Integração opcional com Microsoft Graph para autenticação SSO via Feature Flag, Clicksign para assinatura digital de documentos e Auth Proxy atuando como gateway/proxy de autenticação para os demais microsserviços.
 
 ### 🛒 `solutis_procurement` (Procurement Service)

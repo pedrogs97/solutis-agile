@@ -1,6 +1,7 @@
 """Schemas Pydantic para o módulo FO-PAT-02 (Avaliação Técnica de Patrimônio)"""
 
 from datetime import datetime
+from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -18,6 +19,98 @@ class CatalogComponentOutSchema(CatalogComponentBaseSchema):
     created_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AssetDepreciationCategorySchema(BaseModel):
+    id: int
+    name: str
+    annual_rate: float
+    useful_life_months: int
+    lifespan_months: int | None = None
+    description: str | None = None
+    active: bool = True
+    is_active: bool = True
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    @model_validator(mode="after")
+    def populate_aliases(self) -> Self:
+        if self.lifespan_months is None:
+            self.lifespan_months = self.useful_life_months
+        self.is_active = self.active
+        return self
+
+
+class VCLCalculationInputSchema(BaseModel):
+    valor_aquisicao: float = Field(
+        default=0.0, ge=0.0, description="Valor original de aquisição"
+    )
+    acquisition_value: float | None = Field(default=None)
+    data_aquisicao: str | None = Field(
+        default=None, description="Data de aquisição (YYYY-MM-DD)"
+    )
+    acquisition_date: str | None = Field(default=None)
+    vida_util_meses: int | None = Field(default=None, ge=0)
+    lifespan_months: int | None = Field(default=None)
+    annual_rate: float | None = Field(default=None)
+    depreciation_category_id: int | None = Field(default=None)
+    data_referencia: str | None = Field(
+        default=None, description="Data de referência (YYYY-MM-DD)"
+    )
+    reference_date: str | None = Field(default=None)
+    valor_residual: float = Field(
+        default=0.0, ge=0.0, description="Valor residual em R$"
+    )
+    residual_value: float | None = Field(default=None)
+    data_baixa: str | None = Field(
+        default=None, description="Data da baixa (YYYY-MM-DD)"
+    )
+    write_off_date: str | None = Field(default=None)
+
+    @model_validator(mode="after")
+    def unify_fields(self) -> Self:
+        if self.acquisition_value is not None:
+            self.valor_aquisicao = self.acquisition_value
+        if self.acquisition_date is not None:
+            self.data_aquisicao = self.acquisition_date
+        if self.lifespan_months is not None:
+            self.vida_util_meses = self.lifespan_months
+        if self.reference_date is not None:
+            self.data_referencia = self.reference_date
+        if self.residual_value is not None:
+            self.valor_residual = self.residual_value
+        if self.write_off_date is not None:
+            self.data_baixa = self.write_off_date
+        if not self.data_aquisicao:
+            raise ValueError("Data de aquisição é obrigatória.")
+        return self
+
+
+class VCLCalculationOutputSchema(BaseModel):
+    depreciacao_mensal: float
+    monthly_depreciation: float | None = None
+    meses: int
+    depreciated_months: int | None = None
+    depreciacao_acumulada: float
+    accumulated_depreciation: float | None = None
+    vcl: float
+    net_book_value: float | None = None
+    base_depreciavel: float
+    base_depreciable: float | None = None
+    vida_util_meses: int
+    lifespan_months: int | None = None
+    is_out_of_scope: bool
+    annual_rate: float | None = None
+
+    @model_validator(mode="after")
+    def populate_bilingual_fields(self) -> Self:
+        self.monthly_depreciation = self.depreciacao_mensal
+        self.depreciated_months = self.meses
+        self.accumulated_depreciation = self.depreciacao_acumulada
+        self.net_book_value = self.vcl
+        self.base_depreciable = self.base_depreciavel
+        self.lifespan_months = self.vida_util_meses
+        return self
 
 
 class ComponentItemSchema(BaseModel):
@@ -141,6 +234,28 @@ class AssetEvaluationBaseSchema(BaseModel):
         default=None, description="Manifesto de transporte de resíduos (MTR)"
     )
 
+    # Avaliação Financeira e Contábil (Beatriz Cunha - 24/09/2026)
+    depreciation_category_id: int | None = Field(
+        default=None, description="ID da categoria contábil de depreciação"
+    )
+    depreciation_category_name: str | None = Field(
+        default=None, description="Nome da categoria contábil de depreciação"
+    )
+    reference_date: datetime | None = Field(
+        default=None, description="Data de referência para o cálculo de depreciação"
+    )
+    residual_value: float = Field(
+        default=0.0, ge=0.0, description="Valor residual estimado em R$"
+    )
+    monthly_depreciation: float = Field(
+        default=0.0, ge=0.0, description="Depreciação mensal calculada em R$"
+    )
+    depreciated_months: int = Field(
+        default=0, ge=0, description="Meses depreciados até a data de referência"
+    )
+    accumulated_depreciation: float = Field(
+        default=0.0, ge=0.0, description="Depreciação acumulada em R$"
+    )
     acquisition_value: float = Field(
         default=0.0, ge=0.0, description="Valor original de aquisição em R$"
     )
@@ -217,6 +332,7 @@ class AssetEvaluationBaseSchema(BaseModel):
     @field_validator(
         "acquisition_date",
         "evaluation_date",
+        "reference_date",
         "warranty_expiry_date",
         "document_start_date",
         "document_end_date",
@@ -301,6 +417,13 @@ class AssetEvaluationUpdateSchema(BaseModel):
 
     acquisition_value: float | None = None
     net_book_value: float | None = None
+    depreciation_category_id: int | None = None
+    depreciation_category_name: str | None = None
+    reference_date: datetime | None = None
+    residual_value: float | None = None
+    monthly_depreciation: float | None = None
+    depreciated_months: int | None = None
+    accumulated_depreciation: float | None = None
     usage_time: str | None = None
     expected_lifespan: str | None = None
     estimated_economy: float | None = None
@@ -331,6 +454,7 @@ class AssetEvaluationUpdateSchema(BaseModel):
     @field_validator(
         "acquisition_date",
         "evaluation_date",
+        "reference_date",
         "warranty_expiry_date",
         "document_start_date",
         "document_end_date",
@@ -414,6 +538,13 @@ class AssetEvaluationOutSchema(BaseModel):
 
     acquisition_value: float
     net_book_value: float
+    depreciation_category_id: int | None = None
+    depreciation_category_name: str | None = None
+    reference_date: datetime | None = None
+    residual_value: float = 0.0
+    monthly_depreciation: float = 0.0
+    depreciated_months: int = 0
+    accumulated_depreciation: float = 0.0
     usage_time: str | None = None
     expected_lifespan: str | None = None
     estimated_economy: float

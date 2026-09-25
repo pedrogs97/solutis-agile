@@ -181,6 +181,9 @@ export function usePurchaseProcessForm(id?: string) {
     },
     onSuccess: (data) => {
       setSaveStatus('saved')
+      if (data?.id) {
+        queryClient.setQueryData(['fetchPurchaseProcess', data.id], data)
+      }
       queryClient.invalidateQueries({ queryKey: ['fetchPurchaseProcesses'] })
       queryClient.invalidateQueries({ queryKey: ['fetchPurchaseProcessMetrics'] })
       if (!isEditing && data.id) {
@@ -214,13 +217,27 @@ export function usePurchaseProcessForm(id?: string) {
       aprovadoPor?: string
       comentario?: string
     }) => {
-      if (!id) return null
-      return decidePurchaseProcess(id, decisionPayload)
+      let targetId = id
+      const cleaned = cleanPurchaseProcessPayload(process)
+      if (!targetId || targetId === 'new') {
+        const created = await createPurchaseProcess(cleaned)
+        targetId = created.id
+      } else {
+        await updatePurchaseProcess(targetId, cleaned)
+      }
+      return decidePurchaseProcess(targetId, {
+        ...decisionPayload,
+        decisao: process.decisao,
+      })
     },
     onSuccess: (data) => {
       if (data) {
-        setProcess(data)
-        queryClient.invalidateQueries({ queryKey: ['fetchPurchaseProcess', id] })
+        setProcess((prev) => ({
+          ...data,
+          decisao: { ...data.decisao, ...(prev.decisao || {}) },
+        }))
+        queryClient.setQueryData(['fetchPurchaseProcess', data.id], data)
+        queryClient.invalidateQueries({ queryKey: ['fetchPurchaseProcess', data.id] })
         queryClient.invalidateQueries({ queryKey: ['fetchPurchaseProcesses'] })
         queryClient.invalidateQueries({ queryKey: ['fetchPurchaseProcessMetrics'] })
         notifications.show({

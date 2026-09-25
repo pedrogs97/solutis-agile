@@ -13,11 +13,13 @@ from src.asset.enums import AssetStatusEnum
 from src.asset.models import AssetModel, AssetStatusModel
 from src.asset_evaluation.models import (
     AssetCatalogComponentModel,
+    AssetDepreciationCategoryModel,
     AssetEvaluationAttachmentModel,
     AssetEvaluationComponentModel,
     AssetTechnicalEvaluationModel,
 )
 from src.asset_evaluation.schemas import (
+    AssetDepreciationCategorySchema,
     AssetEvaluationApproveSchema,
     AssetEvaluationCreateSchema,
     AssetEvaluationMetricsSchema,
@@ -25,7 +27,10 @@ from src.asset_evaluation.schemas import (
     AssetEvaluationUpdateSchema,
     AttachmentOutSchema,
     ComponentItemOutSchema,
+    VCLCalculationInputSchema,
+    VCLCalculationOutputSchema,
 )
+from src.asset_evaluation.vcl import CATEGORIAS_PADRAO_RECEITA_FEDERAL, calcular_vcl
 from src.auth.models import UserModel
 from src.config import BASE_DIR, DEBUG
 from src.log.services import LogService
@@ -151,6 +156,195 @@ class AssetEvaluationService:
                 existing_names.add(clean.lower())
         db_session.commit()
 
+    def ensure_default_depreciation_categories(self, db_session: Session) -> None:
+        """Garante que as categorias oficiais da Receita Federal existam no banco."""
+        existing_names = {
+            str(c[0]).lower()
+            for c in db_session.query(AssetDepreciationCategoryModel.name).all()
+        }
+        to_add = [
+            AssetDepreciationCategoryModel(
+                name=cat["name"],
+                annual_rate=float(cat["annual_rate"]),
+                useful_life_months=int(cat["useful_life_months"]),
+                description=cat.get("description"),
+                active=True,
+            )
+            for cat in CATEGORIAS_PADRAO_RECEITA_FEDERAL
+            if cat["name"].lower() not in existing_names
+        ]
+        if to_add:
+            db_session.add_all(to_add)
+            db_session.commit()
+
+    def list_depreciation_categories(
+        self, db_session: Session
+    ) -> list[AssetDepreciationCategorySchema]:
+        """Lista todas as categorias contábeis de depreciação ativas."""
+        self.ensure_default_depreciation_categories(db_session)
+        cats = (
+            db_session.query(AssetDepreciationCategoryModel)
+            .filter(AssetDepreciationCategoryModel.active.is_(True))
+            .order_by(AssetDepreciationCategoryModel.name.asc())
+            .all()
+        )
+        return [AssetDepreciationCategorySchema.model_validate(c) for c in cats]
+
+    def calculate_vcl_service(
+        self, db_session: Session, payload: VCLCalculationInputSchema
+    ) -> VCLCalculationOutputSchema:
+        """Calcula o Valor Contábil Líquido (VCL) conforme regra contábil da Receita Federal."""
+        vida_util = payload.vida_util_meses
+        if payload.depreciation_category_id:
+            cat = (
+                db_session.query(AssetDepreciationCategoryModel)
+                .filter(
+                    AssetDepreciationCategoryModel.id
+                    == payload.depreciation_category_id
+                )
+                .first()
+            )
+            if cat:
+                vida_util = cat.useful_life_months
+        elif vida_util is None:
+            vida_util = 60
+
+        from datetime import datetime as dt
+
+        dt_aq = dt.strptime(payload.data_aquisicao[:10], "%Y-%m-%d").date()
+        dt_ref = (
+            dt.strptime(payload.data_referencia[:10], "%Y-%m-%d").date()
+            if payload.data_referencia
+            else None
+        )
+        dt_bx = (
+            dt.strptime(payload.data_baixa[:10], "%Y-%m-%d").date()
+            if payload.data_baixa
+            else None
+        )
+
+        res = calcular_vcl(
+            valor_aquisicao=payload.valor_aquisicao,
+            data_aquisicao=dt_aq,
+            vida_util_meses=vida_util or 0,
+            data_referencia=dt_ref,
+            valor_residual=payload.valor_residual,
+            data_baixa=dt_bx,
+        )
+
+        return VCLCalculationOutputSchema(
+            depreciacao_mensal=float(res["depreciacao_mensal"]),
+            meses=res["meses"],
+            depreciacao_acumulada=float(res["depreciacao_acumulada"]),
+            vcl=float(res["vcl"]),
+            base_depreciavel=float(res["base_depreciavel"]),
+            vida_util_meses=res["vida_util_meses"],
+            is_out_of_scope=res["is_out_of_scope"],
+        )
+
+    def apply_accounting_vcl(
+        self, db_session: Session, evaluation: AssetTechnicalEvaluationModel
+    ) -> None:
+        """Aplica o cálculo de depreciação contábil linear e atualiza o VCL no modelo."""
+        vida_util_meses = 60
+        if evaluation.depreciation_category_id:
+            cat = (
+                db_session.query(AssetDepreciationCategoryModel)
+                .filter(
+                    AssetDepreciationCategoryModel.id
+                    == evaluation.depreciation_category_id
+                )
+                .first()
+            )
+            if cat:
+                evaluation.depreciation_category_name = cat.name
+                vida_util_meses = cat.useful_life_months
+        elif evaluation.depreciation_category_name:
+            cat = (
+                db_session.query(AssetDepreciationCategoryModel)
+                .filter(
+                    func.lower(AssetDepreciationCategoryModel.name)
+                    == evaluation.depreciation_category_name.strip().lower()
+                )
+                .first()
+            )
+            if cat:
+                evaluation.depreciation_category_id = cat.id
+                vida_util_meses = cat.useful_life_months
+        else:
+            type_name = str(evaluation.asset_type_name or "").lower()
+            if any(
+                k in type_name
+                for k in ["notebook", "desktop", "computador", "servidor", "monitor"]
+            ):
+                cat_name = "Computadores e periféricos"
+            elif any(k in type_name for k in ["veiculo", "veículo", "carro", "moto"]):
+                cat_name = "Veículos"
+            elif any(k in type_name for k in ["maquina", "máquina", "equipamento"]):
+                cat_name = "Máquinas e equipamentos"
+            elif any(
+                k in type_name
+                for k in ["movel", "móvel", "mesa", "cadeira", "mobiliario"]
+            ):
+                cat_name = "Móveis e utensílios"
+            else:
+                cat_name = "Computadores e periféricos"
+
+            cat = (
+                db_session.query(AssetDepreciationCategoryModel)
+                .filter(AssetDepreciationCategoryModel.name == cat_name)
+                .first()
+            )
+            if cat:
+                evaluation.depreciation_category_id = cat.id
+                evaluation.depreciation_category_name = cat.name
+                vida_util_meses = cat.useful_life_months
+
+        if (
+            evaluation.acquisition_date
+            and float(evaluation.acquisition_value or 0.0) > 0
+        ):
+            dt_aq = (
+                evaluation.acquisition_date.date()
+                if hasattr(evaluation.acquisition_date, "date")
+                else evaluation.acquisition_date
+            )
+            dt_ref = (
+                evaluation.reference_date.date()
+                if evaluation.reference_date
+                and hasattr(evaluation.reference_date, "date")
+                else (
+                    evaluation.evaluation_date.date()
+                    if evaluation.evaluation_date
+                    and hasattr(evaluation.evaluation_date, "date")
+                    else None
+                )
+            )
+            dt_bx = (
+                evaluation.write_off_date.date()
+                if evaluation.write_off_date
+                and hasattr(evaluation.write_off_date, "date")
+                else None
+            )
+
+            res = calcular_vcl(
+                valor_aquisicao=evaluation.acquisition_value,
+                data_aquisicao=dt_aq,
+                vida_util_meses=vida_util_meses,
+                data_referencia=dt_ref,
+                valor_residual=evaluation.residual_value or 0.0,
+                data_baixa=dt_bx,
+            )
+            evaluation.monthly_depreciation = float(res["depreciacao_mensal"])
+            evaluation.depreciated_months = res["meses"]
+            evaluation.accumulated_depreciation = float(res["depreciacao_acumulada"])
+            evaluation.net_book_value = float(res["vcl"])
+
+            anos = vida_util_meses // 12
+            evaluation.expected_lifespan = (
+                f"{anos} anos" if anos > 0 else f"{vida_util_meses} meses"
+            )
+
     def _serialize_evaluation(
         self, evaluation: AssetTechnicalEvaluationModel
     ) -> AssetEvaluationOutSchema:
@@ -195,6 +389,23 @@ class AssetEvaluationService:
                 evaluation, "destination_certificate", None
             ),
             "waste_manifest": getattr(evaluation, "waste_manifest", None),
+            "depreciation_category_id": getattr(
+                evaluation, "depreciation_category_id", None
+            ),
+            "depreciation_category_name": getattr(
+                evaluation, "depreciation_category_name", None
+            ),
+            "reference_date": getattr(evaluation, "reference_date", None),
+            "residual_value": float(getattr(evaluation, "residual_value", 0.0) or 0.0),
+            "monthly_depreciation": float(
+                getattr(evaluation, "monthly_depreciation", 0.0) or 0.0
+            ),
+            "depreciated_months": int(
+                getattr(evaluation, "depreciated_months", 0) or 0
+            ),
+            "accumulated_depreciation": float(
+                getattr(evaluation, "accumulated_depreciation", 0.0) or 0.0
+            ),
             "acquisition_value": float(evaluation.acquisition_value or 0.0),
             "net_book_value": float(evaluation.net_book_value or 0.0),
             "usage_time": getattr(evaluation, "usage_time", None),
@@ -356,6 +567,13 @@ class AssetEvaluationService:
             reused_parts_location=data.reused_parts_location,
             waste_final_destination=data.waste_final_destination,
             write_off_notes=data.write_off_notes,
+            depreciation_category_id=data.depreciation_category_id,
+            depreciation_category_name=data.depreciation_category_name,
+            reference_date=data.reference_date,
+            residual_value=data.residual_value,
+            monthly_depreciation=data.monthly_depreciation,
+            depreciated_months=data.depreciated_months,
+            accumulated_depreciation=data.accumulated_depreciation,
             evaluator_id=authenticated_user.id if authenticated_user else None,
             evaluator_name=evaluator_name,
             reviewer_name=data.reviewer_name,
@@ -364,6 +582,7 @@ class AssetEvaluationService:
             approval_comments=data.approval_comments,
         )
 
+        self.apply_accounting_vcl(db_session, evaluation)
         db_session.add(evaluation)
         db_session.flush()
 
@@ -508,6 +727,8 @@ class AssetEvaluationService:
                 f"{evaluation.manufacturer or ''} {evaluation.model or ''}".strip()
                 or None
             )
+
+        self.apply_accounting_vcl(db_session, evaluation)
 
         if authenticated_user:
             try:
@@ -732,18 +953,44 @@ class AssetEvaluationService:
         new_status = "Baixado" if data.write_off_asset else "Aprovado"
         evaluation.status = new_status
         evaluation.approver_id = authenticated_user.id if authenticated_user else None
-        evaluation.approver_name = (
+
+        # Preserva approver_name fornecido pelo formulário ou usa usuário logado
+        form_approver = None
+        if data.evaluation_data and getattr(
+            data.evaluation_data, "approver_name", None
+        ):
+            form_approver = data.evaluation_data.approver_name
+        elif evaluation.approver_name:
+            form_approver = evaluation.approver_name
+
+        evaluation.approver_name = form_approver or (
             authenticated_user.username if authenticated_user else "Sistema"
         )
-        evaluation.approval_date = datetime.now()
+
+        form_approval_date = None
+        if data.evaluation_data and getattr(
+            data.evaluation_data, "approval_date", None
+        ):
+            form_approval_date = data.evaluation_data.approval_date
+        elif evaluation.approval_date:
+            form_approval_date = evaluation.approval_date
+
+        evaluation.approval_date = form_approval_date or datetime.now()
         if not evaluation.approved_by_date:
             evaluation.approved_by_date = evaluation.approval_date
-        evaluation.approval_comments = data.comments
+
+        if data.comments:
+            evaluation.approval_comments = data.comments
+        elif data.evaluation_data and getattr(
+            data.evaluation_data, "approval_comments", None
+        ):
+            evaluation.approval_comments = data.evaluation_data.approval_comments
+
         if data.write_off_asset:
             if not evaluation.write_off_date:
                 evaluation.write_off_date = evaluation.approval_date
-            if not evaluation.write_off_notes and data.comments:
-                evaluation.write_off_notes = data.comments
+            if not evaluation.write_off_notes and evaluation.approval_comments:
+                evaluation.write_off_notes = evaluation.approval_comments
 
         # Efetivação da baixa real do ativo (se vinculado e solicitado)
         if data.write_off_asset and evaluation.asset_id:
@@ -839,6 +1086,7 @@ class AssetEvaluationService:
         if not q:
             return None
 
+        # 1. Correspondência exata por tombo, código ou número de série
         asset = (
             db_session.query(AssetModel)
             .filter(
@@ -848,25 +1096,59 @@ class AssetEvaluationService:
             )
             .first()
         )
+
+        # 2. Se não encontrou, busca parcial ou sem zeros à esquerda
+        if not asset:
+            stripped = q.lstrip("0")
+            asset = (
+                db_session.query(AssetModel)
+                .filter(
+                    (AssetModel.register_number.ilike(f"%{q}%"))
+                    | (AssetModel.code.ilike(f"%{q}%"))
+                    | (AssetModel.serial_number.ilike(f"%{q}%"))
+                    | (
+                        AssetModel.register_number.ilike(f"%{stripped}%")
+                        if stripped
+                        else False
+                    )
+                )
+                .first()
+            )
+
         if not asset:
             return None
 
-        acquisition_date = None
-        if getattr(asset, "created_at", None):
-            acquisition_date = asset.created_at
+        acquisition_date = getattr(asset, "acquisition_date", None) or getattr(
+            asset, "created_at", None
+        )
+
+        val = float(getattr(asset, "value", 0.0) or 0.0)
+        brand = getattr(asset, "brand", "") or ""
+        model = getattr(asset, "model", "") or ""
+        brand_model = f"{brand} {model}".strip()
+        asset_type_name = asset.type.name if getattr(asset, "type", None) else ""
 
         return {
-            "id": asset.id,
-            "patrimonio": asset.register_number or asset.code,
-            "description": asset.description or "",
-            "brand": asset.brand or "",
-            "model": asset.model or "",
+            "id": int(asset.id),
+            "patrimonio": asset.register_number or asset.code or "",
+            "register_number": asset.register_number or asset.code or "",
+            "code": asset.code or "",
             "serial_number": asset.serial_number or "",
-            "asset_type_name": asset.type.name if asset.type else "",
-            "value": float(asset.value or 0.0),
+            "description": asset.description or "",
+            "asset_description": asset.description or "",
+            "brand": brand,
+            "manufacturer": brand,
+            "model": model,
+            "brand_model": brand_model,
+            "asset_type_name": asset_type_name,
+            "type_name": asset_type_name,
+            "value": val,
+            "acquisition_value": val,
             "acquisition_date": (
                 acquisition_date.isoformat() if acquisition_date else None
             ),
             "cost_center": getattr(asset, "cost_center", None) or "",
-            "unity": getattr(asset, "unity", None) or "",
+            "unity": getattr(asset, "unit", None)
+            or getattr(asset, "unity", None)
+            or "",
         }
