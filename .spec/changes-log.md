@@ -1,5 +1,14 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-24] - Deploy Remoto: Correções em Formulários e Cálculo Automático do VCL
+- **Descrição**: Commit, push para a branch `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), reconstruindo e reiniciando os containers dos serviços que tiveram versão incrementada (`solutis-agile-frontend-prod` v2.7.19, `solutis-manager-back-prod` v1.26.19 e `solutis-procurement-prod` v2.18.7).
+- **Commit**: `a662ac3` (`feat: correcoes nos formularios FO-PAT-02 e FO-AD-01 e calculo contabil automatico do VCL`)
+- **Containers Atualizados no Host**:
+  - `solutis-agile-frontend-prod` (`2.7.19`)
+  - `solutis-manager-back-prod` (`1.26.19`)
+  - `solutis-procurement-prod` (`2.18.7`)
+- **Status da Operação**: Sucesso total (exit code 0), com sincronização via `git pull origin main` e execução do `./deploy.sh`.
+
 ## [2026-09-24] - Implementação do Cálculo Automático do Valor Contábil Líquido (VCL)
 - **Descrição**: Implementação completa da "Especificação – Cálculo automático do valor contábil líquido" (24/09/2026 · Beatriz Cunha) para o módulo de Avaliação Técnica de Patrimônio (FO-PAT-02). O sistema calcula linearmente a depreciação mensal e acumulada, meses decorridos e valor contábil líquido de cada bem a partir de categorias fiscais dinâmicas (IN RFB 1.700/2017), valor residual, data de referência customizável e data de baixa.
 - **Arquivos afetados**:
