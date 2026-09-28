@@ -1,5 +1,13 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-28] - Deploy Remoto: Correção de Checklist e Imagens no Comodato
+- **Descrição**: Commit, push para a branch `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), reconstruindo e reiniciando os containers dos serviços com versão incrementada (`solutis-agile-frontend-prod` v2.7.20 e `solutis-manager-back-prod` v1.26.20).
+- **Commit**: `0c0997d` (`fix: anexar imagens e checklist de verificacao no comodato`)
+- **Containers Atualizados no Host**:
+  - `solutis-agile-frontend-prod` (`2.7.20`)
+  - `solutis-manager-back-prod` (`1.26.20`)
+- **Status da Operação**: Sucesso total (exit code 0), com sincronização via `git checkout main && git pull origin main` e execução do `./deploy.sh`.
+
 ## [2026-09-28] - Correção: Inclusão de Imagens e Checklist de Verificação no Comodato
 - **Descrição**: Investigação de logs do período de 21 a 25/09/2026 e correção do problema reportado onde imagens de verificação e o checklist de verificação não constavam nos contratos de comodato e documentos gerados.
 - **Arquivos afetados**:
