@@ -68,7 +68,10 @@ export function useLendingVerification({
         index++
       ) {
         const file = files[index]
-        if (file.type.startsWith('image/')) {
+        const isImage =
+          file.type.startsWith('image/') ||
+          /\.(jpe?g|png|webp|gif|bmp|svg)$/i.test(file.name)
+        if (isImage) {
           newImages.push({ url: URL.createObjectURL(file), file })
         }
       }
@@ -176,6 +179,9 @@ export function useLendingVerification({
   useEffect(() => {
     if (
       previousAssetTypeRef.current !== null &&
+      previousAssetTypeRef.current !== '' &&
+      assetType !== null &&
+      assetType !== '' &&
       previousAssetTypeRef.current !== assetType
     ) {
       resetVerificationFlow()

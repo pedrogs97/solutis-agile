@@ -569,13 +569,75 @@ def test_create_lending_flow_removes_uploaded_and_contract_files_on_verification
             with pytest.raises(HTTPException):
                 asyncio.run(lending_controller.create_lending_flow())
 
-    mock_remove.assert_has_calls(
-        [
-            call("/tmp/lending_attach_1.jpg"),
-            call("/tmp/contract_1.pdf"),
-        ],
-        any_order=True,
+    mock_remove.assert_called_once_with("/tmp/lending_attach_1.jpg")
+    lending_controller.document_service.create_contract.assert_not_called()
+
+
+def test_create_lending_flow_executes_verification_before_contract(
+    mock_db_session, mock_authenticated_user
+):
+    """Ensure verification answers are persisted in DB session before contract creation."""
+    call_order = []
+    lending_data = NewLendingDataSchema(
+        employeeId=1,
+        assetId=1,
+        workloadId=1,
+        costCenterId=1,
+        manager="Test Manager",
+        witnessesId=[2, 3],
+        location="Test Location",
+        bu=LendingBUEnum.ADS,
+        principalSigner="principal@example.com",
+        employeeSigner="employee@example.com",
+        businessExecutive="Executive",
+        verificationAnswers={
+            "typeId": 1,
+            "answered": [
+                {
+                    "verificationId": 1,
+                    "answer": "Sim",
+                    "observations": "",
+                }
+            ],
+        },
     )
+    lending_controller = LendingController(
+        data=lending_data,
+        attachments=[],
+        db_session=mock_db_session,
+        authenticated_user=mock_authenticated_user,
+    )
+    lending_controller.lending_service = MagicMock()
+    lending_controller.document_service = MagicMock()
+    lending_controller.attachment_service = MagicMock()
+    lending_controller.verification_service = MagicMock()
+
+    mock_lending = MagicMock()
+    mock_lending.id = 1
+    mock_lending.model_dump.return_value = {"id": 1}
+    lending_controller.lending_service.create_lending.return_value = mock_lending
+
+    def mock_create_verification(*args, **kwargs):
+        call_order.append("verification")
+        return [{"id": 1, "lendingId": 1, "answer": "Sim"}]
+
+    def mock_create_contract(*args, **kwargs):
+        call_order.append("contract")
+        mock_doc = MagicMock()
+        mock_doc.path = None
+        mock_doc.model_dump.return_value = {"id": 10}
+        return mock_doc
+
+    lending_controller.verification_service.create_answer_verification.side_effect = (
+        mock_create_verification
+    )
+    lending_controller.document_service.create_contract.side_effect = (
+        mock_create_contract
+    )
+
+    asyncio.run(lending_controller.create_lending_flow())
+
+    assert call_order == ["verification", "contract"]
 
 
 def test_create_lending_flow_returns_500_on_unexpected_verification_exception(

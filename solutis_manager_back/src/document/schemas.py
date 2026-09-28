@@ -64,6 +64,7 @@ class VerificationContextSchema(BaseSchema):
 
     number: str
     verifications: List[dict]
+    attachments_files: Optional[List[dict]] = None
 
 
 class NewLendingContextSchema(BaseSchema):

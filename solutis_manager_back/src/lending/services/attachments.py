@@ -89,8 +89,25 @@ class LendingAttachmentService:
 
             if DEBUG:
                 UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "lending_attach")
+            data: bytes = b""
+            if hasattr(attachment, "seek"):
+                seek_res = attachment.seek(0)
+                if hasattr(seek_res, "__await__"):
+                    await seek_res
+            elif hasattr(getattr(attachment, "file", None), "seek"):
+                attachment.file.seek(0)
+
+            if hasattr(attachment, "read"):
+                read_res = attachment.read()
+                if hasattr(read_res, "__await__"):
+                    data = await read_res
+                else:
+                    data = read_res  # type: ignore[assignment]
+            elif hasattr(getattr(attachment, "file", None), "read"):
+                data = attachment.file.read()
+
             file_path = await upload_file(
-                new_file_name, "lending_attach", attachment.file.read(), UPLOAD_DIR
+                new_file_name, "lending_attach", data, UPLOAD_DIR
             )
             new_attachment.file_name = new_file_name
             new_attachment.path = file_path

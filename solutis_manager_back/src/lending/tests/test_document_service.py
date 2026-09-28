@@ -142,9 +142,15 @@ def test_get_verification_document_returns_400_for_missing_lending_number():
     query_verification_answers.filter.return_value = query_verification_answers
     query_verification_answers.all.return_value = []
 
+    query_attachments = MagicMock()
+    query_attachments.join.return_value = query_attachments
+    query_attachments.filter.return_value = query_attachments
+    query_attachments.all.return_value = []
+
     db_session.query.side_effect = [
         query_document,
         query_verification_answers,
+        query_attachments,
     ]
 
     with patch.object(
@@ -189,3 +195,65 @@ def test_sign_document_propagates_http_exception_for_invalid_document_type():
         "error": "Tipo de documento inválido para assinatura",
     }
     db_session.rollback.assert_called_once()
+
+
+def test_get_verification_document_includes_attachments():
+    """Verify that get_verification_document fetches attachments and passes them to create_verification_document."""
+    service = DocumentService()
+    db_session = MagicMock()
+    authenticated_user = MagicMock()
+
+    lending = SimpleNamespace(id=1, number="COM000001")
+
+    query_document = MagicMock()
+    query_document.filter.return_value = query_document
+    query_document.first.return_value = None
+
+    query_verification_answers = MagicMock()
+    query_verification_answers.join.return_value = query_verification_answers
+    query_verification_answers.filter.return_value = query_verification_answers
+    query_verification_answers.all.return_value = []
+
+    mock_attachment = SimpleNamespace(
+        id=1, file_name="attach.png", path="/tmp/attach.png"
+    )
+    query_attachments = MagicMock()
+    query_attachments.join.return_value = query_attachments
+    query_attachments.filter.return_value = query_attachments
+    query_attachments.all.return_value = [mock_attachment]
+
+    query_doc_type = MagicMock()
+    query_doc_type.filter.return_value = query_doc_type
+    query_doc_type.first.return_value = SimpleNamespace(id=5, name="Verificação")
+
+    db_session.query.side_effect = [
+        query_document,
+        query_verification_answers,
+        query_attachments,
+        query_doc_type,
+    ]
+
+    with patch.object(
+        service, "_DocumentService__get_lending_or_404", return_value=lending
+    ):
+        with patch.object(
+            service,
+            "_DocumentService__build_lending_attachments_context",
+            return_value=[{"file": "data:image/png;base64,abc"}],
+        ) as mock_build_att:
+            with patch(
+                "src.document.service.create_verification_document",
+                return_value="/tmp/COM000001 - verificação.pdf",
+            ) as mock_create_doc:
+                with patch("src.document.service.service_log.set_log"):
+                    doc = service.get_verification_document(
+                        lendind_id=1,
+                        db_session=db_session,
+                        authenticated_user=authenticated_user,
+                    )
+
+    mock_build_att.assert_called_once_with([mock_attachment])
+    mock_create_doc.assert_called_once()
+    context_arg = mock_create_doc.call_args[0][0]
+    assert context_arg.attachments_files == [{"file": "data:image/png;base64,abc"}]
+    assert doc.file_name == "COM000001 - verificação.pdf"

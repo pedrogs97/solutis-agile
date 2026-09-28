@@ -433,6 +433,8 @@ def create_verification_document(context: VerificationContextSchema) -> str:
     output_text = template.render(
         verifications=context.verifications,
         logo=f"data:image/png;base64,{logo_file}",
+        ri_1=f"data:image/png;base64,{logo_file}",
+        attachments=context.attachments_files,
     )
 
     lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")

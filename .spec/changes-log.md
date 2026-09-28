@@ -1,5 +1,32 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-28] - Correção: Inclusão de Imagens e Checklist de Verificação no Comodato
+- **Descrição**: Investigação de logs do período de 21 a 25/09/2026 e correção do problema reportado onde imagens de verificação e o checklist de verificação não constavam nos contratos de comodato e documentos gerados.
+- **Arquivos afetados**:
+  - `solutis_manager_back/src/lending/controllers/lending.py`
+  - `solutis_manager_back/src/lending/services/attachments.py`
+  - `solutis_manager_back/src/document/schemas.py`
+  - `solutis_manager_back/src/document/service.py`
+  - `solutis_manager_back/src/utils.py`
+  - `solutis_manager_back/templates/comodato_pj.html`
+  - `solutis_manager_back/templates/verification.html`
+  - `solutis_manager_back/src/lending/tests/test_controller.py`
+  - `solutis_manager_back/src/lending/tests/test_document_service.py`
+  - `solutis-agile-frontend/src/hooks/lending/useLendingVerification.ts`
+  - `solutis-agile-frontend/src/hooks/lending/useContractLendingDetail.ts`
+  - `solutis-agile-frontend/src/hooks/lending/useLendingVerification.test.ts`
+  - `.spec/changes-log.md`
+- **Causa Raiz & Soluções Implementadas**:
+  1. **Ordem de Execução no Backend (`create_lending_flow`)**: A chamada a `document_service.create_contract(...)` ocorria antes de `verification_service.create_answer_verification(...)`. Como `create_contract` busca as respostas no banco de dados, a consulta retornava vazia (`[]`), omitindo o bloco "VERIFICAÇÃO DO ATIVO" do PDF do contrato gerado. Ajustada a ordem para persistir as respostas na sessão antes da geração do contrato.
+  2. **Template PJ sem Bloco de Verificação**: O template `templates/comodato_pj.html` não continha o bloco `{% if verifications %}` nem o CSS correspondente (ao contrário do `comodato.html`). Adicionados os estilos e a seção de verificação no template PJ.
+  3. **Visualização de Verificação sem Anexos**: `get_verification_document` e `templates/verification.html` geravam apenas as perguntas e respostas, sem incluir as imagens anexadas do checklist. Adicionado o repasse de `attachments_files` e renderização dos anexos fotográficos no PDF de verificação.
+  4. **Leitura Segura de Anexos**: Em `LendingAttachmentService.upload_attachment`, adicionado rewind (`seek(0)`) e leitura assíncrona segura (`await read()` / fallback `file.read()`) do payload de arquivo recebido.
+  5. **Resets Involuntários e Validação de Imagens no Frontend**:
+     - No hook `useLendingVerification.ts`, `addVerificationImages` agora possui fallback por extensão de arquivo caso o MIME type venha em branco ou genérico.
+     - A transição inicial de `assetType` (de vazio para tipo de ativo) agora é protegida para não disparar `resetVerificationFlow()`.
+     - No modal de confirmação de envio (`useContractLendingDetail.ts`), ao clicar em "Cancelar e verificar informações", a chamada indevida a `resetVerificationFlow()` foi removida, garantindo que o usuário não perca as fotos e respostas já preenchidas ao revisar os dados gerais.
+  6. **Testes Automatizados**: Criados e atualizados testes unitários e de integração no backend (`test_controller.py`, `test_document_service.py`) e frontend (`useLendingVerification.test.ts`), todos aprovados (35 testes backend, 100% typecheck frontend).
+
 ## [2026-09-24] - Deploy Remoto: Correções em Formulários e Cálculo Automático do VCL
 - **Descrição**: Commit, push para a branch `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), reconstruindo e reiniciando os containers dos serviços que tiveram versão incrementada (`solutis-agile-frontend-prod` v2.7.19, `solutis-manager-back-prod` v1.26.19 e `solutis-procurement-prod` v2.18.7).
 - **Commit**: `a662ac3` (`feat: correcoes nos formularios FO-PAT-02 e FO-AD-01 e calculo contabil automatico do VCL`)

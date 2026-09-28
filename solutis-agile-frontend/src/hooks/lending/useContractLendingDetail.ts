@@ -224,7 +224,6 @@ export default function useContractLendingDetail() {
         onCancel: () => {
           if (hasVerification) {
             setActiveTab('general-data')
-            resetVerificationFlow()
           }
           modals.close('confirm-add-contract-modal')
         },
@@ -237,7 +236,6 @@ export default function useContractLendingDetail() {
       file,
       hasVerification,
       mutateAddLendingContract,
-      resetVerificationFlow,
       setActiveTab,
       verificationImages,
     ],

@@ -2318,9 +2318,20 @@ class DocumentService:
                 lending_verification_answers
             )
 
+            lending_attachments = (
+                db_session.query(LendingAttachments)
+                .join(LendingModel)
+                .filter(LendingModel.id == lending.id)
+                .all()
+            )
+            attachments_files = self.__build_lending_attachments_context(
+                lending_attachments
+            )
+
             context = {
                 "verifications": verifications_context,
                 "number": lending_number,
+                "attachments_files": attachments_files,
             }
             verification_document_path = create_verification_document(
                 VerificationContextSchema(**context)

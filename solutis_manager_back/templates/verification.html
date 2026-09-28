@@ -75,6 +75,25 @@
             .verification-label {
                 margin-left: 5px;
             }
+
+            .page-break {
+                page-break-after: always;
+            }
+
+            .attachment-container {
+                display: block;
+                width: 100%;
+                text-align: center;
+                page-break-inside: avoid;
+                margin-top: 0.5in;
+            }
+
+            .attachment-container img {
+                max-width: 100%;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+            }
         </style>
     </head>
     <body class="container">
@@ -103,7 +122,17 @@
                     </table>
                 </div>
             {% endfor %}
+            {% if attachments %}
+                <p class="paragraph-bold" style="padding-left: 16px;">Anexos</p>
+                <div class="page-break"></div>
+                <div class="container">
+                    {% for attachment in attachments %}
+                        <div class="attachment-container">
+                            <img src="{{ attachment.file }}" alt="Attachment" />
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
-    </div>
     </body>
 </html>
