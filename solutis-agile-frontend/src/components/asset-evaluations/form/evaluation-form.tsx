@@ -157,6 +157,7 @@ export function EvaluationForm({
           onAddPendingUpload={addPendingUpload}
           onRemovePendingUpload={removePendingUpload}
           readOnly={readOnly}
+          wasteManifest={form.watch('waste_manifest')}
         />
 
         {/* 7. Gestão Patrimonial */}

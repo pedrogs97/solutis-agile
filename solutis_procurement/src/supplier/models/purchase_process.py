@@ -72,13 +72,18 @@ class PurchaseProcess(models.Model):
         default=dict,
         help_text="Supplier post-purchase 6-criteria satisfaction evaluation",
     )
+    compliance = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Conformidade & Evidências Obrigatórias",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
 
     class Meta:
         db_table = "purchase_process"
-        ordering = ["-updated_at"]
+        ordering = ("-updated_at",)
         verbose_name = "Processo de Compra"
         verbose_name_plural = "Processos de Compra"
 
@@ -101,7 +106,7 @@ class PurchaseProcess(models.Model):
         if "data" in ident and ident.get("data"):
             try:
                 self.process_date = str(ident.get("data"))[:10]
-            except Exception:
+            except (ValueError, TypeError):
                 pass
         if "status" in apr and apr.get("status"):
             self.status = str(apr.get("status"))

@@ -1,5 +1,82 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-29] - Correções e Melhorias dos Formulários de Ativos (FO-PAT-02) e Compras (FO-AD-01)
+- **Descrição**: Atendimento completo aos apontamentos levantados nos testes dos formulários de Avaliação Técnica e Descarte de Ativos (FO-PAT-02) e Análise e Decisão de Compras (FO-AD-01) decorrentes das reuniões de 24/09 e 25/09/2026.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-suppliers-quote.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-items-detail.tsx`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessCurrencyParsing.test.ts`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/identification-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/esg-weight-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/compliance-attachments-section.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/evaluation-form.tsx`
+  - `solutis-agile-frontend/src/components/asset-evaluations/form/financial-section.tsx`
+  - `solutis-agile-frontend/src/hooks/asset-evaluation/useAssetEvaluationForm.ts`
+  - `solutis_manager_back/src/asset_evaluation/service.py`
+  - `solutis_manager_back/src/tests/test_asset_evaluation.py`
+  - `solutis_manager_back/.pre-commit-config.yaml`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  1. **Máscara e Parsing Numérico em Compras (A-14 / N-09)**:
+     - Criada a função unificada `parseCurrencyOrNull` em `tab-suppliers-quote.tsx` e `tab-items-detail.tsx`, tratando com robustez a distinção entre vírgula brasileira (`12,50`), ponto decimal do teclado numérico numpad (`12.50`) e separadores de milhar (`1.250,50`).
+     - Removido o prefixo visual estático `prefix="R$ "` dos inputs de cotação que causava duplicidade visual e bugs de posicionamento do cursor.
+     - Cobertura de testes unitários com 100% de sucesso em `usePurchaseProcessCurrencyParsing.test.ts`.
+  2. **Busca Estrita e Priorizada por Tombo (A-02 / N-02)**:
+     - Refatorado `find_asset_by_identifier` em `solutis_manager_back/src/asset_evaluation/service.py` eliminando busca frouxa via `ilike("%{q}%")`.
+     - Implementada busca com três níveis: correspondência exata, correspondência com normalização de zeros (`stripped`, `zfill(6)`, `zfill(8)`, `zfill(10)`) e correspondência por prefixo (`q%`) ordenada pelo tamanho da string, evitando trazer tombos semelhantes com números no meio da string.
+     - Teste de integração backend em `test_asset_evaluation.py` aprovado com sucesso.
+  3. **Tombo Opcional para Bem Não Tombado (N-03)**:
+     - Validação dinâmica em `identification-section.tsx` utilizando a função `validate` no React Hook Form, exigindo descrição detalhada apenas se `is_unregistered` for verdadeiro e exigindo tombo apenas se for falso.
+     - Limpeza automática de erros com `clearErrors` ao alternar o switch, destravando a submissão do formulário.
+  4. **Matriz de Componentes e Feedback de Envio (A-05 / N-04)**:
+     - Função `clearAllComponents` em `useAssetEvaluationForm.ts` atualizada para invocar `remove()` do `useFieldArray`, sincronizando o estado visual e a lista de campos.
+     - Adicionado callback de erro `onFormError` no `handleSubmit` emitindo notificação toast alertando caso algum campo obrigatório não tenha sido preenchido antes do envio.
+  5. **Remoção Correta de Evidências e Anexos (A-10 / N-07)**:
+     - `removePendingUpload` ajustado para receber e remover por referência do objeto alvo `{ file, checklistKey }` em vez de depender de índice numérico relativo da lista filtrada.
+  6. **Ajustes ESG e Manifesto MTR (A-07 / A-08)**:
+     - Removida lista de parceiros ESG fictícios de teste em `esg-weight-section.tsx`.
+     - Campo `waste_manifest` atualizado com o rótulo "Nº Manifesto de Transporte de Resíduos (MTR)" e placeholder instrutivo.
+     - Inclusão do item correspondente no checklist de conformidade (`compliance-attachments-section.tsx`) exibindo badge azul dinâmico com o número MTR informado.
+  7. **Persistência de Avaliador/Localização e Feedback Contábil (A-03 / A-04 / A-09)**:
+     - `evaluator_name` e `current_location` convertidos para campos controlados (`Controller`) com fallback para string vazia, eliminando conflito com `register`.
+     - `handleApplyFormula` em `financial-section.tsx` atualizado para exibir notificação toast com o resumo do cálculo (VCL, depreciação acumulada e meses) fornecendo feedback visual imediato ao usuário.
+  8. **Qualidade de Código e Pre-commit (Regra 4)**:
+     - Padronizado `.pre-commit-config.yaml` em `solutis_manager_back` com `ruff` (`--fix`) e `ruff-format`.
+  9. **Validação e Testes**:
+     - Suíte do backend (`pytest`): 23 testes passando em 16.36s.
+     - Suíte do frontend (`vitest`): 100% dos testes passando.
+     - Checagem estática TypeScript (`tsc -b`): 0 erros.
+
+## [2026-09-29] - Inclusão do Tópico 5 (Conformidade & Evidências) no Formulário de Compra (FO-AD-01)
+- **Descrição**: Adicionado novo tópico "5. Conformidade & Evidências" no formulário de Análise e Decisão de Compras (FO-AD-01) e reordenado o tópico anterior para "6. Avaliação do Fornecedor". As informações e anexos comprobatórios (Comprovação de Solicitação, Comprovação de Autorização da Compra, Nota Fiscal e Cotações) são persistidos no banco de dados e recuperados para visualização e edição posterior, com inicialização vazia para formulários já preenchidos.
+- **Arquivos afetados**:
+  - `solutis_procurement/src/supplier/models/purchase_process.py`
+  - `solutis_procurement/src/supplier/migrations/0039_suppliertotvs_suppliertypetotvs_and_more.py`
+  - `solutis_procurement/src/api/v1/schemas/purchase_process.py`
+  - `solutis_procurement/src/api/v1/routers/purchase_process.py`
+  - `solutis_procurement/src/supplier/tests/test_purchase_process.py`
+  - `solutis-agile-frontend/src/types/PurchaseProcess.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessForm.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessCompliance.test.ts`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-compliance-evidence.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/process-form.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/print-view.tsx`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  1. **Persistência no Banco de Dados**: Adicionado campo `compliance = models.JSONField(default=dict, blank=True)` na entidade `PurchaseProcess` no Django, com migration correspondente.
+  2. **Contratos de API e Endpoints**:
+     - `PurchaseProcessCreateIn`, `PurchaseProcessUpdateIn` e `PurchaseProcessOut` atualizados com schemas tipados para `conformidade` (`comprovacaoSolicitacao`, `autorizacaoCompra`, `notaFiscal`, `cotacoes`, e lista de arquivos com metadados e URL).
+     - Endpoints `POST /api/v1/purchase-processes/` e `PUT /api/v1/purchase-processes/{id}/` ajustados para persistir e atualizar os dados e arquivos de conformidade.
+     - `GET /api/v1/purchase-processes/{id}/` serializa `conformidade` garantindo retrocompatibilidade (retorna `{}` quando nulo).
+  3. **Interface do Usuário (Frontend)**:
+     - Novo componente `TabComplianceEvidence` renderiza os 4 cartões com checkbox interativo, seletor de arquivos (`FileButton` aceitando PDF e imagens), contador dinâmico de anexos no badge superior, listagem de arquivos anexados com visualização/download e exclusão.
+     - `ProcessForm` atualizado com o fluxo de abas: `1. Identificação`, `2. Cotação de Fornecedores`, `3. Detalhamento dos Itens`, `4. Decisão & Aprovação`, `5. Conformidade & Evidências` e `6. Avaliação do Fornecedor`.
+     - `usePurchaseProcessForm` inicializa `conformidade` com valores vazios caso o registro já existisse sem este campo, permitindo o preenchimento fluido em processos anteriores ou novos.
+     - `print-view.tsx` atualizado com o tópico 5 impresso e avaliação no tópico 6.
+  4. **Testes Automatizados (TDD)**:
+     - Teste de integração backend em `test_purchase_process.py` validando criação, persistência, alteração e retrocompatibilidade com formulários legados (144 testes passando no backend).
+     - Testes unitários frontend em `usePurchaseProcessCompliance.test.ts` validando inicialização vazia, payload de envio e compatibilidade (8 testes passando no frontend, 100% typecheck e lint limpos).
+
 ## [2026-09-28] - Deploy Remoto: Correção de Checklist e Imagens no Comodato
 - **Descrição**: Commit, push para a branch `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), reconstruindo e reiniciando os containers dos serviços com versão incrementada (`solutis-agile-frontend-prod` v2.7.20 e `solutis-manager-back-prod` v1.26.20).
 - **Commit**: `0c0997d` (`fix: anexar imagens e checklist de verificacao no comodato`)

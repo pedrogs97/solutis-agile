@@ -14,6 +14,9 @@ import {
 } from '@/services/api/purchase-process'
 import { getProfile } from '@/store/persisted/useProfileStore'
 import type {
+  ComplianceFile,
+  ComplianceItem,
+  PurchaseCompliance,
   PurchaseItem,
   PurchaseProcess,
   PurchaseSupplier,
@@ -36,6 +39,7 @@ export function cleanPurchaseProcessPayload(process: PurchaseProcess) {
     itens: process.itens,
     decisao: process.decisao,
     aprovacao: process.aprovacao,
+    conformidade: process.conformidade,
     avaliacao: process.avaliacao,
   }
 }
@@ -98,6 +102,12 @@ export function createNewProcess(): PurchaseProcess {
       dataDecisao: '',
       comentario: '',
     },
+    conformidade: {
+      comprovacaoSolicitacao: { checked: false, arquivos: [] },
+      autorizacaoCompra: { checked: false, arquivos: [] },
+      notaFiscal: { checked: false, arquivos: [] },
+      cotacoes: { checked: false, arquivos: [] },
+    },
     avaliacao: {
       preenchida: false,
       razaoSocial: '',
@@ -157,6 +167,24 @@ export function usePurchaseProcessForm(id?: string) {
         identificacao: { ...fresh.identificacao, ...(fetchedData.identificacao || {}) },
         decisao: { ...fresh.decisao, ...(fetchedData.decisao || {}) },
         aprovacao: { ...fresh.aprovacao, ...(fetchedData.aprovacao || {}) },
+        conformidade: {
+          comprovacaoSolicitacao: {
+            checked: Boolean(fetchedData.conformidade?.comprovacaoSolicitacao?.checked),
+            arquivos: fetchedData.conformidade?.comprovacaoSolicitacao?.arquivos || [],
+          },
+          autorizacaoCompra: {
+            checked: Boolean(fetchedData.conformidade?.autorizacaoCompra?.checked),
+            arquivos: fetchedData.conformidade?.autorizacaoCompra?.arquivos || [],
+          },
+          notaFiscal: {
+            checked: Boolean(fetchedData.conformidade?.notaFiscal?.checked),
+            arquivos: fetchedData.conformidade?.notaFiscal?.arquivos || [],
+          },
+          cotacoes: {
+            checked: Boolean(fetchedData.conformidade?.cotacoes?.checked),
+            arquivos: fetchedData.conformidade?.cotacoes?.arquivos || [],
+          },
+        },
         avaliacao: { ...fresh.avaliacao, ...(fetchedData.avaliacao || {}) },
         fornecedores: (fetchedData.fornecedores && fetchedData.fornecedores.length
           ? fetchedData.fornecedores
@@ -429,6 +457,78 @@ export function usePurchaseProcessForm(id?: string) {
     }))
   }, [])
 
+  const updateComplianceItem = useCallback(
+    (key: keyof PurchaseCompliance, item: Partial<ComplianceItem>) => {
+      isDirtyRef.current = true
+      setProcess((prev) => ({
+        ...prev,
+        conformidade: {
+          ...prev.conformidade,
+          [key]: {
+            ...prev.conformidade[key],
+            ...item,
+          },
+        },
+      }))
+    },
+    []
+  )
+
+  const toggleComplianceCheck = useCallback((key: keyof PurchaseCompliance) => {
+    isDirtyRef.current = true
+    setProcess((prev) => ({
+      ...prev,
+      conformidade: {
+        ...prev.conformidade,
+        [key]: {
+          ...prev.conformidade[key],
+          checked: !prev.conformidade[key]?.checked,
+        },
+      },
+    }))
+  }, [])
+
+  const addComplianceFile = useCallback(
+    (key: keyof PurchaseCompliance, file: ComplianceFile) => {
+      isDirtyRef.current = true
+      setProcess((prev) => {
+        const currentItem = prev.conformidade?.[key] || { checked: false, arquivos: [] }
+        return {
+          ...prev,
+          conformidade: {
+            ...prev.conformidade,
+            [key]: {
+              checked: true,
+              arquivos: [...(currentItem.arquivos || []), file],
+            },
+          },
+        }
+      })
+    },
+    []
+  )
+
+  const removeComplianceFile = useCallback(
+    (key: keyof PurchaseCompliance, fileId: string) => {
+      isDirtyRef.current = true
+      setProcess((prev) => {
+        const currentItem = prev.conformidade?.[key] || { checked: false, arquivos: [] }
+        const newArquivos = (currentItem.arquivos || []).filter((f) => f.id !== fileId)
+        return {
+          ...prev,
+          conformidade: {
+            ...prev.conformidade,
+            [key]: {
+              ...currentItem,
+              arquivos: newArquivos,
+            },
+          },
+        }
+      })
+    },
+    []
+  )
+
   // Completion flags
   const isIdentDone = Boolean(
     process.identificacao.objeto &&
@@ -439,6 +539,16 @@ export function usePurchaseProcessForm(id?: string) {
   const isQuoteDone =
     process.fornecedores.filter((f) => f.nome.trim() !== '').length >= 2
   const isDecisionDone = Boolean(process.decisao.recomendacao)
+  const isComplianceDone = Boolean(
+    process.conformidade?.comprovacaoSolicitacao?.checked ||
+      (process.conformidade?.comprovacaoSolicitacao?.arquivos?.length ?? 0) > 0 ||
+      process.conformidade?.autorizacaoCompra?.checked ||
+      (process.conformidade?.autorizacaoCompra?.arquivos?.length ?? 0) > 0 ||
+      process.conformidade?.notaFiscal?.checked ||
+      (process.conformidade?.notaFiscal?.arquivos?.length ?? 0) > 0 ||
+      process.conformidade?.cotacoes?.checked ||
+      (process.conformidade?.cotacoes?.arquivos?.length ?? 0) > 0
+  )
   const isEvalDone = Boolean(process.avaliacao.preenchida)
 
   return {
@@ -461,6 +571,10 @@ export function usePurchaseProcessForm(id?: string) {
     updateIdentification,
     updateDecision,
     updateApproval,
+    updateComplianceItem,
+    toggleComplianceCheck,
+    addComplianceFile,
+    removeComplianceFile,
     updateEvaluation,
     updateEvaluationCriterion,
     updateSupplier,
@@ -473,6 +587,7 @@ export function usePurchaseProcessForm(id?: string) {
     isIdentDone,
     isQuoteDone,
     isDecisionDone,
+    isComplianceDone,
     isEvalDone,
   }
 }

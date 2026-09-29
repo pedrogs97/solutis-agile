@@ -19,6 +19,7 @@ import {
   Tooltip,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
+import { notifications } from '@mantine/notifications'
 import { useQuery } from '@tanstack/react-query'
 import {
   Calculator,
@@ -95,7 +96,7 @@ export function FinancialSection({
     watchedWriteOffDate
   )
 
-  const handleApplyFormula = () => {
+  const handleApplyFormula = (showToast = true) => {
     setValue('net_book_value', formulaResult.netBookValue)
     setValue('monthly_depreciation', formulaResult.monthlyDepreciation)
     setValue('depreciated_months', formulaResult.depreciatedMonths)
@@ -118,6 +119,14 @@ export function FinancialSection({
         watchedReferenceDate || watchedEvaluationDate
       )
       if (usage) setValue('usage_time', usage)
+    }
+
+    if (showToast) {
+      notifications.show({
+        color: 'teal',
+        title: 'Cálculo contábil aplicado',
+        message: `VCL: ${formatMoneyBRL(formulaResult.netBookValue)} · Depreciação acumulada: ${formatMoneyBRL(formulaResult.accumulatedDepreciation)} (${formulaResult.depreciatedMonths} meses)`,
+      })
     }
   }
 
@@ -168,7 +177,7 @@ export function FinancialSection({
             variant="light"
             color="blue"
             leftSection={<Calculator size={14} />}
-            onClick={handleApplyFormula}
+            onClick={() => handleApplyFormula(true)}
             title="Calcular e preencher campos contábeis no formulário"
           >
             Aplicar cálculo contábil
@@ -509,7 +518,7 @@ export function FinancialSection({
                   variant="subtle"
                   color="blue"
                   leftSection={<Calculator size={12} />}
-                  onClick={handleApplyFormula}
+                  onClick={() => handleApplyFormula(true)}
                   title="Copiar valor calculado para o campo oficial"
                 >
                   Sincronizar

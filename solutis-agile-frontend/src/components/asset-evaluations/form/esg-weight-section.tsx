@@ -20,12 +20,8 @@ interface EsgWeightSectionProps {
   readOnly?: boolean
 }
 
-const ESG_PARTNERS = [
-  { company: 'Recicla Já Soluções Ambientais', cnpj: '12.345.678/0001-90' },
-  { company: 'EcoTI Logística Reversa & Descarte', cnpj: '98.765.432/0001-10' },
-  { company: 'SucataTech Eletrônicos & Metais', cnpj: '45.678.901/0001-23' },
-  { company: 'GreenCycle Gestão de Resíduos', cnpj: '33.222.111/0001-44' },
-]
+// Parceiros ESG cadastrados pela organização (vazio por padrão para dados reais de produção)
+const ESG_PARTNERS: { company: string; cnpj: string }[] = []
 
 export function EsgWeightSection({
   form,
@@ -242,7 +238,8 @@ export function EsgWeightSection({
             name="waste_manifest"
             render={({ field }) => (
               <TextInput
-                label="Manifesto de transporte de resíduos"
+                label="Nº Manifesto de Transporte de Resíduos (MTR)"
+                placeholder="Ex.: MTR-2026/00123"
                 value={field.value || ''}
                 onChange={field.onChange}
                 disabled={readOnly}

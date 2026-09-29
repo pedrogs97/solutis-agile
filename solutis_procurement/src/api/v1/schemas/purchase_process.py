@@ -74,6 +74,27 @@ class PurchaseEvaluationSchema(CamelSchema):
     data_avaliacao: str = ""
 
 
+class PurchaseComplianceFileSchema(CamelSchema):
+    id: str
+    nome: str = ""
+    tamanho: float | None = None
+    tipo: str | None = ""
+    data: str | None = ""
+    url: str | None = None
+
+
+class PurchaseComplianceItemSchema(CamelSchema):
+    checked: bool = False
+    arquivos: list[PurchaseComplianceFileSchema] = Field(default_factory=list)
+
+
+class PurchaseComplianceSchema(CamelSchema):
+    comprovacao_solicitacao: PurchaseComplianceItemSchema | None = None
+    autorizacao_compra: PurchaseComplianceItemSchema | None = None
+    nota_fiscal: PurchaseComplianceItemSchema | None = None
+    cotacoes: PurchaseComplianceItemSchema | None = None
+
+
 class PurchaseProcessCreateIn(CamelSchema):
     schema_version: int = 1
     identificacao: PurchaseIdentificationSchema
@@ -81,6 +102,7 @@ class PurchaseProcessCreateIn(CamelSchema):
     itens: list[PurchaseItemSchema] = Field(default_factory=list)
     decisao: PurchaseDecisionSchema | None = None
     aprovacao: PurchaseApprovalSchema | None = None
+    conformidade: PurchaseComplianceSchema | None = None
     avaliacao: PurchaseEvaluationSchema | None = None
 
 
@@ -91,6 +113,7 @@ class PurchaseProcessUpdateIn(CamelSchema):
     itens: list[PurchaseItemSchema] | None = None
     decisao: PurchaseDecisionSchema | None = None
     aprovacao: PurchaseApprovalSchema | None = None
+    conformidade: PurchaseComplianceSchema | None = None
     avaliacao: PurchaseEvaluationSchema | None = None
 
 
@@ -122,6 +145,7 @@ class PurchaseProcessOut(Schema):
     itens: list[dict[str, Any]]
     decisao: dict[str, Any]
     aprovacao: dict[str, Any]
+    conformidade: dict[str, Any] = Field(default_factory=dict)
     avaliacao: dict[str, Any]
     computed: PurchaseProcessComputedSchema
 

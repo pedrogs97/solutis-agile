@@ -324,3 +324,131 @@ def test_delete_purchase_process_api(sample_purchase_process_data):
 
     get_res = client.get(f"/api/v1/purchase-processes/{proc_id}/")
     assert get_res.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+def test_purchase_process_compliance_persistence_and_backward_compatibility(
+    sample_purchase_process_data,
+):
+    client = _auth_client()
+
+    # 1. Existing process without conformidade in payload (backward compatibility)
+    create_res = client.post(
+        "/api/v1/purchase-processes/",
+        data=sample_purchase_process_data,
+        format="json",
+    )
+    assert create_res.status_code == status.HTTP_201_CREATED
+    data = create_res.json()
+    proc_id = data["id"]
+    # When opened, conformidade defaults to empty dict
+    assert data["conformidade"] == {}
+
+    # 2. Update with conformidade (tópico 5: evidências e anexos)
+    compliance_payload = {
+        "conformidade": {
+            "comprovacaoSolicitacao": {
+                "checked": True,
+                "arquivos": [
+                    {
+                        "id": "file-1",
+                        "nome": "solicitacao_compra.pdf",
+                        "tamanho": 102400,
+                        "tipo": "application/pdf",
+                        "data": "2026-09-29T16:00:00Z",
+                        "url": "data:application/pdf;base64,JVBERi0xLjQK",
+                    }
+                ],
+            },
+            "autorizacaoCompra": {
+                "checked": True,
+                "arquivos": [
+                    {
+                        "id": "file-2",
+                        "nome": "autorizacao_gestor.png",
+                        "tamanho": 204800,
+                        "tipo": "image/png",
+                        "data": "2026-09-29T16:05:00Z",
+                    }
+                ],
+            },
+            "notaFiscal": {
+                "checked": False,
+                "arquivos": [],
+            },
+            "cotacoes": {
+                "checked": True,
+                "arquivos": [
+                    {
+                        "id": "file-3",
+                        "nome": "cotacao_alfa.pdf",
+                        "tamanho": 51200,
+                        "tipo": "application/pdf",
+                        "data": "2026-09-29T16:10:00Z",
+                    }
+                ],
+            },
+        }
+    }
+
+    put_res = client.put(
+        f"/api/v1/purchase-processes/{proc_id}/",
+        data=compliance_payload,
+        format="json",
+    )
+    assert put_res.status_code == status.HTTP_200_OK
+    updated_data = put_res.json()
+    assert "conformidade" in updated_data
+    conf = updated_data["conformidade"]
+    assert conf["comprovacaoSolicitacao"]["checked"] is True
+    assert len(conf["comprovacaoSolicitacao"]["arquivos"]) == 1
+    assert (
+        conf["comprovacaoSolicitacao"]["arquivos"][0]["nome"]
+        == "solicitacao_compra.pdf"
+    )
+    assert conf["autorizacaoCompra"]["checked"] is True
+    assert conf["notaFiscal"]["checked"] is False
+    assert len(conf["notaFiscal"]["arquivos"]) == 0
+    assert conf["cotacoes"]["checked"] is True
+
+    # 3. GET verifies persistence in DB
+    get_res = client.get(f"/api/v1/purchase-processes/{proc_id}/")
+    assert get_res.status_code == status.HTTP_200_OK
+    persisted_conf = get_res.json()["conformidade"]
+    assert persisted_conf["comprovacaoSolicitacao"]["checked"] is True
+    assert (
+        persisted_conf["comprovacaoSolicitacao"]["arquivos"][0]["nome"]
+        == "solicitacao_compra.pdf"
+    )
+    assert (
+        persisted_conf["comprovacaoSolicitacao"]["arquivos"][0]["url"]
+        == "data:application/pdf;base64,JVBERi0xLjQK"
+    )
+
+    # 4. Alter values later (e.g. adding Nota Fiscal and unchecking autorizacao)
+    compliance_payload["conformidade"]["notaFiscal"] = {
+        "checked": True,
+        "arquivos": [
+            {
+                "id": "file-4",
+                "nome": "DANFE_12345.pdf",
+                "tamanho": 300000,
+                "tipo": "application/pdf",
+                "data": "2026-09-29T16:30:00Z",
+            }
+        ],
+    }
+    compliance_payload["conformidade"]["comprovacaoSolicitacao"]["arquivos"] = []
+    compliance_payload["conformidade"]["comprovacaoSolicitacao"]["checked"] = False
+
+    put_res_2 = client.put(
+        f"/api/v1/purchase-processes/{proc_id}/",
+        data=compliance_payload,
+        format="json",
+    )
+    assert put_res_2.status_code == status.HTTP_200_OK
+    conf2 = put_res_2.json()["conformidade"]
+    assert conf2["notaFiscal"]["checked"] is True
+    assert conf2["notaFiscal"]["arquivos"][0]["nome"] == "DANFE_12345.pdf"
+    assert conf2["comprovacaoSolicitacao"]["checked"] is False
+    assert len(conf2["comprovacaoSolicitacao"]["arquivos"]) == 0

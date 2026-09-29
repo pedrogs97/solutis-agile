@@ -23,8 +23,9 @@ interface ComplianceAttachmentsSectionProps {
   attachments?: AssetEvaluationAttachment[]
   pendingUploads?: { file: File; checklistKey?: string }[]
   onAddPendingUpload?: (file: File, checklistKey?: string) => void
-  onRemovePendingUpload?: (index: number) => void
+  onRemovePendingUpload?: (target: { file: File; checklistKey?: string } | number) => void
   readOnly?: boolean
+  wasteManifest?: string | null
 }
 
 const CHECKLIST_ITEMS = [
@@ -35,6 +36,7 @@ const CHECKLIST_ITEMS = [
   { key: 'ordem-servico', label: 'Ordem de serviço / diagnóstico de assistência' },
   { key: 'laudo-tecnico', label: 'Laudo técnico de irrecuperabilidade' },
   { key: 'certificado-destinacao', label: 'Certificado de destinação final / Reciclagem' },
+  { key: 'manifesto-residuos', label: 'Manifesto de Transporte de Resíduos (MTR)' },
   { key: 'registro-pesagem', label: 'Comprovante / Registro de pesagem' },
 ]
 
@@ -44,6 +46,7 @@ export function ComplianceAttachmentsSection({
   onAddPendingUpload,
   onRemovePendingUpload,
   readOnly = false,
+  wasteManifest,
 }: Readonly<ComplianceAttachmentsSectionProps>) {
   const totalCount = attachments.length + pendingUploads.length
 
@@ -80,12 +83,19 @@ export function ComplianceAttachmentsSection({
           return (
             <Paper key={item.key} p="sm" radius="md" withBorder bg="var(--mantine-color-gray-0)">
               <Group justify="space-between">
-                <Checkbox
-                  label={item.label}
-                  checked={hasFiles}
-                  readOnly
-                  color="teal"
-                />
+                <Group gap="xs">
+                  <Checkbox
+                    label={item.label}
+                    checked={hasFiles}
+                    readOnly
+                    color="teal"
+                  />
+                  {item.key === 'manifesto-residuos' && wasteManifest && (
+                    <Badge size="xs" variant="outline" color="blue">
+                      MTR: {wasteManifest}
+                    </Badge>
+                  )}
+                </Group>
 
                 {!readOnly && onAddPendingUpload && (
                   <FileButton
@@ -142,7 +152,7 @@ export function ComplianceAttachmentsSection({
                             size="xs"
                             color="red"
                             variant="subtle"
-                            onClick={() => onRemovePendingUpload(idx)}
+                            onClick={() => onRemovePendingUpload(p)}
                           >
                             <Trash2 size={12} />
                           </ActionIcon>

@@ -25,20 +25,35 @@ import {
 import type { PurchaseItem, PurchaseProcess } from '@/types/PurchaseProcess'
 import { UNIDADES } from '@/types/PurchaseProcess'
 
-function parseCurrencyOrNull(val: string | number): number | null {
+function parseCurrencyOrNull(val: string | number | undefined | null): number | null {
   if (val === '' || val === null || val === undefined) return null
-  if (typeof val === 'number') return isNaN(val) ? null : val
-  const normalized = String(val).trim().replace(/\./g, '').replace(',', '.')
+  if (typeof val === 'number') return Number.isNaN(val) ? null : val
+  const str = String(val).trim()
+  if (!str) return null
+
+  let normalized = str
+  if (str.includes(',') && str.includes('.')) {
+    normalized = str.replace(/\./g, '').replace(',', '.')
+  } else if (str.includes(',')) {
+    normalized = str.replace(',', '.')
+  } else if (str.includes('.')) {
+    const parts = str.split('.')
+    if (parts.length > 2) {
+      normalized = str.replace(/\./g, '')
+    } else {
+      normalized = str
+    }
+  }
+
   const num = parseFloat(normalized)
-  return isNaN(num) ? null : num
+  return Number.isNaN(num) ? null : num
 }
 
-function parseQuantityInput(val: string | number): number {
-  if (typeof val === 'number') return isNaN(val) ? 1 : val
+function parseQuantityInput(val: string | number | undefined | null): number {
+  if (typeof val === 'number') return Number.isNaN(val) ? 1 : val
   if (!val) return 1
-  const normalized = String(val).trim().replace(/\./g, '').replace(',', '.')
-  const num = parseFloat(normalized)
-  return isNaN(num) ? 1 : num
+  const parsed = parseCurrencyOrNull(val)
+  return parsed && parsed > 0 ? parsed : 1
 }
 
 interface TabItemsDetailProps {

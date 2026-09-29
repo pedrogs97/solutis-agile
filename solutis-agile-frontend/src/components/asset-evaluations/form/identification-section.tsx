@@ -1,6 +1,5 @@
 'use client'
 
-import { useMemo, useState } from 'react'
 import {
   Card,
   Grid,
@@ -16,6 +15,7 @@ import {
 import { DateInput } from '@mantine/dates'
 import { notifications } from '@mantine/notifications'
 import { Calendar, Info, Search } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Controller, type UseFormReturn } from 'react-hook-form'
 
 import { useCostCenterOptions } from '@/hooks/useCostCenterOptions'
@@ -174,6 +174,9 @@ export function IdentificationSection({
                 if (checked) {
                   setValue('patrimonio', '')
                   setValue('asset_id', null)
+                  form.clearErrors('patrimonio')
+                } else {
+                  form.clearErrors('unregistered_description')
                 }
               }}
               disabled={readOnly}
@@ -191,7 +194,14 @@ export function IdentificationSection({
               <TextInput
                 label="Nº Patrimônio (Tombo) *"
                 placeholder="Ex.: 00123456 (digite e pressione Tab para buscar)"
-                {...register('patrimonio', { required: !isUnregistered })}
+                {...register('patrimonio', {
+                  validate: (val) => {
+                    if (!form.getValues('is_unregistered') && (!val || !val.trim())) {
+                      return 'Nº Patrimônio (Tombo) é obrigatório.'
+                    }
+                    return true
+                  },
+                })}
                 disabled={readOnly}
                 rightSection={
                   <Search
@@ -238,7 +248,14 @@ export function IdentificationSection({
             <TextInput
               label="Descrição do Bem Não Tombado *"
               placeholder="Ex.: Mesa estações 4 lugares, Armário de aço 2 portas, Cadeira ergonômica..."
-              {...register('unregistered_description', { required: isUnregistered })}
+              {...register('unregistered_description', {
+                validate: (val) => {
+                  if (form.getValues('is_unregistered') && (!val || !val.trim())) {
+                    return 'Descrição do bem não tombado é obrigatória.'
+                  }
+                  return true
+                },
+              })}
               disabled={readOnly}
             />
           </Grid.Col>
@@ -372,20 +389,34 @@ export function IdentificationSection({
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, md: 4 }}>
-          <TextInput
-            label="Responsável pela Avaliação Inicial"
-            placeholder="Nome do avaliador responsável"
-            {...register('evaluator_name')}
-            disabled={readOnly}
+          <Controller
+            control={control}
+            name="evaluator_name"
+            render={({ field }) => (
+              <TextInput
+                label="Responsável pela Avaliação Inicial"
+                placeholder="Nome do avaliador responsável"
+                disabled={readOnly}
+                {...field}
+                value={field.value || ''}
+              />
+            )}
           />
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, md: 4 }}>
-          <TextInput
-            label="Localização Atual do Ativo"
-            placeholder="Ex.: Depósito TI — Sala 3"
-            {...register('current_location')}
-            disabled={readOnly}
+          <Controller
+            control={control}
+            name="current_location"
+            render={({ field }) => (
+              <TextInput
+                label="Localização Atual do Ativo"
+                placeholder="Ex.: Depósito TI — Sala 3"
+                disabled={readOnly}
+                {...field}
+                value={field.value || ''}
+              />
+            )}
           />
         </Grid.Col>
 

@@ -254,6 +254,53 @@ class TestAssetEvaluationModule(TestBase):
         assert metrics.total_estimated_economy >= 0.0
         db.close()
 
+    def test_find_asset_by_identifier_exact_and_zeros(self, setup, create_initial_data):
+        """Valida que a busca de ativo prioriza correspondência exata e normalização de zeros (A-02 / N-02)."""
+        service = AssetEvaluationService()
+        db = self.testing_session_local()
+
+        # Criar ativo com zeros à esquerda e outro ativo com substring similar
+        asset_target = AssetModel(
+            register_number="000456",
+            code="AT-000456",
+            serial_number="SN-TARGET-456",
+            brand="Dell",
+            model="Latitude 5420",
+            description="Notebook Dell Latitude",
+            value=4500.0,
+            status_id=1,
+        )
+        asset_other = AssetModel(
+            register_number="945699",
+            code="AT-945699",
+            serial_number="SN-OTHER-999",
+            brand="Lenovo",
+            model="ThinkPad",
+            description="Notebook Lenovo",
+            value=3500.0,
+            status_id=1,
+        )
+        db.add_all([asset_target, asset_other])
+        db.commit()
+
+        # Busca pelo tombo exato com zeros
+        res1 = service.find_asset_by_identifier(db, "000456")
+        assert res1 is not None
+        assert res1["patrimonio"] == "000456"
+        assert res1["serial_number"] == "SN-TARGET-456"
+
+        # Busca digitando sem os zeros à esquerda (456) deve encontrar 000456 e NÃO 945699
+        res2 = service.find_asset_by_identifier(db, "456")
+        assert res2 is not None
+        assert res2["patrimonio"] == "000456"
+        assert res2["serial_number"] == "SN-TARGET-456"
+
+        # Busca pelo número de série
+        res3 = service.find_asset_by_identifier(db, "SN-OTHER-999")
+        assert res3 is not None
+        assert res3["patrimonio"] == "945699"
+        db.close()
+
     # -------------------------------------------------------------
     # Testes de Endpoints HTTP (Router Integration)
     # -------------------------------------------------------------

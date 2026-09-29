@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import {
   Badge,
   Card,
@@ -15,6 +14,7 @@ import {
   Title,
 } from '@mantine/core'
 import { CheckCircle2, XCircle } from 'lucide-react'
+import { useEffect } from 'react'
 
 import {
   maskCnpj,

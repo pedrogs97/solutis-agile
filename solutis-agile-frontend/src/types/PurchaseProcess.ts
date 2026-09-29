@@ -69,6 +69,27 @@ export interface PurchaseEvaluation {
   dataAvaliacao: string
 }
 
+export interface ComplianceFile {
+  id: string
+  nome: string
+  tamanho?: number | null
+  tipo?: string | null
+  data?: string | null
+  url?: string | null
+}
+
+export interface ComplianceItem {
+  checked: boolean
+  arquivos: ComplianceFile[]
+}
+
+export interface PurchaseCompliance {
+  comprovacaoSolicitacao: ComplianceItem
+  autorizacaoCompra: ComplianceItem
+  notaFiscal: ComplianceItem
+  cotacoes: ComplianceItem
+}
+
 export interface PurchaseProcessComputed {
   valorProcesso: number
   menorCta?: number | null
@@ -89,6 +110,7 @@ export interface PurchaseProcess {
   itens: PurchaseItem[]
   decisao: PurchaseDecision
   aprovacao: PurchaseApproval
+  conformidade: PurchaseCompliance
   avaliacao: PurchaseEvaluation
   computed?: PurchaseProcessComputed
 }

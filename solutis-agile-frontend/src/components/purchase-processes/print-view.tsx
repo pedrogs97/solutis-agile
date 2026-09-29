@@ -248,10 +248,74 @@ export function PrintView({ process }: PrintViewProps) {
             </Table>
           </div>
 
-          {/* 5. Avaliação do Fornecedor (se preenchida) */}
+          {/* 5. Conformidade & Evidências */}
+          <div>
+            <Title order={4} mb="xs">5. Conformidade & Evidências Obrigatórias</Title>
+            <Table withTableBorder withColumnBorders verticalSpacing="xs">
+              <Table.Thead bg="#f8f9fa">
+                <Table.Tr>
+                  <Table.Th style={{ width: '40%' }}>Documento Comprobatório</Table.Th>
+                  <Table.Th style={{ width: '20%' }}>Status</Table.Th>
+                  <Table.Th style={{ width: '40%' }}>Arquivos Anexados</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                <Table.Tr>
+                  <Table.Td fw={600}>Comprovação de Solicitação</Table.Td>
+                  <Table.Td>
+                    {process.conformidade?.comprovacaoSolicitacao?.checked ||
+                    (process.conformidade?.comprovacaoSolicitacao?.arquivos?.length ?? 0) > 0
+                      ? 'Conforme / Anexado'
+                      : 'Pendente'}
+                  </Table.Td>
+                  <Table.Td>
+                    {process.conformidade?.comprovacaoSolicitacao?.arquivos?.map((f) => f.nome).join(', ') || 'Nenhum'}
+                  </Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Td fw={600}>Comprovação de Autorização da Compra</Table.Td>
+                  <Table.Td>
+                    {process.conformidade?.autorizacaoCompra?.checked ||
+                    (process.conformidade?.autorizacaoCompra?.arquivos?.length ?? 0) > 0
+                      ? 'Conforme / Anexado'
+                      : 'Pendente'}
+                  </Table.Td>
+                  <Table.Td>
+                    {process.conformidade?.autorizacaoCompra?.arquivos?.map((f) => f.nome).join(', ') || 'Nenhum'}
+                  </Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Td fw={600}>Nota Fiscal</Table.Td>
+                  <Table.Td>
+                    {process.conformidade?.notaFiscal?.checked ||
+                    (process.conformidade?.notaFiscal?.arquivos?.length ?? 0) > 0
+                      ? 'Conforme / Anexado'
+                      : 'Pendente'}
+                  </Table.Td>
+                  <Table.Td>
+                    {process.conformidade?.notaFiscal?.arquivos?.map((f) => f.nome).join(', ') || 'Nenhum'}
+                  </Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Td fw={600}>Cotações</Table.Td>
+                  <Table.Td>
+                    {process.conformidade?.cotacoes?.checked ||
+                    (process.conformidade?.cotacoes?.arquivos?.length ?? 0) > 0
+                      ? 'Conforme / Anexado'
+                      : 'Pendente'}
+                  </Table.Td>
+                  <Table.Td>
+                    {process.conformidade?.cotacoes?.arquivos?.map((f) => f.nome).join(', ') || 'Nenhum'}
+                  </Table.Td>
+                </Table.Tr>
+              </Table.Tbody>
+            </Table>
+          </div>
+
+          {/* 6. Avaliação do Fornecedor (se preenchida) */}
           {a.preenchida && (
             <div>
-              <Title order={4} mb="xs">5. Avaliação do Fornecedor</Title>
+              <Title order={4} mb="xs">6. Avaliação do Fornecedor</Title>
               <Table withTableBorder withColumnBorders verticalSpacing="xs">
                 <Table.Tbody>
                   <Table.Tr>

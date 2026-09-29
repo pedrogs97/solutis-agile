@@ -440,8 +440,9 @@ export function useAssetEvaluationForm({
   }
 
   const clearAllComponents = () => {
+    remove()
     setValue('components', [])
-    saveDraft()
+    setTimeout(saveDraft, 50)
   }
 
   const addPendingUpload = (file: File, checklistKey?: string) => {
@@ -451,10 +452,32 @@ export function useAssetEvaluationForm({
     ])
   }
 
-  const removePendingUpload = (index: number) => {
-    setPendingUploads((prev: { file: File; checklistKey?: string }[]) =>
-      prev.filter((_: { file: File; checklistKey?: string }, i: number) => i !== index)
-    )
+  const removePendingUpload = (
+    target: number | { file: File; checklistKey?: string }
+  ) => {
+    setPendingUploads((prev: { file: File; checklistKey?: string }[]) => {
+      if (typeof target === 'number') {
+        return prev.filter((_, i) => i !== target)
+      }
+      return prev.filter(
+        (item) =>
+          item !== target &&
+          !(
+            item.file.name === target.file.name &&
+            item.file.size === target.file.size &&
+            item.checklistKey === target.checklistKey
+          )
+      )
+    })
+  }
+
+  const onFormError = (errors: any) => {
+    console.warn('Validação de formulário pendente:', errors)
+    notifications.show({
+      color: 'red',
+      title: 'Campos Obrigatórios Pendentes',
+      message: 'Por favor, preencha os campos obrigatórios destacados antes de salvar a avaliação.',
+    })
   }
 
   return {
@@ -480,7 +503,7 @@ export function useAssetEvaluationForm({
     draftRestored,
     discardDraft,
     saveDraft,
-    onSubmit: form.handleSubmit(onSubmit),
+    onSubmit: form.handleSubmit(onSubmit, onFormError),
     onApprove: (comments?: string, writeOff: boolean = true) =>
       approveMutation.mutate({
         comments,

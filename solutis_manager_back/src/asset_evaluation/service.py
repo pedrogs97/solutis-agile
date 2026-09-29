@@ -1086,7 +1086,7 @@ class AssetEvaluationService:
         if not q:
             return None
 
-        # 1. Correspondência exata por tombo, código ou número de série
+        # 1. Correspondência exata estrita por tombo, código ou número de série
         asset = (
             db_session.query(AssetModel)
             .filter(
@@ -1097,21 +1097,41 @@ class AssetEvaluationService:
             .first()
         )
 
-        # 2. Se não encontrou, busca parcial ou sem zeros à esquerda
+        # 2. Se não encontrou e for numérico/alfanumérico, correspondência exata com/sem zeros à esquerda
         if not asset:
             stripped = q.lstrip("0")
+            if stripped:
+                variations = [
+                    stripped,
+                    stripped.zfill(6),
+                    stripped.zfill(8),
+                    stripped.zfill(10),
+                ]
+                asset = (
+                    db_session.query(AssetModel)
+                    .filter(
+                        (AssetModel.register_number.in_(variations))
+                        | (AssetModel.code.in_(variations))
+                        | (AssetModel.serial_number.in_(variations))
+                    )
+                    .first()
+                )
+
+        # 3. Se ainda não encontrou, busca segura por prefixo (começa com o termo digitado)
+        if not asset and len(q) >= 3:
+            stripped = q.lstrip("0")
+            prefix_filter = AssetModel.register_number.ilike(
+                f"{q}%"
+            ) | AssetModel.code.ilike(f"{q}%")
+            if stripped:
+                prefix_filter = prefix_filter | AssetModel.register_number.ilike(
+                    f"{stripped}%"
+                )
+
             asset = (
                 db_session.query(AssetModel)
-                .filter(
-                    (AssetModel.register_number.ilike(f"%{q}%"))
-                    | (AssetModel.code.ilike(f"%{q}%"))
-                    | (AssetModel.serial_number.ilike(f"%{q}%"))
-                    | (
-                        AssetModel.register_number.ilike(f"%{stripped}%")
-                        if stripped
-                        else False
-                    )
-                )
+                .filter(prefix_filter)
+                .order_by(func.length(AssetModel.register_number).asc())
                 .first()
             )
 

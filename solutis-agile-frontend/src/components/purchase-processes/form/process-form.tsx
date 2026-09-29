@@ -27,6 +27,7 @@ import {
 import { PrintView } from '@/components/purchase-processes/print-view'
 import { usePurchaseProcessForm } from '@/hooks/purchase-process/usePurchaseProcessForm'
 
+import { TabComplianceEvidence } from './tab-compliance-evidence'
 import { TabDecisionApproval } from './tab-decision-approval'
 import { TabIdentification } from './tab-identification'
 import { TabItemsDetail } from './tab-items-detail'
@@ -53,6 +54,10 @@ export function ProcessForm({ id }: ProcessFormProps) {
     updateIdentification,
     updateDecision,
     updateApproval,
+    updateComplianceItem,
+    toggleComplianceCheck,
+    addComplianceFile,
+    removeComplianceFile,
     updateEvaluation,
     updateEvaluationCriterion,
     updateSupplier,
@@ -65,6 +70,7 @@ export function ProcessForm({ id }: ProcessFormProps) {
     isIdentDone,
     isQuoteDone,
     isDecisionDone,
+    isComplianceDone,
     isEvalDone,
   } = usePurchaseProcessForm(id)
 
@@ -72,7 +78,14 @@ export function ProcessForm({ id }: ProcessFormProps) {
     window.print()
   }
 
-  const tabsOrder = ['ident', 'cotacao', 'itens', 'decisao', 'avaliacao']
+  const tabsOrder = [
+    'ident',
+    'cotacao',
+    'itens',
+    'decisao',
+    'conformidade',
+    'avaliacao',
+  ]
   const currentIdx = tabsOrder.indexOf(activeTab)
   const prevTab = currentIdx > 0 ? tabsOrder[currentIdx - 1] : null
   const nextTab = currentIdx < tabsOrder.length - 1 ? tabsOrder[currentIdx + 1] : null
@@ -186,10 +199,17 @@ export function ProcessForm({ id }: ProcessFormProps) {
           </Tabs.Tab>
 
           <Tabs.Tab
+            value="conformidade"
+            rightSection={isComplianceDone ? <CheckCircle size={14} color="#40c057" /> : null}
+          >
+            5. Conformidade & Evidências
+          </Tabs.Tab>
+
+          <Tabs.Tab
             value="avaliacao"
             rightSection={isEvalDone ? <CheckCircle size={14} color="#40c057" /> : null}
           >
-            5. Avaliação do Fornecedor
+            6. Avaliação do Fornecedor
           </Tabs.Tab>
         </Tabs.List>
 
@@ -227,6 +247,16 @@ export function ProcessForm({ id }: ProcessFormProps) {
             updateApproval={updateApproval}
             handleDecide={handleDecide}
             isDeciding={isDeciding}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="conformidade" pt="md">
+          <TabComplianceEvidence
+            process={process}
+            toggleComplianceCheck={toggleComplianceCheck}
+            addComplianceFile={addComplianceFile}
+            removeComplianceFile={removeComplianceFile}
+            updateComplianceItem={updateComplianceItem}
           />
         </Tabs.Panel>
 

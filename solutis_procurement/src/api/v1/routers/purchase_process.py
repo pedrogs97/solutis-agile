@@ -58,6 +58,7 @@ def serialize_purchase_process(proc: PurchaseProcess) -> PurchaseProcessOut:
         itens=proc.items or [],
         decisao=proc.decision or {},
         aprovacao=proc.approval or {},
+        conformidade=proc.compliance or {},
         avaliacao=proc.evaluation or {},
         computed=_serialize_computed(proc),
     )
@@ -395,6 +396,7 @@ def create_purchase_process(request, payload: PurchaseProcessCreateIn):
         items=data.get("itens") or [],
         decision=data.get("decisao") or {},
         approval=data.get("aprovacao") or {},
+        compliance=data.get("conformidade") or {},
         evaluation=data.get("avaliacao") or {},
     )
     proc.save()
@@ -421,6 +423,8 @@ def update_purchase_process(request, id: str, payload: PurchaseProcessUpdateIn):
         proc.decision = data["decisao"]
     if "aprovacao" in data and data["aprovacao"] is not None:
         proc.approval = data["aprovacao"]
+    if "conformidade" in data and data["conformidade"] is not None:
+        proc.compliance = data["conformidade"]
     if "avaliacao" in data and data["avaliacao"] is not None:
         proc.evaluation = data["avaliacao"]
 

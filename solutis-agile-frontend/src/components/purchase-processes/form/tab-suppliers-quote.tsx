@@ -32,19 +32,32 @@ interface TabSuppliersQuoteProps {
   removeSupplier: (supplierId: string) => void
 }
 
-function parseCurrencyInput(
-  val: string | number | undefined | null,
-  allowZeroAsDefault = true
-): number | null {
-  if (val === undefined || val === null || val === '') {
-    return allowZeroAsDefault ? 0 : null
+function parseCurrencyOrNull(val: string | number | undefined | null): number | null {
+  if (val === '' || val === null || val === undefined) return null
+  if (typeof val === 'number') return Number.isNaN(val) ? null : val
+  const str = String(val).trim()
+  if (!str) return null
+
+  let normalized = str
+  if (str.includes(',') && str.includes('.')) {
+    // Formato brasileiro com milhar e decimal: 1.250,50
+    normalized = str.replace(/\./g, '').replace(',', '.')
+  } else if (str.includes(',')) {
+    // Formato com vírgula decimal: 12,50
+    normalized = str.replace(',', '.')
+  } else if (str.includes('.')) {
+    const parts = str.split('.')
+    // Múltiplos pontos indicam milhar: 1.000.000
+    if (parts.length > 2) {
+      normalized = str.replace(/\./g, '')
+    } else {
+      // Ponto único (ex.: teclado numérico 12.50): mantém como decimal
+      normalized = str
+    }
   }
-  if (typeof val === 'number') {
-    return Number.isNaN(val) ? (allowZeroAsDefault ? 0 : null) : val
-  }
-  const cleanStr = String(val).replace(/\./g, '').replace(',', '.')
-  const parsed = parseFloat(cleanStr)
-  return Number.isNaN(parsed) ? (allowZeroAsDefault ? 0 : null) : parsed
+
+  const num = parseFloat(normalized)
+  return Number.isNaN(num) ? null : num
 }
 
 export function TabSuppliersQuote({
@@ -195,10 +208,9 @@ export function TabSuppliersQuote({
                         decimalScale={2}
                         decimalSeparator=","
                         thousandSeparator="."
-                        prefix="R$ "
                         value={f.valorBrutoManual ?? undefined}
                         onChange={(val) =>
-                          updateSupplier(f.id, 'valorBrutoManual', parseCurrencyInput(val, false))
+                          updateSupplier(f.id, 'valorBrutoManual', parseCurrencyOrNull(val))
                         }
                       />
                     )}
@@ -217,10 +229,9 @@ export function TabSuppliersQuote({
                       decimalScale={2}
                       decimalSeparator=","
                       thousandSeparator="."
-                      prefix="R$ "
-                      value={f.desconto ?? 0}
+                      value={f.desconto ?? undefined}
                       onChange={(val) =>
-                        updateSupplier(f.id, 'desconto', parseCurrencyInput(val, true) ?? 0)
+                        updateSupplier(f.id, 'desconto', parseCurrencyOrNull(val) ?? 0)
                       }
                     />
                   </Table.Td>
@@ -238,10 +249,9 @@ export function TabSuppliersQuote({
                       decimalScale={2}
                       decimalSeparator=","
                       thousandSeparator="."
-                      prefix="R$ "
-                      value={f.impostos ?? 0}
+                      value={f.impostos ?? undefined}
                       onChange={(val) =>
-                        updateSupplier(f.id, 'impostos', parseCurrencyInput(val, true) ?? 0)
+                        updateSupplier(f.id, 'impostos', parseCurrencyOrNull(val) ?? 0)
                       }
                     />
                   </Table.Td>
@@ -259,10 +269,9 @@ export function TabSuppliersQuote({
                       decimalScale={2}
                       decimalSeparator=","
                       thousandSeparator="."
-                      prefix="R$ "
-                      value={f.frete ?? 0}
+                      value={f.frete ?? undefined}
                       onChange={(val) =>
-                        updateSupplier(f.id, 'frete', parseCurrencyInput(val, true) ?? 0)
+                        updateSupplier(f.id, 'frete', parseCurrencyOrNull(val) ?? 0)
                       }
                     />
                   </Table.Td>
@@ -280,10 +289,9 @@ export function TabSuppliersQuote({
                       decimalScale={2}
                       decimalSeparator=","
                       thousandSeparator="."
-                      prefix="R$ "
-                      value={f.outros ?? 0}
+                      value={f.outros ?? undefined}
                       onChange={(val) =>
-                        updateSupplier(f.id, 'outros', parseCurrencyInput(val, true) ?? 0)
+                        updateSupplier(f.id, 'outros', parseCurrencyOrNull(val) ?? 0)
                       }
                     />
                   </Table.Td>
@@ -333,10 +341,9 @@ export function TabSuppliersQuote({
                       decimalScale={2}
                       decimalSeparator=","
                       thousandSeparator="."
-                      prefix="R$ "
                       value={f.orcado ?? undefined}
                       onChange={(val) =>
-                        updateSupplier(f.id, 'orcado', parseCurrencyInput(val, false))
+                        updateSupplier(f.id, 'orcado', parseCurrencyOrNull(val))
                       }
                     />
                   </Table.Td>
