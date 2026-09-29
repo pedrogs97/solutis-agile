@@ -1,5 +1,14 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-29] - Deploy Remoto: Formulários de Ativos (FO-PAT-02) e Compras (FO-AD-01)
+- **Descrição**: Commit, push para a branch `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), reconstruindo e reiniciando os containers dos serviços com versão incrementada (`solutis-agile-frontend-prod` v2.7.21, `solutis-manager-back-prod` v1.26.21 e `solutis-procurement-prod` v2.18.8).
+- **Commit**: `842f032` (`feat: melhorias e correções nos formulários de compras e ativos`)
+- **Containers Atualizados no Host**:
+  - `solutis-agile-frontend-prod` (`2.7.21`)
+  - `solutis-manager-back-prod` (`1.26.21`)
+  - `solutis-procurement-prod` (`2.18.8`)
+- **Status da Operação**: Sucesso total (exit code 0), com sincronização via `git checkout main && git pull origin main` e execução do `./deploy.sh`.
+
 ## [2026-09-29] - Correções e Melhorias dos Formulários de Ativos (FO-PAT-02) e Compras (FO-AD-01)
 - **Descrição**: Atendimento completo aos apontamentos levantados nos testes dos formulários de Avaliação Técnica e Descarte de Ativos (FO-PAT-02) e Análise e Decisão de Compras (FO-AD-01) decorrentes das reuniões de 24/09 e 25/09/2026.
 - **Arquivos afetados**:
