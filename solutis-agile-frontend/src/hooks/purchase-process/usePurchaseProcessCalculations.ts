@@ -32,33 +32,73 @@ export function formatMoney(v: unknown): string {
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-export function formatDate(iso?: string | null): string {
+export function formatDate(iso?: string | Date | null): string {
   if (!iso) return '—'
+  if (iso instanceof Date) {
+    if (isNaN(iso.getTime())) return '—'
+    const day = String(iso.getDate()).padStart(2, '0')
+    const month = String(iso.getMonth() + 1).padStart(2, '0')
+    const year = iso.getFullYear()
+    return `${day}/${month}/${year}`
+  }
+
+  const str = String(iso).trim()
+  if (!str) return '—'
+
+  // Se já estiver no formato brasileiro DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) return str
+
+  // Se for formato ISO iniciando em YYYY-MM-DD (ex.: 2026-09-29 ou 2026-09-29T...)
+  // Extrai ano, mês e dia diretamente sem new Date() para evitar recuo de dia em fusos negativos (UTC-3)
+  const ymdMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (ymdMatch) {
+    const [, year, month, day] = ymdMatch
+    return `${day}/${month}/${year}`
+  }
+
   try {
-    const d = new Date(iso)
-    if (isNaN(d.getTime())) return iso
-    return d.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
+    const d = new Date(str)
+    if (isNaN(d.getTime())) return str
+    const day = String(d.getDate()).padStart(2, '0')
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const year = d.getFullYear()
+    return `${day}/${month}/${year}`
   } catch {
-    return iso
+    return str
   }
 }
 
-export function formatDateTime(iso?: string | null): string {
+export function formatDateTime(iso?: string | Date | null): string {
   if (!iso) return '—'
+  if (iso instanceof Date) {
+    if (isNaN(iso.getTime())) return '—'
+    return (
+      iso.toLocaleDateString('pt-BR') +
+      ' ' +
+      iso.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    )
+  }
+
+  const str = String(iso).trim()
+  if (!str) return '—'
+
+  // Se for apenas data YYYY-MM-DD sem horário
+  const ymdOnlyMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (ymdOnlyMatch) {
+    const [, year, month, day] = ymdOnlyMatch
+    return `${day}/${month}/${year}`
+  }
+
   try {
-    const d = new Date(iso)
-    if (isNaN(d.getTime())) return iso
+    const d = new Date(str)
+    if (isNaN(d.getTime())) return str
     return (
       d.toLocaleDateString('pt-BR') +
       ' ' +
       d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     )
   } catch {
-    return iso
+    return str
   }
 }
 

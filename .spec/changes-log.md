@@ -1,5 +1,24 @@
 # Histórico de Alterações do Projeto
 
+## [2026-09-29] - Correção: Tendência Mensal Estática no Dashboard Executivo de Compras
+- **Descrição**: Corrigido bug onde o gráfico "Tendência Mensal" no dashboard executivo exibia dados estáticos que não correspondiam aos valores reais dos processos de compras.
+- **Causa Raiz (dupla)**:
+  1. **Aritmética de meses incorreta**: usava `now - timedelta(days=i * 30)` para calcular os últimos 6 meses. Como meses têm 28-31 dias, a multiplicação por 30 podia pular ou repetir meses.
+  2. **Filtro por `created_at` em vez de `process_date`**: a contagem era feita pela data de criação do registro no banco, não pela data efetiva do processo informada no formulário.
+- **Solução Implementada**:
+  - `solutis_procurement/src/api/v1/routers/purchase_process.py`:
+    - Refatorada aritmética de meses para usar subtração direta de `now.month - i` com ajuste de ano (`while m <= 0: m += 12; y -= 1`).
+    - Contagem mensal agora usa `process_date` como campo primário, com fallback para `created_at` quando `process_date` é nulo: `Q(process_date__year=y, process_date__month=m) | Q(process_date__isnull=True, created_at__year=y, created_at__month=m)`.
+    - Filtro de período (30/90 dias, ano) também refatorado para usar `process_date` com fallback.
+
+## [2026-09-29] - Correção: Exibição de Data com 1 Dia a Menos no Dashboard de Compras
+- **Descrição**: Corrigido bug de fuso horário onde a coluna "Data" no dashboard e tabela de processos de compra (`process-table.tsx` e `print-view.tsx`) exibia a data com um dia a menos (ex.: dia 29/09 aparecia como 28/09).
+- **Causa Raiz**: A função `formatDate` utilizava `new Date(iso).toLocaleDateString('pt-BR')`. Como o backend armazena datas no formato ISO `"YYYY-MM-DD"`, o construtor `new Date("YYYY-MM-DD")` interpreta a string em UTC à meia-noite (`00:00:00Z`). Em localidades com fuso horário negativo como o Brasil (GMT-3), a conversão para horário local recuava 3 horas para as 21:00 do dia anterior, diminuindo o dia em 1 unidade.
+- **Solução Implementada**:
+  - `src/hooks/purchase-process/usePurchaseProcessCalculations.ts`: Refatoradas as funções `formatDate` e `formatDateTime` para extrair diretamente os componentes de ano, mês e dia da string (`YYYY-MM-DD`) sem passar por conversão UTC do construtor `Date`.
+  - `src/hooks/purchase-process/usePurchaseProcessForm.ts`: Inicialização de `identificacao.data` no formulário atualizada para utilizar `formatDateToLocalYMD(new Date())`, garantindo que novos processos criados no período noturno também usem a data local exata do usuário.
+  - `src/hooks/purchase-process/usePurchaseProcessCalculations.test.ts`: Adicionada cobertura de testes automatizados garantindo que datas no formato `YYYY-MM-DD` nunca sofram recuo de dia (13 testes passando).
+
 ## [2026-09-29] - Deploy Remoto: Formulários de Ativos (FO-PAT-02) e Compras (FO-AD-01)
 - **Descrição**: Commit, push para a branch `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), reconstruindo e reiniciando os containers dos serviços com versão incrementada (`solutis-agile-frontend-prod` v2.7.21, `solutis-manager-back-prod` v1.26.21 e `solutis-procurement-prod` v2.18.8).
 - **Commit**: `842f032` (`feat: melhorias e correções nos formulários de compras e ativos`)

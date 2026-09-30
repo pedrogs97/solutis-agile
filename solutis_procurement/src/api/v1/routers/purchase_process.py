@@ -168,14 +168,23 @@ def get_purchase_process_metrics(
 
     now = timezone.now()
     if periodo == "30":
-        cutoff = now - timedelta(days=30)
-        qs = qs.filter(created_at__gte=cutoff)
+        cutoff = now.date() - timedelta(days=30)
+        qs = qs.filter(
+            Q(process_date__gte=cutoff)
+            | Q(process_date__isnull=True, created_at__gte=cutoff)
+        )
     elif periodo == "90":
-        cutoff = now - timedelta(days=90)
-        qs = qs.filter(created_at__gte=cutoff)
+        cutoff = now.date() - timedelta(days=90)
+        qs = qs.filter(
+            Q(process_date__gte=cutoff)
+            | Q(process_date__isnull=True, created_at__gte=cutoff)
+        )
     elif periodo == "ano":
-        cutoff = timezone.datetime(now.year, 1, 1, tzinfo=now.tzinfo)
-        qs = qs.filter(created_at__gte=cutoff)
+        cutoff = timezone.datetime(now.year, 1, 1, tzinfo=now.tzinfo).date()
+        qs = qs.filter(
+            Q(process_date__gte=cutoff)
+            | Q(process_date__isnull=True, created_at__gte=cutoff)
+        )
 
     processes = list(qs)
     total_count = len(processes)
@@ -316,13 +325,19 @@ def get_purchase_process_metrics(
         all_qs = all_qs.filter(category=categoria)
 
     for i in range(5, -1, -1):
-        target_month_date = now - timedelta(days=i * 30)
-        y = target_month_date.year
-        m = target_month_date.month
+        y = now.year
+        m = now.month - i
+        while m <= 0:
+            m += 12
+            y -= 1
+
         month_label = f"{month_names[m - 1]}/{str(y)[2:]}"
         month_key = f"{y}-{m:02d}"
 
-        cnt = all_qs.filter(created_at__year=y, created_at__month=m).count()
+        cnt = all_qs.filter(
+            Q(process_date__year=y, process_date__month=m)
+            | Q(process_date__isnull=True, created_at__year=y, created_at__month=m)
+        ).count()
         months_trend.append(
             MonthlyTrendItem(
                 key=month_key,

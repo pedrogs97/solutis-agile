@@ -12,6 +12,7 @@ import {
   fetchPurchaseProcess,
   updatePurchaseProcess,
 } from '@/services/api/purchase-process'
+import { formatDateToLocalYMD } from '@/lib/utils'
 import { getProfile } from '@/store/persisted/useProfileStore'
 import type {
   ComplianceFile,
@@ -73,7 +74,7 @@ export function createNewProcess(): PurchaseProcess {
     criadoEm: new Date().toISOString(),
     atualizadoEm: new Date().toISOString(),
     identificacao: {
-      data: new Date().toISOString().slice(0, 10),
+      data: formatDateToLocalYMD(new Date()) || new Date().toISOString().slice(0, 10),
       categoria: 'Normal',
       modalidade: 'Produto',
       centroCusto: '',

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { PurchaseProcess } from '@/types/PurchaseProcess'
+import type { PurchaseProcess } from '../../types/PurchaseProcess'
 
 import {
   calcAutoGrossValue,
@@ -11,12 +11,29 @@ import {
   calcPerformanceClassification,
   calcProcessValue,
   cnpjDigits,
+  formatDate,
+  formatDateTime,
   formatMoney,
   getLowestCtaSupplier,
   maskCnpj,
 } from './usePurchaseProcessCalculations'
 
 describe('usePurchaseProcessCalculations', () => {
+  it('formats dates correctly without timezone day rollback', () => {
+    // Datas ISO YYYY-MM-DD não devem recuar para o dia anterior por conta de UTC-3
+    expect(formatDate('2026-09-29')).toBe('29/09/2026')
+    expect(formatDate('2026-09-16')).toBe('16/09/2026')
+    expect(formatDate('2026-01-01')).toBe('01/01/2026')
+    expect(formatDate('2026-12-31')).toBe('31/12/2026')
+    expect(formatDate('29/09/2026')).toBe('29/09/2026')
+    expect(formatDate(null)).toBe('—')
+    expect(formatDate('')).toBe('—')
+    expect(formatDate(undefined)).toBe('—')
+
+    // formatDateTime para YYYY-MM-DD simples deve exibir a data correta
+    expect(formatDateTime('2026-09-29')).toBe('29/09/2026')
+  })
+
   it('formats CNPJ and cleans digits correctly', () => {
     expect(cnpjDigits('12.345.678/0001-99')).toBe('12345678000199')
     expect(maskCnpj('12345678000199')).toBe('12.345.678/0001-99')
