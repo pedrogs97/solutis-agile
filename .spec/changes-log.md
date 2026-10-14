@@ -1,5 +1,16 @@
 # Histórico de Alterações do Projeto
 
+## [2026-10-13] - Deploy Remoto: Módulo de Compras e Sincronização de Fornecedores
+- **Descrição**: Commit (`d71fa8f` e `f4285c6`), push para a branch `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), reconstruindo os containers dos serviços com versão incrementada, seguido da execução bem-sucedida do comando de sincronização de fornecedores via CSV.
+- **Commits**: `d71fa8f` (`feat: melhorias no modulo de compras, bloqueio de traducao e atualizacao de fornecedores`) e `f4285c6` (`chore(deploy): adiciona parametro --post-cmd para execucao pos-deploy`)
+- **Containers Atualizados no Host**:
+  - `solutis-agile-frontend-prod` (`2.7.23`)
+  - `solutis-procurement-prod` (`2.18.10`)
+- **Sincronização Executada**:
+  - Comando: `python manage.py sync_suppliers --from-csv-only` executado no contêiner `solutis-procurement-prod`.
+  - Resultado: 45 fornecedores semeados e sincronizados com sucesso a partir do CSV (incluindo os 6 novos fornecedores adicionados).
+- **Status da Operação**: Sucesso total (exit code 0), com sincronização via `git checkout main && git pull origin main`, `./deploy.sh` e execução remota pós-deploy.
+
 ## [2026-10-13] - Atualização da Base de Fornecedores via CSV e Comando sync_suppliers
 - **Descrição**: Inclusão e atualização dos 6 fornecedores solicitados diretamente nos arquivos de dados CSV (`solutis_procurement/fornecedores.csv` e `solutis_procurement/data/fornecedores.csv`), suporte a sincronização via comando Django `python manage.py sync_suppliers` com opção `--from-csv-only` (offline/seed direto) e ampliação da suíte de testes unitários. Sem dependência de migration de dados.
 - **Fornecedores Adicionados / Atualizados**:
