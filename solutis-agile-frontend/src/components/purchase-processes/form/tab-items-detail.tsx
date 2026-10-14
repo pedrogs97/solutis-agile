@@ -104,7 +104,7 @@ export function TabItemsDetail({
                 <Table.Th style={{ width: 90 }}>Qtd.</Table.Th>
                 <Table.Th style={{ width: 100 }}>Unid.</Table.Th>
                 {process.fornecedores.map((f, idx) => (
-                  <Table.Th key={f.id} colSpan={2} style={{ textAlign: 'center', minWidth: 190 }}>
+                  <Table.Th key={f.id} colSpan={2} style={{ textAlign: 'center', minWidth: 190 }} translate="no" className="notranslate">
                     {f.nome || `Fornecedor ${idx + 1}`}
                   </Table.Th>
                 ))}

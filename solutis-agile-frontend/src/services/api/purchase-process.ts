@@ -13,6 +13,9 @@ export interface PurchaseProcessFilters {
   search?: string
   status?: string
   category?: string
+  periodo?: string
+  dataInicio?: string
+  dataFim?: string
   page?: number
   pageSize?: number
   orderBy?: string
@@ -32,6 +35,9 @@ export const fetchPurchaseProcesses = async ({
       search: filters.search,
       status: filters.status,
       category: filters.category,
+      periodo: filters.periodo,
+      data_inicio: filters.dataInicio,
+      data_fim: filters.dataFim,
       page: filters.page,
       page_size: filters.pageSize,
       order_by: filters.orderBy,

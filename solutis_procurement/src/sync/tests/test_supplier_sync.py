@@ -14,6 +14,7 @@ from src.supplier.models.domain import (
     DomSupplierSituation,
     DomTypeSupplier,
 )
+from src.supplier.models.supplier import Supplier
 from src.sync.dto import SupplierTotvsDTO
 from src.sync.services.supplier_sync import SupplierSyncService
 
@@ -65,9 +66,9 @@ class TestSupplierSyncCSV:
         """Test that default CSV file is successfully loaded."""
         sync_service = SupplierSyncService(mock_db_service)
 
-        # 41 suppliers with valid CNPJ loaded
-        assert len(sync_service._risk_mapping) == 41
-        assert len(sync_service._name_mapping) == 41
+        # 45 suppliers with valid CNPJ loaded
+        assert len(sync_service._risk_mapping) == 45
+        assert len(sync_service._name_mapping) == 45
 
         # Check known suppliers from user list
         assert sync_service._risk_mapping["30.491.362/0001-93"] == "BAIXO"
@@ -85,11 +86,38 @@ class TestSupplierSyncCSV:
             == "CLICKSIGN GESTAO DE DOCUMENTOS S/A"
         )
 
+        assert sync_service._risk_mapping["33.544.362/0001-00"] == "BAIXO"
+        assert (
+            sync_service._name_mapping["33.544.362/0001-00"]
+            == "COMPANHIA DE JESUS JESUITAS"
+        )
+
         assert sync_service._risk_mapping["59.531.496/0001-72"] == "BAIXO"
-        assert sync_service._name_mapping["59.531.496/0001-72"] == "OLIVA"
+        assert (
+            sync_service._name_mapping["59.531.496/0001-72"]
+            == "ISABEL CRISTINA OSORIO DE OLIVA SERVICOS"
+        )
 
         assert sync_service._risk_mapping["71.208.516/0001-74"] == "MÉDIO"
         assert sync_service._name_mapping["71.208.516/0001-74"] == "ALGAR"
+
+        assert sync_service._risk_mapping["71.208.516/0164-10"] == "MÉDIO"
+        assert sync_service._name_mapping["71.208.516/0164-10"] == "ALGAR TELECOM S/A"
+
+        assert sync_service._risk_mapping["67.542.036/0001-78"] == "BAIXO"
+        assert (
+            sync_service._name_mapping["67.542.036/0001-78"]
+            == "DOMINGUES, CEARA & PIETROBON ADVOGADOS"
+        )
+
+        assert sync_service._risk_mapping["53.172.704/0001-08"] == "BAIXO"
+        assert (
+            sync_service._name_mapping["53.172.704/0001-08"]
+            == "WERTHEIMER SERVIÇOS DE SAÚDE MENTAL LTDA"
+        )
+
+        assert sync_service._risk_mapping["65.343.385/0001-35"] == "BAIXO"
+        assert sync_service._name_mapping["65.343.385/0001-35"] == "MS TECH GROUP LTDA"
 
         assert sync_service._risk_mapping["02.558.157/0001-62"] == "MÉDIO"
         assert (
@@ -205,3 +233,48 @@ class TestSupplierSyncCSV:
         created.refresh_from_db()
         assert created.trade_name == "Nome Atualizado TOTVS"
         assert created.risk_level.name == "ALTO"
+
+    @pytest.mark.django_db
+    def test_sync_from_csv_only(self, tmp_path):
+        """Test syncing suppliers directly from CSV without TOTVS connection."""
+        csv_file = tmp_path / "offline_suppliers.csv"
+        csv_file.write_text(
+            "nome,cnpj,grau_de_risco\n"
+            '"DOMINGUES, CEARA & PIETROBON ADVOGADOS",67.542.036/0001-78,BAIXO\n'
+            "ALGAR TELECOM S/A,71.208.516/0164-10,MEDIO\n",
+            encoding="utf-8",
+        )
+
+        sync_service = SupplierSyncService(csv_path=csv_file)
+        count = sync_service.sync_from_csv_only()
+        assert count == 2
+
+        s1 = Supplier.objects.get(tax_id="67.542.036/0001-78")
+        assert s1.legal_name == "DOMINGUES, CEARA & PIETROBON ADVOGADOS"
+        assert s1.risk_level.name == "BAIXO"
+
+        s2 = Supplier.objects.get(tax_id="71.208.516/0164-10")
+        assert s2.legal_name == "ALGAR TELECOM S/A"
+        assert s2.risk_level.name == "MÉDIO"
+
+    @pytest.mark.django_db
+    def test_sync_suppliers_command_from_csv(self):
+        """Test sync_suppliers management command with --from-csv-only."""
+        from django.core.management import call_command
+
+        call_command("sync_suppliers", "--from-csv-only")
+
+        expected_suppliers = {
+            "67.542.036/0001-78": ("DOMINGUES, CEARA & PIETROBON ADVOGADOS", "BAIXO"),
+            "53.172.704/0001-08": ("WERTHEIMER SERVIÇOS DE SAÚDE MENTAL LTDA", "BAIXO"),
+            "65.343.385/0001-35": ("MS TECH GROUP LTDA", "BAIXO"),
+            "33.544.362/0001-00": ("COMPANHIA DE JESUS JESUITAS", "BAIXO"),
+            "59.531.496/0001-72": ("ISABEL CRISTINA OSORIO DE OLIVA SERVICOS", "BAIXO"),
+            "71.208.516/0164-10": ("ALGAR TELECOM S/A", "MÉDIO"),
+        }
+
+        for tax_id, (name, risk) in expected_suppliers.items():
+            supplier = Supplier.objects.filter(tax_id=tax_id).first()
+            assert supplier is not None
+            assert supplier.legal_name == name
+            assert supplier.risk_level.name == risk

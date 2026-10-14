@@ -96,6 +96,9 @@ def list_purchase_processes(
     search: str | None = None,
     status: str | None = None,
     category: str | None = None,
+    periodo: str | None = None,
+    data_inicio: str | None = None,
+    data_fim: str | None = None,
     page: int = 1,
     page_size: int = 20,
     order_by: str = "-updated_at",
@@ -116,6 +119,52 @@ def list_purchase_processes(
 
     if category:
         qs = qs.filter(category=category)
+
+    now = timezone.now()
+    if periodo == "mes":
+        cutoff = timezone.datetime(now.year, now.month, 1, tzinfo=now.tzinfo).date()
+        qs = qs.filter(
+            Q(process_date__gte=cutoff)
+            | Q(process_date__isnull=True, created_at__date__gte=cutoff)
+        )
+    elif periodo == "30":
+        cutoff = now.date() - timedelta(days=30)
+        qs = qs.filter(
+            Q(process_date__gte=cutoff)
+            | Q(process_date__isnull=True, created_at__date__gte=cutoff)
+        )
+    elif periodo == "90":
+        cutoff = now.date() - timedelta(days=90)
+        qs = qs.filter(
+            Q(process_date__gte=cutoff)
+            | Q(process_date__isnull=True, created_at__date__gte=cutoff)
+        )
+    elif periodo == "ano":
+        cutoff = timezone.datetime(now.year, 1, 1, tzinfo=now.tzinfo).date()
+        qs = qs.filter(
+            Q(process_date__gte=cutoff)
+            | Q(process_date__isnull=True, created_at__date__gte=cutoff)
+        )
+
+    if data_inicio:
+        try:
+            d_ini = datetime.strptime(data_inicio[:10], "%Y-%m-%d").date()
+            qs = qs.filter(
+                Q(process_date__gte=d_ini)
+                | Q(process_date__isnull=True, created_at__date__gte=d_ini)
+            )
+        except (ValueError, TypeError):
+            pass
+
+    if data_fim:
+        try:
+            d_fim = datetime.strptime(data_fim[:10], "%Y-%m-%d").date()
+            qs = qs.filter(
+                Q(process_date__lte=d_fim)
+                | Q(process_date__isnull=True, created_at__date__lte=d_fim)
+            )
+        except (ValueError, TypeError):
+            pass
 
     valid_orderings = [
         "-updated_at",

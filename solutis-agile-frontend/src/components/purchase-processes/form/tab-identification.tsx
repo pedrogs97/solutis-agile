@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  ActionIcon,
+  Button,
   Grid,
   Paper,
   Select,
@@ -10,7 +12,8 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
-import { useMemo } from 'react'
+import { Plus, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useCostCenterOptions } from '@/hooks/useCostCenterOptions'
 import type { PurchaseProcess } from '@/types/PurchaseProcess'
@@ -37,6 +40,13 @@ export function TabIdentification({
   const apr = process.aprovacao
 
   const { costCenterOptions } = useCostCenterOptions()
+  const [showSecondCostCenter, setShowSecondCostCenter] = useState(Boolean(i.centroCusto2))
+
+  useEffect(() => {
+    if (i.centroCusto2) {
+      setShowSecondCostCenter(true)
+    }
+  }, [i.centroCusto2])
 
   const selectCostCenterData = useMemo(() => {
     const options = (costCenterOptions || []).map((o) => ({
@@ -48,6 +58,17 @@ export function TabIdentification({
     }
     return options
   }, [costCenterOptions, i.centroCusto])
+
+  const selectCostCenterData2 = useMemo(() => {
+    const options = (costCenterOptions || []).map((o) => ({
+      value: o.label || o.value,
+      label: o.label || o.value,
+    }))
+    if (i.centroCusto2 && !options.some((o) => o.value === i.centroCusto2)) {
+      options.unshift({ value: i.centroCusto2, label: i.centroCusto2 })
+    }
+    return options
+  }, [costCenterOptions, i.centroCusto2])
 
   return (
     <Paper withBorder radius="md" p="lg">
@@ -91,16 +112,58 @@ export function TabIdentification({
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Select
-              label="Centro de Custo"
-              placeholder="Selecione o centro de custo"
-              value={i.centroCusto || null}
-              onChange={(val) => updateIdentification('centroCusto', val || '')}
-              data={selectCostCenterData}
-              searchable
-              clearable
-            />
+            <Stack gap={4}>
+              <Select
+                label="Centro de Custo"
+                placeholder="Selecione o centro de custo"
+                value={i.centroCusto || null}
+                onChange={(val) => updateIdentification('centroCusto', val || '')}
+                data={selectCostCenterData}
+                searchable
+                clearable
+              />
+              {!showSecondCostCenter && (
+                <Button
+                  variant="subtle"
+                  size="compact-xs"
+                  color="blue"
+                  leftSection={<Plus size={12} />}
+                  onClick={() => setShowSecondCostCenter(true)}
+                  style={{ alignSelf: 'flex-start' }}
+                >
+                  + Adicionar outro centro de custo
+                </Button>
+              )}
+            </Stack>
           </Grid.Col>
+
+          {showSecondCostCenter && (
+            <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+              <Select
+                label="Centro de Custo 2 (Adicional)"
+                placeholder="Selecione o segundo centro de custo"
+                value={i.centroCusto2 || null}
+                onChange={(val) => updateIdentification('centroCusto2', val || '')}
+                data={selectCostCenterData2}
+                searchable
+                clearable
+                rightSection={
+                  <ActionIcon
+                    size="xs"
+                    color="gray"
+                    variant="subtle"
+                    onClick={() => {
+                      updateIdentification('centroCusto2', '')
+                      setShowSecondCostCenter(false)
+                    }}
+                    title="Remover segundo centro de custo"
+                  >
+                    <X size={14} />
+                  </ActionIcon>
+                }
+              />
+            </Grid.Col>
+          )}
 
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
             <Select
@@ -131,6 +194,14 @@ export function TabIdentification({
           value={i.objeto || ''}
           onChange={(e) => updateIdentification('objeto', e.currentTarget.value)}
           required
+        />
+
+        <Textarea
+          label="Observações"
+          placeholder="Observações complementares ou notas gerais sobre este processo de compra..."
+          minRows={2}
+          value={i.observacao || ''}
+          onChange={(e) => updateIdentification('observacao', e.currentTarget.value)}
         />
 
         <Grid gutter="md">

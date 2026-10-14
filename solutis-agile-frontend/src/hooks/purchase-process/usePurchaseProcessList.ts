@@ -35,6 +35,9 @@ export function usePurchaseProcessList(initialFilters?: PurchaseProcessFilters) 
   const [search, setSearch] = useState(initialFilters?.search || '')
   const [status, setStatus] = useState(initialFilters?.status || '')
   const [category, setCategory] = useState(initialFilters?.category || '')
+  const [periodo, setPeriodo] = useState(initialFilters?.periodo || '')
+  const [dataInicio, setDataInicio] = useState(initialFilters?.dataInicio || '')
+  const [dataFim, setDataFim] = useState(initialFilters?.dataFim || '')
   const [page, setPage] = useState(initialFilters?.page || 1)
   const [pageSize, setPageSize] = useState(initialFilters?.pageSize || 20)
 
@@ -46,7 +49,7 @@ export function usePurchaseProcessList(initialFilters?: PurchaseProcessFilters) 
   } = useQuery({
     queryKey: [
       'fetchPurchaseProcesses',
-      { search, status, category, page, pageSize },
+      { search, status, category, periodo, dataInicio, dataFim, page, pageSize },
     ],
     queryFn: fetchPurchaseProcesses,
   })
@@ -147,6 +150,12 @@ export function usePurchaseProcessList(initialFilters?: PurchaseProcessFilters) 
     setStatus,
     category,
     setCategory,
+    periodo,
+    setPeriodo,
+    dataInicio,
+    setDataInicio,
+    dataFim,
+    setDataFim,
     page,
     setPage,
     pageSize,

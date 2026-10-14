@@ -35,6 +35,12 @@ export function ProcessTable({ onToggleDashboard, showDashboard }: ProcessTableP
     setStatus,
     category,
     setCategory,
+    periodo,
+    setPeriodo,
+    dataInicio,
+    setDataInicio,
+    dataFim,
+    setDataFim,
     page,
     setPage,
     listData,
@@ -80,7 +86,7 @@ export function ProcessTable({ onToggleDashboard, showDashboard }: ProcessTableP
         style={{ borderColor: 'light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4))' }}
       >
         <Group justify="space-between" wrap="wrap" gap="sm">
-          <Group gap="sm" style={{ flex: 1, minWidth: 280 }}>
+          <Group gap="sm" style={{ flex: 1, minWidth: 280 }} wrap="wrap">
             <TextInput
               placeholder="Buscar por objeto, comprador ou solicitante..."
               leftSection={<Search size={16} />}
@@ -93,6 +99,53 @@ export function ProcessTable({ onToggleDashboard, showDashboard }: ProcessTableP
               size="sm"
             />
             <Select
+              placeholder="Período"
+              value={periodo}
+              onChange={(val) => {
+                setPeriodo(val || '')
+                setPage(1)
+              }}
+              data={[
+                { value: '', label: 'Todo o período' },
+                { value: 'mes', label: 'Este mês' },
+                { value: '30', label: 'Últimos 30 dias' },
+                { value: '90', label: 'Últimos 90 dias' },
+                { value: 'ano', label: 'Este ano' },
+                { value: 'custom', label: 'Personalizado' },
+              ]}
+              w={160}
+              size="sm"
+              clearable
+            />
+            {periodo === 'custom' && (
+              <Group gap="xs">
+                <TextInput
+                  type="date"
+                  placeholder="Início"
+                  value={dataInicio}
+                  onChange={(e) => {
+                    setDataInicio(e.currentTarget.value)
+                    setPage(1)
+                  }}
+                  size="sm"
+                  w={140}
+                  title="Data de Início"
+                />
+                <TextInput
+                  type="date"
+                  placeholder="Fim"
+                  value={dataFim}
+                  onChange={(e) => {
+                    setDataFim(e.currentTarget.value)
+                    setPage(1)
+                  }}
+                  size="sm"
+                  w={140}
+                  title="Data de Fim"
+                />
+              </Group>
+            )}
+            <Select
               placeholder="Status"
               value={status}
               onChange={(val) => {
@@ -100,7 +153,7 @@ export function ProcessTable({ onToggleDashboard, showDashboard }: ProcessTableP
                 setPage(1)
               }}
               data={[{ value: '', label: 'Todos os status' }, ...STATUS_LIST.map((s) => ({ value: s, label: s }))]}
-              w={160}
+              w={150}
               size="sm"
               clearable
             />
@@ -112,7 +165,7 @@ export function ProcessTable({ onToggleDashboard, showDashboard }: ProcessTableP
                 setPage(1)
               }}
               data={[{ value: '', label: 'Todas as categorias' }, ...CATEGORIAS.map((c) => ({ value: c, label: c }))]}
-              w={170}
+              w={160}
               size="sm"
               clearable
             />
@@ -208,7 +261,7 @@ export function ProcessTable({ onToggleDashboard, showDashboard }: ProcessTableP
                     </Table.Td>
 
                     <Table.Td>
-                      <Text size="sm">
+                      <Text size="sm" translate="no" className="notranslate">
                         {item.fornecedorRecomendadoNome || <span style={{ color: 'var(--mantine-color-dimmed)' }}>—</span>}
                       </Text>
                     </Table.Td>

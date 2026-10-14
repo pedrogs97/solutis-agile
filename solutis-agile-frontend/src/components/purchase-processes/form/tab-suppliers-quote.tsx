@@ -120,11 +120,11 @@ export function TabSuppliersQuote({
                 {process.fornecedores.map((f, idx) => {
                   const isWinner = lowest && lowest.id === f.id && Boolean(f.nome?.trim())
                   return (
-                    <Table.Th key={f.id} style={{ minWidth: 220 }}>
+                    <Table.Th key={f.id} style={{ minWidth: 220 }} translate="no" className="notranslate">
                       <Group justify="space-between" align="center">
                         <Group gap={6}>
-                          <Text size="sm" fw={700}>
-                            Fornecedor {idx + 1}
+                          <Text size="sm" fw={700} translate="no" className="notranslate">
+                            {f.nome?.trim() ? f.nome : `Fornecedor ${idx + 1}`}
                           </Text>
                           {isWinner && (
                             <Badge color="green" size="xs" variant="filled">
@@ -162,6 +162,9 @@ export function TabSuppliersQuote({
                       placeholder="Nome do fornecedor"
                       value={f.nome || ''}
                       onChange={(e) => updateSupplier(f.id, 'nome', e.currentTarget.value)}
+                      translate="no"
+                      className="notranslate"
+                      autoComplete="off"
                     />
                   </Table.Td>
                 ))}

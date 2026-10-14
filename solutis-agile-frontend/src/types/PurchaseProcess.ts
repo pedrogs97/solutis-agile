@@ -3,11 +3,13 @@ export interface PurchaseIdentification {
   categoria: 'Normal' | 'Urgência' | 'Prioridade' | string
   modalidade: 'Serviço' | 'Produto' | string
   centroCusto: string
+  centroCusto2?: string | null
   objeto: string
   tipoContratacao: 'Compra nova' | 'Renovação' | 'Substituição' | 'Emergencial' | string
   risco: 'Baixo' | 'Médio' | 'Alto' | 'Crítico' | string
   solicitante: string
   compradorResponsavel: string
+  observacao?: string | null
 }
 
 export interface PurchaseSupplier {

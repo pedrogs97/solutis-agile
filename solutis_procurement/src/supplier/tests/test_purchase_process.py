@@ -452,3 +452,63 @@ def test_purchase_process_compliance_persistence_and_backward_compatibility(
     assert conf2["notaFiscal"]["arquivos"][0]["nome"] == "DANFE_12345.pdf"
     assert conf2["comprovacaoSolicitacao"]["checked"] is False
     assert len(conf2["comprovacaoSolicitacao"]["arquivos"]) == 0
+
+
+@pytest.mark.django_db
+def test_purchase_process_cost_center_2_observation_and_period_filters(
+    sample_purchase_process_data,
+):
+    client = _auth_client()
+
+    # 1. Criação com centroCusto2 e observacao
+    payload = dict(sample_purchase_process_data)
+    payload["identificacao"] = dict(sample_purchase_process_data["identificacao"])
+    payload["identificacao"]["centroCusto"] = "1000 - TI Principal"
+    payload["identificacao"]["centroCusto2"] = "2000 - Operações Secundário"
+    payload["identificacao"]["observacao"] = "Observação teste de compra corporativa"
+    payload["identificacao"]["data"] = "2026-10-10"
+
+    res = client.post(
+        "/api/v1/purchase-processes/",
+        data=payload,
+        format="json",
+    )
+    assert res.status_code == status.HTTP_201_CREATED
+    data = res.json()
+    proc_id = data["id"]
+    assert data["identificacao"]["centroCusto"] == "1000 - TI Principal"
+    assert data["identificacao"]["centroCusto2"] == "2000 - Operações Secundário"
+    assert (
+        data["identificacao"]["observacao"] == "Observação teste de compra corporativa"
+    )
+
+    # 2. GET detail e validação de persistência
+    get_res = client.get(f"/api/v1/purchase-processes/{proc_id}/")
+    assert get_res.status_code == status.HTTP_200_OK
+    persisted = get_res.json()
+    assert persisted["identificacao"]["centroCusto2"] == "2000 - Operações Secundário"
+    assert (
+        persisted["identificacao"]["observacao"]
+        == "Observação teste de compra corporativa"
+    )
+
+    # 3. Teste de filtros por período e data na listagem
+    # Filtro com periodo='ano' deve retornar o registro de 2026
+    list_ano = client.get("/api/v1/purchase-processes/?periodo=ano")
+    assert list_ano.status_code == status.HTTP_200_OK
+    assert list_ano.json()["count"] >= 1
+
+    # Filtro com intervalo de datas abrangendo 2026-10-10
+    list_range = client.get(
+        "/api/v1/purchase-processes/?data_inicio=2026-10-01&data_fim=2026-10-31"
+    )
+    assert list_range.status_code == status.HTTP_200_OK
+    assert list_range.json()["count"] >= 1
+    assert list_range.json()["items"][0]["id"] == proc_id
+
+    # Filtro com intervalo fora do processo deve retornar 0
+    list_out_range = client.get(
+        "/api/v1/purchase-processes/?data_inicio=2025-01-01&data_fim=2025-01-31"
+    )
+    assert list_out_range.status_code == status.HTTP_200_OK
+    assert list_out_range.json()["count"] == 0

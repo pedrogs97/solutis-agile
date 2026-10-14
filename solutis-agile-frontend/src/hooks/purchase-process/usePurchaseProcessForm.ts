@@ -6,13 +6,13 @@ import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAbilityGuard } from '@/hooks/useAbilityGuard'
+import { formatDateToLocalYMD } from '@/lib/utils'
 import {
   createPurchaseProcess,
   decidePurchaseProcess,
   fetchPurchaseProcess,
   updatePurchaseProcess,
 } from '@/services/api/purchase-process'
-import { formatDateToLocalYMD } from '@/lib/utils'
 import { getProfile } from '@/store/persisted/useProfileStore'
 import type {
   ComplianceFile,
@@ -78,11 +78,13 @@ export function createNewProcess(): PurchaseProcess {
       categoria: 'Normal',
       modalidade: 'Produto',
       centroCusto: '',
+      centroCusto2: '',
       objeto: '',
       tipoContratacao: 'Compra nova',
       risco: 'Baixo',
       solicitante: '',
       compradorResponsavel: currentUser,
+      observacao: '',
     },
     fornecedores: [createNewSupplier(f1), createNewSupplier(f2)],
     itens: [

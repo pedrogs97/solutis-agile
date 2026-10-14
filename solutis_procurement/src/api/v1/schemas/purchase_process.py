@@ -14,11 +14,13 @@ class PurchaseIdentificationSchema(CamelSchema):
     categoria: str = "Normal"
     modalidade: str = "Produto"
     centro_custo: str = ""
+    centro_custo2: str | None = ""
     objeto: str = ""
     tipo_contratacao: str = "Compra nova"
     risco: str = "Baixo"
     solicitante: str = ""
     comprador_responsavel: str = ""
+    observacao: str | None = ""
 
 
 class PurchaseSupplierSchema(CamelSchema):

@@ -128,6 +128,7 @@ export function TabSupplierEvaluation({
               data={supplierOptions}
               onChange={handleSelectCotatedSupplier}
               clearable
+              className="notranslate"
             />
           )}
 
@@ -138,6 +139,9 @@ export function TabSupplierEvaluation({
                 placeholder="Razão Social"
                 value={a.razaoSocial || ''}
                 onChange={(e) => updateEvaluation('razaoSocial', e.currentTarget.value)}
+                translate="no"
+                className="notranslate"
+                autoComplete="off"
               />
             </Grid.Col>
 

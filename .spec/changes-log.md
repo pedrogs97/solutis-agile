@@ -1,5 +1,73 @@
 # Histórico de Alterações do Projeto
 
+## [2026-10-13] - Atualização da Base de Fornecedores via CSV e Comando sync_suppliers
+- **Descrição**: Inclusão e atualização dos 6 fornecedores solicitados diretamente nos arquivos de dados CSV (`solutis_procurement/fornecedores.csv` e `solutis_procurement/data/fornecedores.csv`), suporte a sincronização via comando Django `python manage.py sync_suppliers` com opção `--from-csv-only` (offline/seed direto) e ampliação da suíte de testes unitários. Sem dependência de migration de dados.
+- **Fornecedores Adicionados / Atualizados**:
+  1. `DOMINGUES, CEARA & PIETROBON ADVOGADOS` | CNPJ: `67.542.036/0001-78` | Risco: `BAIXO`
+  2. `WERTHEIMER SERVIÇOS DE SAÚDE MENTAL LTDA` | CNPJ: `53.172.704/0001-08` | Risco: `BAIXO`
+  3. `MS TECH GROUP LTDA` | CNPJ: `65.343.385/0001-35` | Risco: `BAIXO`
+  4. `COMPANHIA DE JESUS JESUITAS` | CNPJ: `33.544.362/0001-00` | Risco: `BAIXO`
+  5. `ISABEL CRISTINA OSORIO DE OLIVA SERVICOS` | CNPJ: `59.531.496/0001-72` | Risco: `BAIXO`
+  6. `ALGAR TELECOM S/A` | CNPJ: `71.208.516/0164-10` | Risco: `MÉDIO`
+- **Arquivos afetados**:
+  - `solutis_procurement/fornecedores.csv`
+  - `solutis_procurement/data/fornecedores.csv`
+  - `solutis_procurement/src/sync/services/supplier_sync.py`
+  - `solutis_procurement/src/sync/management/commands/sync_suppliers.py`
+  - `solutis_procurement/src/sync/tests/test_supplier_sync.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  - **Arquivos CSV**: Atualizados com delimitador resiliente e nomes com vírgula entre aspas, totalizando 45 fornecedores com CNPJ válido e mapeamento de grau de risco (`BAIXO` e `MÉDIO`).
+  - **Management Command (`sync_suppliers`)**: O comando `python manage.py sync_suppliers` agora aceita a flag `--from-csv-only` (ou `--offline`), permitindo carregar/semear a lista de fornecedores diretamente a partir do CSV em bancos locais ou ambientes sem conexão ativa ao TOTVS, além da sincronização padrão integrada ao TOTVS.
+  - **Testes Unitários (TDD)**: Testes em `test_supplier_sync.py` atualizados para 7/7 casos cobrindo os 45 fornecedores, verificação individual dos 6 fornecedores solicitados e execução do comando `sync_suppliers` com `--from-csv-only`.
+
+## [2026-10-13] - Melhorias e Correções no Módulo de Análise e Decisão de Compras
+- **Descrição**: Atendimento às demandas de ajuste e novas funcionalidades no formulário e na listagem de Análise e Decisão de Compras: bloqueio de tradução indevida de nomes de fornecedores pelo navegador, suporte a múltiplos centros de custo, inclusão de campo de observação geral e filtro de período na listagem de processos.
+- **Arquivos afetados**:
+  - `solutis-agile-frontend/index.html`
+  - `solutis-agile-frontend/src/styles/global.css`
+  - `solutis-agile-frontend/src/types/PurchaseProcess.ts`
+  - `solutis-agile-frontend/src/services/api/purchase-process.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessForm.ts`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessList.ts`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-identification.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-suppliers-quote.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-items-detail.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-decision-approval.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/form/tab-supplier-evaluation.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/process-table.tsx`
+  - `solutis-agile-frontend/src/components/purchase-processes/print-view.tsx`
+  - `solutis-agile-frontend/src/hooks/purchase-process/usePurchaseProcessFieldsAndFilters.test.ts`
+  - `solutis_procurement/src/api/v1/schemas/purchase_process.py`
+  - `solutis_procurement/src/api/v1/routers/purchase_process.py`
+  - `solutis_procurement/src/supplier/tests/test_purchase_process.py`
+  - `.spec/changes-log.md`
+- **Impacto / Mudanças principais**:
+  1. **Bloqueio de Tradução Indevida do Nome do Fornecedor**:
+     - Configurado `index.html` com `lang="pt-BR"`, tag `<meta name="google" content="notranslate" />` e atributo `translate="no"` com classe `.notranslate` na raiz da aplicação.
+     - Protegidos todos os campos de exibição, cotação, seleção de recomendação, tabela e visão de impressão dos nomes de fornecedores com `translate="no"`, `className="notranslate"` e `autoComplete="off"`, impedindo que navegadores traduzam termos empresariais (ex.: "Fast", "Total", "Solution").
+  2. **Adição de Segundo Centro de Custo no Formulário**:
+     - Atualizados schemas NinjaAPI (`centro_custo2`) e tipos frontend (`centroCusto2`).
+     - Na aba de Identificação (`tab-identification.tsx`), implementada adição dinâmica de um segundo centro de custo através do botão "+ Adicionar outro centro de custo", com opção de exclusão.
+     - Visão de impressão (`print-view.tsx`) atualizada para exibir ambos os centros de custo no cabeçalho quando preenchidos.
+  3. **Campo de Observação Geral**:
+     - Adicionado campo `observacao` ao schema de identificação no backend e na tipagem frontend.
+     - Implementado campo de `Textarea` de observações gerais na aba de Identificação e exibição formatada na impressão.
+  4. **Filtro por Período na Análise de Compras**:
+     - Endpoint `list_purchase_processes` atualizado para aceitar parâmetros `periodo` (`mes`, `30`, `90`, `ano`), `data_inicio` e `data_fim`, com filtragem por `process_date` e fallback para `created_at__date`.
+     - Frontend equipado com seletor de período dinâmico na barra de ferramentas da tabela (`process-table.tsx`) com opções pré-configuradas e seleção de intervalo de datas personalizado (data inicial e final).
+  5. **Cobertura de Testes (TDD)**:
+     - Backend: Criado teste unitário `test_purchase_process_cost_center_2_observation_and_period_filters` em `solutis_procurement`, 100% aprovado.
+     - Frontend: Criada suíte de testes `usePurchaseProcessFieldsAndFilters.test.ts` cobrindo tipos, hooks de listagem e de formulário, 100% aprovada (16 testes de purchase-process).
+
+## [2026-09-29] - Deploy Remoto: Correção da Tendência Mensal no Dashboard Executivo
+- **Descrição**: Commit, push para a branch `main` e deploy remoto executado com sucesso no servidor de produção `Solutis` (`172.21.3.225`), reconstruindo os containers dos serviços com versão incrementada.
+- **Commit**: `4a381bf` (`fix: correção da tendência mensal estática no dashboard executivo de compras`)
+- **Containers Atualizados no Host**:
+  - `solutis-agile-frontend-prod` (`2.7.22`)
+  - `solutis-procurement-prod` (`2.18.9`)
+- **Status da Operação**: Sucesso total (exit code 0), com sincronização via `git checkout main && git pull origin main` e execução do `./deploy.sh`.
+
 ## [2026-09-29] - Correção: Tendência Mensal Estática no Dashboard Executivo de Compras
 - **Descrição**: Corrigido bug onde o gráfico "Tendência Mensal" no dashboard executivo exibia dados estáticos que não correspondiam aos valores reais dos processos de compras.
 - **Causa Raiz (dupla)**:

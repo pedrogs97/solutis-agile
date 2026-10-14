@@ -44,17 +44,17 @@ class SupplierSyncService:
 
     def __init__(
         self,
-        db_service: DatabaseConnectionService,
+        db_service: DatabaseConnectionService | None = None,
         csv_path: str | Path | None = None,
     ):
         """
         Initialize the sync service.
 
         Args:
-            db_service: Database connection service instance
+            db_service: Optional database connection service instance
             csv_path: Optional path to CSV file with suppliers (name, cnpj, risk level)
         """
-        self.db_service = db_service
+        self.db_service = db_service or DatabaseConnectionService()
         self.csv_path = csv_path
         self._suppliers_data: dict[str, dict[str, str]] = {}
         self._name_mapping: dict[str, str] = {}
@@ -123,6 +123,12 @@ class SupplierSyncService:
                 "43.649.570/0001-10": "BAIXO",
                 "33.571.622/0001-29": "BAIXO",
                 "60.143.657/0001-30": "BAIXO",
+                "67.542.036/0001-78": "BAIXO",
+                "53.172.704/0001-08": "BAIXO",
+                "65.343.385/0001-35": "BAIXO",
+                "33.544.362/0001-00": "BAIXO",
+                "59.531.496/0001-72": "BAIXO",
+                "71.208.516/0164-10": "MÉDIO",
             }
             return
 
@@ -216,7 +222,79 @@ class SupplierSyncService:
             raise
 
         finally:
-            self.db_service.close()
+            if self.db_service:
+                self.db_service.close()
+
+    def sync_from_csv_only(self) -> int:
+        """
+        Synchronize or seed suppliers directly from the loaded CSV mapping,
+        without requiring connection to the TOTVS database.
+        Useful for offline mode, local dev or direct CSV updates.
+        """
+        logger.info("Starting supplier synchronization directly from CSV mapping")
+        saved_count = 0
+        items_to_sync = self._suppliers_data
+        if not items_to_sync and self._risk_mapping:
+            items_to_sync = {
+                cnpj: {
+                    "name": self._name_mapping.get(cnpj, ""),
+                    "cnpj": cnpj,
+                    "risk_level": risk,
+                }
+                for cnpj, risk in self._risk_mapping.items()
+            }
+
+        with transaction.atomic():
+            category, _ = DomCategory.objects.get_or_create(
+                id=1,
+                defaults={"name": "PESSOA JURÍDICA"},
+            )
+            classification, _ = DomClassification.objects.get_or_create(
+                id=1,
+                defaults={"name": "PADRÃO"},
+            )
+            supplier_type, _ = DomTypeSupplier.objects.get_or_create(name="PADRÃO")
+
+            for cnpj, data in items_to_sync.items():
+                if not cnpj:
+                    continue
+                name = data.get("name") or cnpj
+                risk_name = data.get("risk_level") or "BAIXO"
+
+                risk_level = DomRiskLevel.objects.filter(name__iexact=risk_name).first()
+                if not risk_level:
+                    risk_level, _ = DomRiskLevel.objects.get_or_create(name=risk_name)
+
+                supplier = Supplier.objects.filter(tax_id=cnpj).first()
+                if not supplier and name:
+                    supplier = Supplier.objects.filter(legal_name=name).first()
+
+                if supplier:
+                    supplier.tax_id = cnpj
+                    if name:
+                        supplier.legal_name = name
+                        supplier.trade_name = name or supplier.trade_name
+                    supplier.risk_level = risk_level
+                    supplier.save()
+                else:
+                    supplier = Supplier.objects.create(
+                        tax_id=cnpj,
+                        legal_name=name,
+                        trade_name=name,
+                        risk_level=risk_level,
+                        category=category,
+                        classification=classification,
+                        type=supplier_type,
+                    )
+
+                if hasattr(supplier, "responsibility_matrix") and not getattr(
+                    supplier, "responsibility_matrix", None
+                ):
+                    ResponsibilityMatrix.objects.create(supplier=supplier)
+                saved_count += 1
+
+        logger.info("Successfully synchronized %s suppliers from CSV", saved_count)
+        return saved_count
 
     def _fetch_suppliers_from_totvs(self) -> list[SupplierTotvsDTO]:
         """

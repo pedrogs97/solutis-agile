@@ -138,7 +138,7 @@ export function TabDecisionApproval({
                     <Table.Tr key={f.id} bg={isWinner ? 'light-dark(#f6fbf7, rgba(47, 158, 68, 0.15))' : undefined}>
                       <Table.Td>
                         <Group gap={6}>
-                          <Text size="sm" fw={600}>
+                          <Text size="sm" fw={600} translate="no" className="notranslate">
                             {f.nome}
                           </Text>
                           {isWinner && (
@@ -177,6 +177,7 @@ export function TabDecisionApproval({
                 onChange={(val) => updateDecision('fornecedorRecomendadoId', val || '')}
                 data={filledSuppliers.map((f) => ({ value: f.id, label: f.nome }))}
                 clearable
+                className="notranslate"
               />
             </Grid.Col>
 

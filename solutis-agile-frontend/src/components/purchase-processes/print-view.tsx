@@ -70,7 +70,7 @@ export function PrintView({ process }: PrintViewProps) {
                   <Table.Td fw={600}>Modalidade:</Table.Td>
                   <Table.Td>{i.modalidade}</Table.Td>
                   <Table.Td fw={600}>Centro de Custo:</Table.Td>
-                  <Table.Td>{i.centroCusto || '—'}</Table.Td>
+                  <Table.Td>{i.centroCusto ? `${i.centroCusto}${i.centroCusto2 ? ` / ${i.centroCusto2}` : ''}` : (i.centroCusto2 || '—')}</Table.Td>
                 </Table.Tr>
                 <Table.Tr>
                   <Table.Td fw={600}>Tipo de Contratação:</Table.Td>
@@ -88,6 +88,12 @@ export function PrintView({ process }: PrintViewProps) {
                   <Table.Td fw={600}>Objeto:</Table.Td>
                   <Table.Td colSpan={3}>{i.objeto}</Table.Td>
                 </Table.Tr>
+                {i.observacao && (
+                  <Table.Tr>
+                    <Table.Td fw={600}>Observações:</Table.Td>
+                    <Table.Td colSpan={3}>{i.observacao}</Table.Td>
+                  </Table.Tr>
+                )}
               </Table.Tbody>
             </Table>
           </div>
@@ -100,7 +106,7 @@ export function PrintView({ process }: PrintViewProps) {
                 <Table.Tr>
                   <Table.Th style={{ width: 220 }}>Critério</Table.Th>
                   {process.fornecedores.map((f, idx) => (
-                    <Table.Th key={f.id} style={{ textAlign: 'center' }}>
+                    <Table.Th key={f.id} style={{ textAlign: 'center' }} translate="no" className="notranslate">
                       {f.nome || `Fornecedor ${idx + 1}`}
                       {lowest && lowest.id === f.id && Boolean(f.nome?.trim()) && ' (Menor CTA)'}
                     </Table.Th>
@@ -186,7 +192,7 @@ export function PrintView({ process }: PrintViewProps) {
                     <Table.Th style={{ width: 60 }}>Qtd.</Table.Th>
                     <Table.Th style={{ width: 60 }}>Unid.</Table.Th>
                     {process.fornecedores.map((f) => (
-                      <Table.Th key={f.id} style={{ textAlign: 'right' }}>
+                      <Table.Th key={f.id} style={{ textAlign: 'right' }} translate="no" className="notranslate">
                         {f.nome || 'Fornecedor'}
                       </Table.Th>
                     ))}
@@ -218,7 +224,9 @@ export function PrintView({ process }: PrintViewProps) {
               <Table.Tbody>
                 <Table.Tr>
                   <Table.Td fw={600} style={{ width: 220 }}>Fornecedor Recomendado:</Table.Td>
-                  <Table.Td>{filledSuppliers.find((f) => f.id === d.fornecedorRecomendadoId)?.nome || '—'}</Table.Td>
+                  <Table.Td translate="no" className="notranslate">
+                    {filledSuppliers.find((f) => f.id === d.fornecedorRecomendadoId)?.nome || '—'}
+                  </Table.Td>
                   <Table.Td fw={600} style={{ width: 220 }}>Mínimo de Propostas Atingido:</Table.Td>
                   <Table.Td>{d.minimoAtingido === 'sim' ? 'Sim' : 'Não (Exceção/Dispensa)'}</Table.Td>
                 </Table.Tr>
@@ -320,7 +328,7 @@ export function PrintView({ process }: PrintViewProps) {
                 <Table.Tbody>
                   <Table.Tr>
                     <Table.Td fw={600} style={{ width: 180 }}>Fornecedor Avaliado:</Table.Td>
-                    <Table.Td>{a.razaoSocial} ({maskCnpj(a.cnpj)})</Table.Td>
+                    <Table.Td translate="no" className="notranslate">{a.razaoSocial} ({maskCnpj(a.cnpj)})</Table.Td>
                     <Table.Td fw={600} style={{ width: 180 }}>Nota Fiscal / Data:</Table.Td>
                     <Table.Td>NF {a.nfNumero || '—'} / {formatDate(a.dataCompra)}</Table.Td>
                   </Table.Tr>
