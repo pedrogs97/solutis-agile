@@ -172,6 +172,7 @@ def execute_remote_deploy(
     use_sudo: bool = False,
     dry_run: bool = False,
     timeout: int = 10,
+    post_cmd: str | None = None,
 ) -> int:
     """
     Conecta ao servidor via SSH e executa o deploy.sh remoto.
@@ -259,7 +260,8 @@ def execute_remote_deploy(
     # Monta comando remoto com navegação para o diretório do projeto
     cmd_prefix = "sudo " if use_sudo else ""
     pull_step = "git checkout main && git pull origin main && " if git_pull else ""
-    full_cmd = f"cd {remote_dir} && {pull_step}chmod +x {remote_cmd} && {cmd_prefix}{remote_cmd}"
+    post_step = f" && {post_cmd}" if post_cmd else ""
+    full_cmd = f"cd {remote_dir} && {pull_step}chmod +x {remote_cmd} && {cmd_prefix}{remote_cmd}{post_step}"
 
     safe_print(f"🚀 Iniciando execução remota do deploy: '{full_cmd}'")
     safe_print("=" * 60)
@@ -378,6 +380,11 @@ def main() -> int:
         help="Executa o script remoto com sudo",
     )
     parser.add_argument(
+        "--post-cmd",
+        default=None,
+        help="Comando opcional a ser executado remotamente após o deploy bem sucedido",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Apenas testa a conexão e a existência do diretório sem executar o deploy",
@@ -490,6 +497,7 @@ def main() -> int:
         git_pull=args.git_pull,
         use_sudo=args.sudo,
         dry_run=args.dry_run,
+        post_cmd=args.post_cmd,
     )
 
 
